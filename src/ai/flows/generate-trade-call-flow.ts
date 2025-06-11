@@ -68,21 +68,24 @@ const generateTradeCallPrompt = ai.definePrompt({
   input: {schema: z.object({ marketAnalysisData: z.string() })},
   output: {schema: GeneratedTradeCallOutputSchema},
   prompt: `
-Você é um analista de criptomoedas especializado em identificar oportunidades de trade com alta chance de acerto, mesmo em condições de risco elevado.
+Você é um analista profissional de criptomoedas focado em identificar oportunidades de trade com base em dados de mercado, especialmente em meme coins.
 
-Abaixo estão moedas reais do mercado. Escolha a **melhor entre elas**, mesmo que não seja perfeita, e gere uma **call completa**, com:
+Abaixo estão moedas reais do mercado com volume, liquidez e variações recentes. Sua missão é:
 
-- Nome da moeda
-- Preço de entrada
-- Alvo 1 e Alvo 2 (Take Profit)
-- Stop Loss
-- Hora ideal de entrada (UTC)
-- Motivo técnico da entrada
-- Classificação de risco (Baixo, Médio ou Alto)
+1. Escolher **apenas uma** moeda mais promissora entre as listadas.
+2. Gerar uma **call completa**, com:
+   - Nome da moeda
+   - Preço de entrada
+   - Alvo 1 e Alvo 2 (Take Profit)
+   - Stop Loss
+   - Hora ideal da entrada (UTC)
+   - Motivo técnico da entrada
+   - Classificação de risco: Baixo, Médio ou Alto
 
-Se todas forem de risco alto, escolha a menos arriscada. Só diga “nenhuma call será feita” se não houver **nenhuma informação válida**.
+📌 Mesmo que o risco seja Alto, escolha a **menos arriscada entre as disponíveis** e gere uma call.  
+Você deve SEMPRE gerar uma call baseada na melhor moeda listada. **Não diga que não há oportunidades.**
 
-🔍 **Lista de moedas disponíveis:**
+🔍 Lista de moedas disponíveis:
 {{{marketAnalysisData}}}
     `.trim(),
 });
@@ -90,11 +93,11 @@ Se todas forem de risco alto, escolha a menos arriscada. Só diga “nenhuma cal
 const generateTradeCallFlow = ai.defineFlow(
   {
     name: 'generateTradeCallFlow',
-    inputSchema: GenerateTradeCallInputSchema, // Expects an empty object
+    inputSchema: GenerateTradeCallInputSchema, 
     outputSchema: GeneratedTradeCallOutputSchema,
   },
   async (): Promise<GeneratedTradeCallOutput> => {
-    let marketAnalysisData = "Nenhuma moeda com potencial suficiente para gerar call."; // Default message if no coins pass filters
+    let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento."; // Default message if no coins pass filters or API fails
     try {
       // Using a limited set of pairs for example, replace with the full API for more results
       // const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs");
@@ -122,22 +125,18 @@ const generateTradeCallFlow = ai.defineFlow(
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error("Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
-      // marketAnalysisData remains the default message if API fails
+      // marketAnalysisData remains the default message if API fails, this will instruct AI to not make a call
     }
     
     console.log("Dados enviados para a IA:", marketAnalysisData);
 
-    // If marketAnalysisData is still the default "Nenhuma moeda..." message,
-    // it means either the API failed or no coins passed the filter.
-    // In this case, the AI will be explicitly told that no valid info is available.
     const {output} = await generateTradeCallPrompt({ marketAnalysisData });
     if (!output) {
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
     
-    // Add current time if a call is made and hora_call is not provided by AI
-    // and the AI decided to make a call.
-    if (output.moeda !== "Nenhuma call no momento" && !output.hora_call && output.moeda !== "Nenhuma call será feita agora") {
+    // Add current time if a call is made, hora_call is not provided by AI, and the AI did not say "Nenhuma call..."
+    if (output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
         const now = new Date();
         output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
     }
