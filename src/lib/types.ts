@@ -73,12 +73,12 @@ export interface HotPair {
   id: string;
   name: string;
   symbol: string;
-  pairAddress: string; 
-  exchange: string; 
-  reason: string; 
+  pairAddress: string;
+  exchange: string;
+  reason: string;
   mockVolume24h: number;
   mockLiquidity: number;
-  priceChange24h?: number; 
+  priceChange24h?: number;
   logoUrl?: string;
   logoAiHint?: string;
   dexScreenerUrl?: string;
@@ -112,9 +112,10 @@ export interface GenerateTradeCallInput {
 
 export interface GeneratedTradeCallOutput {
   moeda: string;
-  hora_call: string; 
+  hora_call: string;
   entrada: string; // Formatted price string e.g., "$0.00000421"
-  alvo: string; // Formatted price string
+  alvos: Array<{ preco: string; observacao?: string }>; // Array for two targets
   stop: string; // Formatted price string
   motivo: string;
+  risco: "Baixo" | "Médio" | "Alto";
 }

@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { generateTradeCall, type GenerateTradeCallInput, type GeneratedTradeCallOutput } from "@/ai/flows/generate-trade-call-flow";
-import { Loader2, Wand2, AlertTriangle, FileJson } from 'lucide-react';
+import { Loader2, Wand2, AlertTriangle, FileJson, TrendingUp, ShieldAlert, BarChart2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 export default function GenerateTradeCallPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -62,6 +63,34 @@ export default function GenerateTradeCallPage() {
       setIsLoading(false);
     }
   };
+
+  const getRiskBadgeVariant = (risco: GeneratedTradeCallOutput['risco'] | undefined) => {
+    if (!risco) return "secondary";
+    switch (risco) {
+      case "Baixo":
+        return "default"; // Green
+      case "Médio":
+        return "secondary"; // Yellowish/Orange
+      case "Alto":
+        return "destructive"; // Red
+      default:
+        return "outline";
+    }
+  };
+  const getRiskBadgeClasses = (risco: GeneratedTradeCallOutput['risco'] | undefined) => {
+    if (!risco) return "";
+    switch (risco) {
+      case "Baixo":
+        return "bg-green-500/20 text-green-400 border-green-500/30";
+      case "Médio":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      case "Alto":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
+      default:
+        return "";
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -141,26 +170,63 @@ export default function GenerateTradeCallPage() {
       {tradeCallResult && !isLoading && (
         <Card className="max-w-2xl mx-auto shadow-xl mt-6">
           <CardHeader>
-            <CardTitle className="font-headline text-xl flex items-center">
-              <FileJson className="mr-2 h-5 w-5 text-primary" />
-              Call Gerada para {tradeCallResult.moeda}
+            <CardTitle className="font-headline text-xl flex items-center justify-between">
+              <span className="flex items-center"><FileJson className="mr-2 h-5 w-5 text-primary" />
+              Call Gerada para {tradeCallResult.moeda}</span>
+               <Badge variant={getRiskBadgeVariant(tradeCallResult.risco)} className={getRiskBadgeClasses(tradeCallResult.risco)}>
+                Risco: {tradeCallResult.risco}
+              </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 bg-muted/30 p-4 rounded-md">
-            <div className="text-sm font-mono whitespace-pre-wrap">
-              {JSON.stringify(tradeCallResult, null, 2)}
+          <CardContent className="space-y-4">
+            <div className="bg-muted/30 p-4 rounded-md space-y-2">
+                <InfoItem icon={<BarChart2 className="h-4 w-4 text-primary/80"/>} label="Moeda:" value={tradeCallResult.moeda} />
+                <InfoItem label="Hora da Call (UTC):" value={tradeCallResult.hora_call} />
+                <InfoItem label="Entrada:" value={tradeCallResult.entrada} valueClassName="text-green-400 font-bold" />
+                
+                <div className="space-y-1">
+                    <Label className="text-sm text-muted-foreground">Alvos de Lucro:</Label>
+                    {tradeCallResult.alvos.map((alvo, index) => (
+                        <div key={index} className="flex items-center ml-4">
+                            <TrendingUp className="h-4 w-4 mr-2 text-green-400"/>
+                            <span className="text-sm text-foreground">Alvo {index + 1}: <span className="font-semibold text-green-400">{alvo.preco}</span></span>
+                        </div>
+                    ))}
+                </div>
+                
+                <InfoItem icon={<ShieldAlert className="h-4 w-4 text-red-400"/>} label="Stop Loss:" value={tradeCallResult.stop} valueClassName="text-red-400 font-bold" />
             </div>
-            <hr className="my-2 border-border"/>
-            <h4 className="font-semibold text-md">Detalhes da Call:</h4>
-            <p><strong>Moeda:</strong> {tradeCallResult.moeda}</p>
-            <p><strong>Hora da Call:</strong> {tradeCallResult.hora_call}</p>
-            <p><strong>Entrada:</strong> <span className="font-semibold text-green-400">{tradeCallResult.entrada}</span></p>
-            <p><strong>Alvo:</strong> <span className="font-semibold text-green-400">{tradeCallResult.alvo}</span></p>
-            <p><strong>Stop:</strong> <span className="font-semibold text-red-400">{tradeCallResult.stop}</span></p>
-            <p><strong>Motivo:</strong> {tradeCallResult.motivo}</p>
+            <div>
+                <Label className="text-sm font-medium text-muted-foreground">Motivo da Call:</Label>
+                <p className="text-sm text-foreground bg-muted/30 p-3 rounded-md mt-1">{tradeCallResult.motivo}</p>
+            </div>
+            
+            <details className="mt-4 rounded-md border border-border p-3 hover:bg-muted/10 transition-colors">
+                <summary className="text-xs text-muted-foreground cursor-pointer">Ver JSON completo</summary>
+                <div className="text-xs font-mono whitespace-pre-wrap bg-muted/40 p-2 rounded mt-2 max-h-60 overflow-y-auto">
+                    {JSON.stringify(tradeCallResult, null, 2)}
+                </div>
+            </details>
+
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
+
+interface InfoItemProps {
+    icon?: React.ReactNode;
+    label: string;
+    value: string;
+    valueClassName?: string;
+}
+
+const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value, valueClassName }) => (
+    <div className="flex items-center">
+        {icon && <span className="mr-2">{icon}</span>}
+        <span className="text-sm text-muted-foreground min-w-[120px]">{label}</span>
+        <span className={`text-sm text-foreground ${valueClassName || ''}`}>{value}</span>
+    </div>
+);
+
