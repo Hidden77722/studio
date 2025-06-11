@@ -4,12 +4,12 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { AppLogo } from '@/components/shared/AppLogo'; // For loading state
+import { AppLogo } from '@/components/shared/AppLogo'; 
 
 interface AuthContextType {
   user: FirebaseUser | null;
   loading: boolean;
-  isProUser: boolean; // Placeholder for pro user logic
+  isProUser: boolean; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,15 +17,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isProUser, setIsProUser] = useState(false); // Placeholder
+  const [isProUser, setIsProUser] = useState(false); 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
       // Placeholder: In a real app, you'd check if the user has an active "Pro" subscription
-      // This could involve checking custom claims, Firestore data, etc.
       if (currentUser) {
+        // Example: Check custom claims or Firestore to set isProUser
+        // For now, let's assume all logged-in users are Pro for demonstration
         setIsProUser(true); 
       } else {
         setIsProUser(false);
@@ -35,7 +36,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  // Full page loading state
   if (loading) {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4">
@@ -50,7 +50,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         </div>
     );
   }
-
 
   return (
     <AuthContext.Provider value={{ user, loading, isProUser }}>

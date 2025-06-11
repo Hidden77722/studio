@@ -5,10 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppLogo } from "@/components/shared/AppLogo";
 import Link from "next/link";
-import { LogIn } from "lucide-react";
 import React, { useEffect } from "react";
 import { auth } from "@/lib/firebase";
-import { GoogleAuthProvider, signInWithPopup, UserCredential, AuthError } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, AuthError } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -25,9 +24,8 @@ const GoogleIcon = () => (
   </svg>
 );
 
-
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isSigningIn, setIsSigningIn] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -39,15 +37,13 @@ export default function LoginPage() {
   }, [user, authLoading, router]);
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
+    setIsSigningIn(true);
     setError(null);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
       // onAuthStateChanged in AuthContext will handle user state update
       // and the useEffect above will redirect.
-      // No explicit router.push('/dashboard') here needed immediately after signInWithPopup
-      // as the redirect is handled by the AuthContext user state change.
     } catch (e) {
       const authError = e as AuthError;
       console.error("Google Sign-In Error:", authError);
@@ -59,12 +55,11 @@ export default function LoginPage() {
         setError("Falha ao fazer login com Google. Tente novamente.");
       }
     } finally {
-      setIsLoading(false);
+      setIsSigningIn(false);
     }
   };
 
   if (authLoading || (!authLoading && user)) {
-    // Show a loading spinner or null while AuthProvider is initializing or redirecting
      return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4">
             <AppLogo />
@@ -78,7 +73,6 @@ export default function LoginPage() {
         </div>
     );
   }
-
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
@@ -98,15 +92,14 @@ export default function LoginPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Button variant="outline" className="w-full text-lg py-6" onClick={handleGoogleSignIn} disabled={isLoading}>
-            {isLoading ? "Processando..." : <><GoogleIcon /> Entrar com Google</>}
+          <Button variant="outline" className="w-full text-lg py-6" onClick={handleGoogleSignIn} disabled={isSigningIn}>
+            {isSigningIn ? "Processando..." : <><GoogleIcon /> Entrar com Google</>}
           </Button>
            <p className="text-xs text-muted-foreground text-center px-4">
             Ao continuar, você concorda com nossos <Link href="#" className="underline hover:text-primary">Termos de Serviço</Link> e <Link href="#" className="underline hover:text-primary">Política de Privacidade</Link>.
           </p>
         </CardContent>
         <CardFooter className="text-center text-sm">
-           {/* Placeholder for other login methods or sign up if needed */}
         </CardFooter>
       </Card>
     </div>

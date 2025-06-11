@@ -17,8 +17,7 @@ import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-
+import { useAuth } from "@/context/AuthContext"; // Import useAuth
 
 interface UserProfileDropdownProps {
   userName: string;
@@ -28,7 +27,7 @@ interface UserProfileDropdownProps {
 
 export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProfileDropdownProps) {
   const router = useRouter();
-  const { isProUser } = useAuth();
+  const { isProUser } = useAuth(); // Get pro status from context
 
   const getInitials = (name: string) => {
     if (!name) return "?";
@@ -45,13 +44,11 @@ export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProf
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push('/auth/login');
+      router.push('/auth/login'); // Redirect to login after sign out
     } catch (error) {
       console.error("Error signing out: ", error);
-      // Optionally show a toast or error message to the user
     }
   };
-
 
   return (
     <div className="flex items-center gap-4">
@@ -63,7 +60,7 @@ export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProf
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={avatarUrl} alt={userName} />
+              <AvatarImage src={avatarUrl} alt={userName} data-ai-hint="user avatar" />
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {getInitials(userName)}
               </AvatarFallback>

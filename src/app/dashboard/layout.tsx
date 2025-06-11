@@ -35,7 +35,6 @@ const navItems = [
 ];
 
 const proNavItems = [
-    // Add pro-only items here if needed in the future
 ];
 
 const bottomNavItems = [
@@ -46,11 +45,10 @@ const bottomNavItems = [
 function DashboardSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
-  const { isProUser } = useAuth();
+  const { isProUser } = useAuth(); // Get pro status from context
   const isCollapsed = state === "collapsed";
 
   const allNavItems = isProUser ? [...navItems, ...proNavItems] : navItems;
-
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
@@ -74,7 +72,7 @@ function DashboardSidebar() {
               </Link>
             </SidebarMenuItem>
           ))}
-           {!isProUser && (
+           {!isProUser && ( // Show "Seja Pro" if user is not pro
              <SidebarMenuItem>
                 <Link href="/dashboard/billing">
                     <SidebarMenuButton
@@ -123,9 +121,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [user, loading, router]);
 
   if (loading || !user) {
-    // The AuthProvider already shows a full-page loading spinner
-    // So we can return null here or a minimal spinner if preferred
-    // For consistency, let AuthProvider handle the main loading UI
+    // AuthProvider shows its own full-page spinner during initial load
+    // or when user is null and redirecting.
+    // So, we return null here to avoid double spinners.
     return null;
   }
 
@@ -139,10 +137,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <SidebarTrigger />
             </div>
             <div className="hidden md:block font-headline text-xl">
-              Bem-vindo(a), {user.displayName || user.email}! {isProUser && <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full ml-2">PRO</span>}
+              Bem-vindo(a), {user.displayName || user.email?.split('@')[0] || "Usuário"}! {isProUser && <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full ml-2">PRO</span>}
             </div>
             <UserProfileDropdown
-              userName={user.displayName || "Usuário"}
+              userName={user.displayName || user.email?.split('@')[0] || "Usuário"}
               userEmail={user.email || ""}
               avatarUrl={user.photoURL || undefined}
             />
