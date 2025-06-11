@@ -19,9 +19,8 @@ export default function SettingsPage() {
   const [enablePushNotifications, setEnablePushNotifications] = React.useState(true);
   const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("dark"); // 'dark', 'light', 'system'
-  // Define um som de notificação padrão.
   const [notificationSound, setNotificationSound] = React.useState(
-    "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/G-major.wav" // Using an MDN example WAV file
+    "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/G-major.wav" 
   );
 
 
@@ -30,32 +29,61 @@ export default function SettingsPage() {
       title: "🔔 Notificação de Teste",
       description: "Este é um alerta de teste com som!",
     });
-    try {
-      if (notificationSound && notificationSound.trim() !== "") {
+
+    if (notificationSound && notificationSound.trim() !== "") {
+      try {
         const audio = new Audio(notificationSound);
-        audio.play().catch(error => {
-          console.error("Erro ao tentar reproduzir o som:", error);
+
+        audio.addEventListener('error', (e) => {
+          console.error("Erro no elemento de áudio:", e);
+          let errorMessage = "Não foi possível carregar o som. ";
+          // MediaError codes: 1=MEDIA_ERR_ABORTED, 2=MEDIA_ERR_NETWORK, 3=MEDIA_ERR_DECODE, 4=MEDIA_ERR_SRC_NOT_SUPPORTED
+          const errorCode = audio.error?.code;
+          if (errorCode === 1) {
+            errorMessage += "Reprodução abortada.";
+          } else if (errorCode === 2) {
+            errorMessage += "Erro de rede ao carregar.";
+          } else if (errorCode === 3) {
+            errorMessage += "Erro ao decodificar (formato inválido/corrompido?).";
+          } else if (errorCode === 4) {
+            errorMessage += "Formato/URL não suportado ou inacessível (verifique CORS, link direto).";
+          } else {
+            errorMessage += "Causa desconhecida. Verifique a URL, conexão e console do navegador para mais detalhes.";
+          }
           toast({
-            title: "🔇 Erro no Áudio",
-            description: "Não foi possível reproduzir o som. Verifique a URL (deve ser um link direto para um arquivo de áudio como .mp3 ou .wav), problemas de CORS, ou bloqueios de autoplay do navegador.",
+            title: "🔇 Falha ao Carregar Áudio",
+            description: errorMessage,
             variant: "destructive",
           });
         });
-        console.log(`Tentando reproduzir som: ${notificationSound}`);
-      } else {
-         toast({
-            title: "🔇 Som não configurado",
-            description: "Nenhum som de notificação foi configurado. Insira uma URL válida para um arquivo de som.",
-            variant: "default",
+
+        audio.play()
+          .then(() => {
+            console.log(`Tentando reproduzir som: ${notificationSound}`);
+          })
+          .catch(playError => {
+            console.error("Erro ao tentar reproduzir o som (play promise rejected):", playError);
+            toast({
+              title: "🔇 Erro na Reprodução",
+              description: "Não foi possível iniciar a reprodução. O navegador pode ter bloqueado (verifique políticas de autoplay) ou ocorreu outro erro. Verifique o console.",
+              variant: "destructive",
+            });
           });
+
+      } catch (constructorError) { 
+        console.error("Exceção ao criar o objeto de áudio:", constructorError);
+        toast({
+          title: "🔇 Erro Crítico no Áudio",
+          description: "Ocorreu uma exceção ao tentar configurar o som. Verifique se a URL é válida.",
+          variant: "destructive",
+        });
       }
-    } catch (error) {
-      console.error("Exceção ao tentar reproduzir o som:", error);
-      toast({
-        title: "🔇 Erro Crítico no Áudio",
-        description: "Ocorreu uma exceção ao tentar configurar a reprodução do som.",
-        variant: "destructive",
-      });
+    } else {
+       toast({
+          title: "🔇 Som não configurado",
+          description: "Nenhum som de notificação foi configurado. Insira uma URL válida para um arquivo de som.",
+          variant: "default",
+        });
     }
   };
 
@@ -121,8 +149,13 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-1">
             <Label htmlFor="notification-sound" className="flex items-center"><Volume2 className="mr-2 h-4 w-4" /> Som de Notificação</Label>
-            <Input id="notification-sound" value={notificationSound} onChange={e => setNotificationSound(e.target.value)} placeholder="URL de um arquivo de som (ex: .mp3, .wav)" />
-            <p className="text-xs text-muted-foreground">Personalize o som para alertas de novos trades. Insira uma URL válida para um arquivo de som.</p>
+            <Input 
+              id="notification-sound" 
+              value={notificationSound} 
+              onChange={e => setNotificationSound(e.target.value)} 
+              placeholder="URL de um arquivo de som (ex: .mp3, .wav)" 
+            />
+            <p className="text-xs text-muted-foreground">Personalize o som para alertas de novos trades. Insira uma URL válida para um arquivo de som direto.</p>
           </div>
           <div className="flex gap-2">
             <Button>Salvar Configurações de Notificação</Button>
