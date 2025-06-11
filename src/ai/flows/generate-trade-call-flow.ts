@@ -12,13 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import axios from 'axios';
 
-// Input schema is now an empty object as the flow fetches its own data
-// but needs a valid schema for Genkit.
 const GenerateTradeCallInputSchema = z.object({});
 export type GenerateTradeCallInput = z.infer<typeof GenerateTradeCallInputSchema>;
 
 
-// Schema de saída: a call de trade gerada ou indicação de nenhuma call
 const GeneratedTradeCallOutputSchema = z.object({
   moeda: z.string().describe('O nome da moeda escolhida para a call, ou "Nenhuma call no momento" se nenhuma for considerada promissora.'),
   hora_call: z.string().optional().describe('A hora ideal de entrada sugerida em formato HH:MM UTC (ex: "14:30 UTC"). Opcional se nenhuma call for recomendada, mas esperado se uma call for gerada.'),
@@ -65,6 +62,7 @@ interface DexScreenerApiResponse {
 
 const generateTradeCallPrompt = ai.definePrompt({
   name: 'generateTradeCallPrompt',
+  // model: 'openai/gpt-3.5-turbo', // Reverted to use global default (Google AI)
   input: {schema: z.object({ marketAnalysisData: z.string() })},
   output: {schema: GeneratedTradeCallOutputSchema},
   prompt: `
@@ -96,30 +94,29 @@ Se os dados fornecidos em 'Lista de moedas' indicarem explicitamente 'Nenhuma in
 const generateTradeCallFlow = ai.defineFlow(
   {
     name: 'generateTradeCallFlow',
-    inputSchema: GenerateTradeCallInputSchema, 
+    inputSchema: GenerateTradeCallInputSchema,
     outputSchema: GeneratedTradeCallOutputSchema,
   },
   async (): Promise<GeneratedTradeCallOutput> => {
-    let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento."; 
+    let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento.";
     try {
-      
+
       const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp,82ZJj2gXhL7p7tSAmE2z4hMv5f5sKRjS2wWqS6u6VBiM,32CKP31hST2bvaGKMEMLh2Xm9sN6gQp64t56pjpCMg1T,DezXAZ8z7PnrnRJjz3wXBoRgixCa6xPgt7QCUsKSDbEBA,JUPyiWgKj3p5V4x4zzq9W9gUf2g8JBvWcK2x2Azft3p,KNCRHVxYSH4uLKejZFSjdz2WwXJtre4CZRPSXkahrwp");
       const pairs = response.data.pairs || [];
 
-      
+
       const filtered = pairs.filter((pair) => {
         const vol = parseFloat(pair.volume?.h24 || '0');
         const liq = parseFloat(pair.liquidity?.usd || '0');
         const priceChange1h = parseFloat(pair.priceChange?.h1 || '0');
         const priceChange24h = parseFloat(pair.priceChange?.h24 || '0');
-        // Filtro mais leve: volume ≥ 20k, liquidez ≥ 5k, crescimento 5% em 1h OU 10% em 24h
         return vol >= 20000 && liq >= 5000 && (priceChange1h > 5 || priceChange24h > 10);
       });
 
       if (filtered.length > 0) {
         const topCoins = filtered
           .sort((a, b) => parseFloat(b.volume?.h24 || '0') - parseFloat(a.volume?.h24 || '0'))
-          .slice(0, 3); // Limita para as 3 melhores
+          .slice(0, 3);
 
         marketAnalysisData = topCoins.map((coin) => {
           return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
@@ -132,16 +129,14 @@ const generateTradeCallFlow = ai.defineFlow(
       console.error("Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
       marketAnalysisData = `Erro ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
     }
-    
+
     console.log("Dados enviados para a IA:", marketAnalysisData);
 
     const {output} = await generateTradeCallPrompt({ marketAnalysisData });
     if (!output) {
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
-    
-    // Se a IA gerou uma call válida (não "Nenhuma call...") mas não forneceu hora_call, defina-a como fallback.
-    // O prompt agora pede explicitamente para a IA gerar a hora_call.
+
     if (output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
         const now = new Date();
         output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
@@ -152,6 +147,6 @@ const generateTradeCallFlow = ai.defineFlow(
 );
 
 export async function generateTradeCall(): Promise<GeneratedTradeCallOutput> {
-  return generateTradeCallFlow({}); 
+  return generateTradeCallFlow({});
 }
 
