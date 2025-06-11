@@ -66,28 +66,28 @@ const mockHistoricalCalls: HistoricalCall[] = [
 ];
 
 const mockUserPerformance: UserPerformance = {
-  accuracy: 97.0,
-  averageProfit: 1750.00,
-  totalTrades: 35,
-  winningTrades: 34,
-  losingTrades: 1,
-  accuracyOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 85 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 88 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 90 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 92 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 94 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 95 },
-    { date: new Date().toISOString(), value: 97 },
+  accuracy: 96.5, // High accuracy
+  averageProfit: 1850.00, // Good average profit
+  totalTrades: 50, // More trades
+  winningTrades: 48, // Reflects high accuracy
+  losingTrades: 2,
+  accuracyOverTime: [ // Showing consistent high accuracy
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 92 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 93 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 94 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 95 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 95.5 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 96 },
+    { date: new Date().toISOString(), value: 96.5 },
   ],
-  profitOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 7000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 12000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 19000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 28000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 38000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 50000 },
-    { date: new Date().toISOString(), value: 59500 },
+  profitOverTime: [ // Showing strong profit growth
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 8000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 15000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 25000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 38000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 55000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 75000 },
+    { date: new Date().toISOString(), value: 88800 }, // 48 trades * $1850 profit/trade = $88,800
   ],
 };
 
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center justify-center h-48 bg-card rounded-lg p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-3"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
                 <p className="text-muted-foreground text-center">Nenhum alerta ativo no momento. Fique ligado!</p>
-                {!isLoadingInitial && <p className="text-xs text-muted-foreground mt-2 text-center">(Se este problema persistir, pode haver uma dificuldade em buscar dados da API CoinGecko. Verifique sua conexão ou o status da API.)</p>}
+                {!isLoadingInitial && <p className="text-xs text-muted-foreground mt-2 text-center">(Se este problema persistir, pode haver uma dificuldade em buscar dados da API. Verifique sua conexão ou o status da API.)</p>}
             </div>
           )}
         </TabsContent>
@@ -193,3 +193,5 @@ function StatCard({ title, value, icon }: StatCardProps) {
     </Card>
   );
 }
+
+    

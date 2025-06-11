@@ -6,50 +6,47 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon, BarChartHorizontalBig, Activity } from "lucide-react";
 
 const mockUserPerformance: UserPerformance = {
-  accuracy: 90.0, 
-  averageProfit: 450.00, 
-  totalTrades: 25,
-  winningTrades: 22,
-  losingTrades: 3,
+  accuracy: 95.0, 
+  averageProfit: 1250.00, 
+  totalTrades: 40,
+  winningTrades: 38,
+  losingTrades: 2,
   accuracyOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 70 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 75 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 80 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 82 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 85 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 88 },
-    { date: new Date().toISOString(), value: 90 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 88 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 90 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 91 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 93 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 94 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 94.5 },
+    { date: new Date().toISOString(), value: 95 },
   ],
   profitOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 600 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 1000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 1300 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 1800 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 2300 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 2900 },
-    { date: new Date().toISOString(), value: 3500 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 5000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 9500 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 15000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 22000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 31000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 40500 },
+    { date: new Date().toISOString(), value: 47500 }, // Total profit = winningTrades * averageProfit - losingTrades * (algo)
   ],
 };
 
 export default function PerformancePage() {
-  // Simplified profit factor calculation based on updated mockUserPerformance
-  const totalGrossProfit = mockUserPerformance.winningTrades * mockUserPerformance.averageProfit; // Approximate
-  // Estimate average loss: (TotalProfit - (Accuracy * TotalTrades * AvgProfit)) / LosingTrades
-  // This is a rough estimation for mock data. A more precise model would track individual profits/losses.
-  const estimatedTotalLoss = mockUserPerformance.losingTrades > 0 ? (totalGrossProfit / (mockUserPerformance.accuracy / 100) - totalGrossProfit) / (1 - (mockUserPerformance.accuracy / 100)) : 0;
-  const absoluteEstimatedTotalLoss = Math.abs(estimatedTotalLoss); // Ensure positive for division
+  const totalGrossProfit = mockUserPerformance.winningTrades * mockUserPerformance.averageProfit;
+  // Simplified estimation for total loss for profit factor calculation
+  const estimatedAverageLoss = mockUserPerformance.averageProfit / 2; // Assume avg loss is half of avg profit for mock
+  const absoluteEstimatedTotalLoss = mockUserPerformance.losingTrades * estimatedAverageLoss;
   
-  const profitFactor = absoluteEstimatedTotalLoss > 0 && mockUserPerformance.losingTrades > 0
+  const profitFactor = absoluteEstimatedTotalLoss > 0
     ? totalGrossProfit / absoluteEstimatedTotalLoss
-    : Infinity; // Avoid division by zero if no losses or no losing trades
+    : Infinity;
 
-  // Mock data for win/loss streak chart - Adjusted for more wins
   const winLossData = [
-    { name: 'Jan', wins: 7, losses: 1 },
-    { name: 'Fev', wins: 8, losses: 0 },
-    { name: 'Mar', wins: 6, losses: 1 },
-    { name: 'Abr', wins: 9, losses: 1 },
-    { name: 'Mai', wins: 7, losses: 0 },
+    { name: 'Jan', wins: 10, losses: 1 }, // Adjusted to reflect more wins
+    { name: 'Fev', wins: 12, losses: 0 },
+    { name: 'Mar', wins: 8, losses: 1 },
+    { name: 'Abr', wins: 7, losses: 0 },
+    { name: 'Mai', wins: 11, losses: 0 }, // Example: 38 wins / 2 losses over 5 months
   ];
 
 
@@ -94,7 +91,7 @@ export default function PerformancePage() {
               data={winLossData.map(d => ({ date: d.name, value: d.wins - d.losses }))} 
               title="" 
               description=""
-              dataKey="winLossDiff" 
+              dataKey="winLossDiff" // Using a different dataKey to avoid conflict if chartConfig is shared
               chartType="line"
               color="hsl(var(--chart-3))"
             />
@@ -126,3 +123,5 @@ function StatCard({ title, value, icon, description }: StatCardProps) {
     </Card>
   );
 }
+
+    
