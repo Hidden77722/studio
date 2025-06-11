@@ -7,12 +7,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 // REAL_COIN_POOL agora usa contractAddress como identificador principal para Birdeye
 // e placehold.co para image URLs.
 const REAL_COIN_POOL = [
-  { contractAddress: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp', name: 'Dogecoin (Simulado)', symbol: 'DOGE', imageUrl: 'https://placehold.co/40x40.png?text=DG', logoAiHint: 'dogecoin logo' },
-  { contractAddress: 'shib_contract_placeholder', name: 'Shiba Inu (Simulado)', symbol: 'SHIB', imageUrl: 'https://placehold.co/40x40.png?text=SH', logoAiHint: 'shiba inu' },
-  { contractAddress: 'pepe_contract_placeholder', name: 'Pepe (Simulado)', symbol: 'PEPE', imageUrl: 'https://placehold.co/40x40.png?text=PP', logoAiHint: 'pepe frog' },
-  { contractAddress: 'bonk_contract_placeholder', name: 'Bonk (Simulado)', symbol: 'BONK', imageUrl: 'https://placehold.co/40x40.png?text=BK', logoAiHint: 'bonk dog' },
+  { contractAddress: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp', name: 'Dogecoin (Simulado)', symbol: 'DOGE', imageUrl: 'https://placehold.co/40x40.png', logoAiHint: 'dogecoin logo' },
+  { contractAddress: 'shib_contract_placeholder', name: 'Shiba Inu (Simulado)', symbol: 'SHIB', imageUrl: 'https://placehold.co/40x40.png', logoAiHint: 'shiba inu' },
+  { contractAddress: 'pepe_contract_placeholder', name: 'Pepe (Simulado)', symbol: 'PEPE', imageUrl: 'https://placehold.co/40x40.png', logoAiHint: 'pepe frog' },
+  { contractAddress: 'bonk_contract_placeholder', name: 'Bonk (Simulado)', symbol: 'BONK', imageUrl: 'https://placehold.co/40x40.png', logoAiHint: 'bonk dog' },
   { contractAddress: 'wif_contract_placeholder', name: 'Dogwifhat (Simulado)', symbol: 'WIF', imageUrl: 'https://placehold.co/40x40.png', logoAiHint: 'dog hat' },
-  { contractAddress: 'floki_contract_placeholder', name: 'FLOKI (Simulado)', symbol: 'FLOKI', imageUrl: 'https://placehold.co/40x40.png?text=FL', logoAiHint: 'floki inu' }
+  { contractAddress: 'floki_contract_placeholder', name: 'FLOKI (Simulado)', symbol: 'FLOKI', imageUrl: 'https://placehold.co/40x40.png', logoAiHint: 'floki inu' }
 ];
 
 const ALERT_TEMPLATES = [
@@ -48,9 +48,10 @@ const RETRY_DELAY_MS = 2000; // Base delay for Birdeye/DexScreener (placeholder)
 
 // Placeholder para a função de busca da API Birdeye
 async function fetchPriceFromBirdeyeAPI(contractAddress: string | null): Promise<number | null> {
-  if (!contractAddress) {
-    console.warn(`[Birdeye Placeholder] Tentando buscar preço, mas o endereço do contrato não foi fornecido.`);
-    return null;
+  if (!contractAddress || contractAddress.endsWith('_placeholder')) {
+    console.warn(`[Birdeye Placeholder] Tentando buscar preço, mas o endereço do contrato é inválido ou placeholder: ${contractAddress}`);
+    // Retornar um preço mock realista para placeholders para evitar que a geração de call falhe totalmente
+    return Math.random() * 0.001 + 0.00001;
   }
   console.log(`[Birdeye Placeholder] Simulating price fetch for contract: ${contractAddress}`);
   await new Promise(resolve => setTimeout(resolve, 500));
@@ -61,9 +62,13 @@ async function fetchPriceFromBirdeyeAPI(contractAddress: string | null): Promise
 
 // Placeholder para a função de busca da API DexScreener
 async function fetchDexScreenerData(pairAddress: string | null): Promise<{ volume24h: number; liquidityUSD: number } | null> {
-  if (!pairAddress) {
-    console.warn(`[DexScreener Placeholder] Tentando buscar dados, mas o endereço do par não foi fornecido.`);
-    return null;
+  if (!pairAddress || pairAddress.endsWith('_placeholder')) {
+    console.warn(`[DexScreener Placeholder] Tentando buscar dados, mas o endereço do par é inválido ou placeholder: ${pairAddress}`);
+     // Retornar dados mock realistas para placeholders
+    return {
+      volume24h: Math.floor(Math.random() * 1000000) + 50000,
+      liquidityUSD: Math.floor(Math.random() * 500000) + 10000,
+    };
   }
   console.log(`[DexScreener Placeholder] Simulating data fetch for pair: ${pairAddress}`);
   await new Promise(resolve => setTimeout(resolve, 600)); // Simula latência
@@ -82,7 +87,6 @@ async function fetchCoinPrice(contractAddress: string | null): Promise<number | 
 
   while (attempts < MAX_FETCH_RETRIES) {
     try {
-      // Apenas tenta Birdeye (placeholder), já que CoinGecko foi removida
       const price = await fetchPriceFromBirdeyeAPI(contractAddress);
 
       if (price !== null) {
@@ -122,8 +126,7 @@ export function useLiveCalls() {
       return null;
     }
 
-    // Buscar dados da DexScreener (mockado)
-    const dexData = await fetchDexScreenerData(randomCoinInfo.contractAddress);
+    const dexData = await fetchDexScreenerData(randomCoinInfo.contractAddress); // Usar contractAddress como pairAddress para o mock
 
     const entryPrice = currentPrice;
     const targets = randomTemplate.targetsConfig.map(t => ({
@@ -191,21 +194,22 @@ export function useLiveCalls() {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
-          if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
-            return prevCalls;
+          // Evitar duplicatas pelo símbolo da moeda
+          if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol && Math.abs(new Date(existingCall.entryTime).getTime() - new Date(newCall.entryTime).getTime()) < 5000)) {
+            return prevCalls; // Se já existe uma call muito recente para a mesma moeda, não adiciona
           }
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-            calls.shift();
+            calls.shift(); // Remove a mais antiga se o limite for atingido
           }
           calls.push(newCall);
           return calls;
         });
       }
-    }, 7000); 
+    }, 7000); // Intervalo para tentar gerar novas calls
 
     return () => clearInterval(intervalId);
-  }, [isLoadingInitial, generateNewCall, liveCalls.length]);
+  }, [isLoadingInitial, generateNewCall, liveCalls.length]); // Adicionado liveCalls.length para reavaliar o intervalo se o número de calls mudar externamente (improvável aqui)
 
   return { liveCalls, isLoadingInitial };
 }

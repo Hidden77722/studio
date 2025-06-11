@@ -16,7 +16,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     id: "h1",
     coinName: "ShibaMoon",
     coinSymbol: "SHIBM",
-    logoUrl: "https://placehold.co/40x40.png?text=SM",
+    logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "shiba moon",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 18 * 1).toISOString(),
@@ -33,7 +33,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     id: "h2",
     coinName: "FlokiRocket",
     coinSymbol: "FLOKIR",
-    logoUrl: "https://placehold.co/40x40.png?text=FR",
+    logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "floki rocket",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4.8).toISOString(), 
@@ -50,7 +50,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     id: "h3",
     coinName: "DogeYield",
     coinSymbol: "DOGEY",
-    logoUrl: "https://placehold.co/40x40.png?text=DY",
+    logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "doge yield",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 20 * 1).toISOString(),
@@ -156,14 +156,14 @@ export default function DashboardPage() {
               data={mockUserPerformance.accuracyOverTime}
               title="Precisão ao Longo do Tempo"
               description="Sua tendência de precisão nos trades."
-              dataKey="accuracy"
+              dataKey="value" // Changed from accuracy to value to match data structure
               color="hsl(var(--accent))"
             />
             <PerformanceChart
               data={mockUserPerformance.profitOverTime}
               title="Lucro Acumulado ao Longo do Tempo"
               description="Sua tendência de acumulação de lucro."
-              dataKey="profit"
+              dataKey="value" // Changed from profit to value to match data structure
               chartType="bar"
               color="hsl(var(--primary))"
             />
@@ -193,5 +193,3 @@ function StatCard({ title, value, icon }: StatCardProps) {
     </Card>
   );
 }
-
-    

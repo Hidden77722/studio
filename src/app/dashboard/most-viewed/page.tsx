@@ -4,7 +4,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, TrendingUp, TrendingDown, BarChartHorizontalBig } from "lucide-react";
-import type { CoinMarketData } from "@/lib/types"; // Assuming this type exists and is suitable
+import type { CoinMarketData } from "@/lib/types"; 
 import Image from "next/image";
 
 // Mock data simulating "Most Viewed" coins, as if from CoinMarketCap
@@ -13,7 +13,7 @@ const mockMostViewedCoins: CoinMarketData[] = [
     id: "bitcoin-mv",
     symbol: "BTC",
     name: "Bitcoin (Simulado)",
-    image: "https://placehold.co/40x40.png?text=BTC",
+    image: "https://placehold.co/40x40.png",
     current_price: 60500.75,
     market_cap: 1200000000000,
     market_cap_rank: 1,
@@ -24,7 +24,7 @@ const mockMostViewedCoins: CoinMarketData[] = [
     id: "ethereum-mv",
     symbol: "ETH",
     name: "Ethereum (Simulado)",
-    image: "https://placehold.co/40x40.png?text=ETH",
+    image: "https://placehold.co/40x40.png",
     current_price: 3020.10,
     market_cap: 360000000000,
     market_cap_rank: 2,
@@ -35,7 +35,7 @@ const mockMostViewedCoins: CoinMarketData[] = [
     id: "super-meme-mv",
     symbol: "SMEME",
     name: "SuperMeme Coin (Simulado)",
-    image: "https://placehold.co/40x40.png?text=SM",
+    image: "https://placehold.co/40x40.png",
     current_price: 0.000123,
     market_cap: 12300000,
     market_cap_rank: 300,
@@ -46,7 +46,7 @@ const mockMostViewedCoins: CoinMarketData[] = [
     id: "hype-token-mv",
     symbol: "HYPE",
     name: "HypeToken (Simulado)",
-    image: "https://placehold.co/40x40.png?text=HP",
+    image: "https://placehold.co/40x40.png",
     current_price: 0.025,
     market_cap: 25000000,
     market_cap_rank: 250,
@@ -57,7 +57,7 @@ const mockMostViewedCoins: CoinMarketData[] = [
     id: "solana-viewed",
     symbol: "SOL",
     name: "Solana (Simulado)",
-    image: "https://placehold.co/40x40.png?text=SOL",
+    image: "https://placehold.co/40x40.png",
     current_price: 150.55,
     market_cap: 70000000000,
     market_cap_rank: 5,
@@ -91,7 +91,7 @@ export default function MostViewedPage() {
                     width={32}
                     height={32}
                     className="rounded-full"
-                    data-ai-hint={`${coin.symbol.toLowerCase()} logo`}
+                    data-ai-hint={`${coin.symbol.toLowerCase()} logo`} // Use symbol for AI hint
                   />
                   <div>
                     <CardTitle className="text-lg font-headline leading-tight">{coin.name}</CardTitle>

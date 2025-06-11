@@ -44,7 +44,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     description: 'Trader influente com foco em price action e narrativas de mercado. Frequentemente comenta sobre o sentimento em torno de memecoins.',
     twitterUrl: 'https://twitter.com/HsakaTrades',
     avatarUrl: 'https://placehold.co/48x48.png',
-    dataAiHintAvatar: 'abstract avatar'
+    dataAiHintAvatar: 'abstract circle'
   },
   {
     id: 'Pentoshi',
@@ -62,7 +62,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     description: 'Focada em encontrar gemas de memecoin de baixa capitalização e engajamento comunitário. Análises e insights sobre novas tendências.',
     twitterUrl: 'https://twitter.com/LadyofCrypto1',
     avatarUrl: 'https://placehold.co/48x48.png',
-    dataAiHintAvatar: 'woman avatar'
+    dataAiHintAvatar: 'woman face'
   },
   {
     id: 'dogewhale',
@@ -117,7 +117,7 @@ export default function InfluencersPage() {
           <Card key={influencer.id} className="flex flex-col shadow-lg hover:shadow-primary/20 transition-shadow duration-300 ease-in-out">
             <CardHeader className="flex flex-row items-start space-x-4">
               <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={influencer.avatarUrl} alt={influencer.name} data-ai-hint={influencer.dataAiHintAvatar || "profile avatar"} />
+                <AvatarImage src={influencer.avatarUrl} alt={influencer.name} data-ai-hint={influencer.dataAiHintAvatar || "profile image"} />
                 <AvatarFallback className="bg-muted text-muted-foreground">{getInitials(influencer.name)}</AvatarFallback>
               </Avatar>
               <div>
@@ -145,4 +145,3 @@ export default function InfluencersPage() {
     </div>
   );
 }
-

@@ -17,7 +17,7 @@ const mockHotPairs: HotPair[] = [
     mockVolume24h: 2500000,
     mockLiquidity: 750000,
     priceChange24h: 125.5,
-    logoUrl: "https://placehold.co/40x40.png?text=TC",
+    logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "cat turbo",
     dexScreenerUrl: "https://dexscreener.com/ethereum/0x123abcPairAddressForTurboCat" 
   },
@@ -31,7 +31,7 @@ const mockHotPairs: HotPair[] = [
     mockVolume24h: 1800000,
     mockLiquidity: 400000,
     priceChange24h: 78.2,
-    logoUrl: "https://placehold.co/40x40.png?text=SS",
+    logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "solana wave",
     dexScreenerUrl: "https://dexscreener.com/solana/0x456defPairAddressForSolanaSurge"
   },
@@ -45,7 +45,7 @@ const mockHotPairs: HotPair[] = [
     mockVolume24h: 950000,
     mockLiquidity: 220000,
     priceChange24h: 45.0,
-    logoUrl: "https://placehold.co/40x40.png?text=AI",
+    logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "brain ai",
     dexScreenerUrl: "https://dexscreener.com/base/0x789ghiPairAddressForBasedAI"
   },
@@ -59,7 +59,7 @@ const mockHotPairs: HotPair[] = [
     mockVolume24h: 1200000,
     mockLiquidity: 300000,
     priceChange24h: -5.2, // Example of negative change
-    logoUrl: "https://placehold.co/40x40.png?text=PC",
+    logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "classic pepe",
     dexScreenerUrl: "https://dexscreener.com/bsc/0xabc123PairAddressForPepeClassic"
   }
