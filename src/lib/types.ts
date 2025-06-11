@@ -39,3 +39,17 @@ export interface UserProfile {
   subscriptionTier: 'Monthly' | 'Annual' | 'None';
   subscriptionEndDate?: string;
 }
+
+export interface MockTweet {
+  id: string;
+  userName: string;
+  userHandle: string;
+  avatarUrl: string;
+  content: string;
+  timestamp: string; 
+  likes: number;
+  retweets: number;
+  replies: number;
+  imageUrl?: string;
+  coinTags?: string[];
+}

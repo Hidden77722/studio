@@ -15,15 +15,15 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Home, BarChart3, History, Settings, Info, HelpCircle, Newspaper } from "lucide-react";
+import { Home, BarChart3, History, Settings, Info, HelpCircle, Newspaper, Rss } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/dashboard", label: "Início do Painel", icon: Home },
   { href: "/dashboard/live-calls", label: "Alertas ao Vivo", icon: Newspaper },
+  { href: "/dashboard/twitter-feed", label: "Feed de MemeCoins", icon: Rss },
   { href: "/dashboard/history", label: "Histórico de Trades", icon: History },
   { href: "/dashboard/performance", label: "Desempenho", icon: BarChart3 },
   { href: "/dashboard/why-this-coin-examples", label: "Insights de IA", icon: Info },
@@ -36,7 +36,7 @@ const bottomNavItems = [
 
 function DashboardSidebar() {
   const pathname = usePathname();
-  const { state, open } = useSidebar();
+  const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
   return (
@@ -86,11 +86,10 @@ function DashboardSidebar() {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // Mock user data
   const user = {
     name: "Pro Trader",
     email: "pro@memetrade.com",
-    avatarUrl: "https://placehold.co/100x100.png", // Placeholder avatar
+    avatarUrl: "https://placehold.co/100x100.png", 
   };
 
   return (
@@ -99,7 +98,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <DashboardSidebar />
         <SidebarInset className="flex-1 flex flex-col">
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-background/80 backdrop-blur-md px-4 md:px-6">
-            {/* Hamburger for mobile, only show if sidebar is not visible or collapsed state handling not via trigger */}
             <div className="md:hidden">
               <SidebarTrigger />
             </div>
