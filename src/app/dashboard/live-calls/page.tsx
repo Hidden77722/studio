@@ -51,19 +51,19 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
       const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
       if (!response.ok) {
         console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}): ${response.status} ${response.statusText}`);
-        if (response.status === 429) {
+        if (response.status === 429) { 
             attempts++;
             if (attempts < MAX_FETCH_RETRIES) {
-                const delay = RETRY_DELAY_MS * Math.pow(2, attempts); // Exponential backoff
+                const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); // Exponential backoff for rate limit
                 console.warn(`Rate limit (429) para ${coinId}. Tentando novamente em ${delay / 1000}s...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } else {
                  console.error(`Rate limit (429) para ${coinId} após ${MAX_FETCH_RETRIES} tentativas. Desistindo.`);
                  return null;
             }
-            continue;
+            continue; 
         }
-        return null;
+        return null; // For other non-ok responses, don't retry, just fail.
       }
       const data = await response.json();
 
@@ -84,16 +84,18 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
       attempts++;
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (attempts < MAX_FETCH_RETRIES) {
-        const delay = RETRY_DELAY_MS * attempts;
+        const delay = RETRY_DELAY_MS * attempts; // Simple linear backoff for general network errors
         console.warn(`Falha de rede ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}. Tentando novamente em ${delay / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       } else {
         console.error(`Falha de rede ao buscar preço para ${coinId} após ${MAX_FETCH_RETRIES} tentativas: ${errorMessage}. Verifique sua conexão ou o status da API CoinGecko.`);
-        return null;
+        return null; // Final failure
       }
     }
   }
-  console.error(`[SAFGUARD] Saindo de fetchCoinCurrentPrice para ${coinId} sem retornar um valor após o loop de tentativas.`);
+  // This line should ideally not be reached if the loop logic is perfect,
+  // but serves as a safeguard if all retries (including for 429s) are exhausted.
+  console.error(`[SAFGUARD] Saindo de fetchCoinCurrentPrice para ${coinId} sem retornar um valor após ${MAX_FETCH_RETRIES} tentativas.`);
   return null;
 }
 
@@ -134,18 +136,22 @@ export default function LiveCallsPage() {
 
   useEffect(() => {
     const loadInitialCalls = async () => {
+      console.log("Iniciando carregamento de alertas ao vivo..."); // Log adicionado
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
       let generationAttempts = 0;
-      const maxGenerationAttempts = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2);
+      const maxGenerationAttempts = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2); // Allow more attempts
 
       while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && generationAttempts < maxGenerationAttempts) {
         const call = await generateNewCall();
         if (call) {
+          // Ensure no duplicate coin symbols if possible (best effort for mock)
           if (!newLiveCalls.some(existingCall => existingCall.coinSymbol === call.coinSymbol)) {
              newLiveCalls.push(call);
           }
         } else {
+          // If a call generation fails (e.g., price fetch fails), add a small delay
+          // before trying to generate another one, but only if we still need more calls.
           if (newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS) {
              await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2));
           }
@@ -154,30 +160,39 @@ export default function LiveCallsPage() {
       }
       setLiveCalls(newLiveCalls);
       setIsLoadingInitial(false);
+      if (newLiveCalls.length === 0 && generationAttempts >= maxGenerationAttempts) {
+        console.warn("Não foi possível carregar nenhum alerta inicial após várias tentativas.");
+      } else if (newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS) {
+        console.warn(`Carregados ${newLiveCalls.length}/${NUMBER_OF_VISIBLE_CARDS} alertas iniciais.`);
+      } else {
+        console.log(`${newLiveCalls.length} alertas iniciais carregados com sucesso.`);
+      }
     };
     loadInitialCalls();
   }, [generateNewCall]);
 
   useEffect(() => {
-    if (isLoadingInitial) return;
+    if (isLoadingInitial) return; // Don't start interval if initial load is happening or failed to get any
 
     const intervalId = setInterval(async () => {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
+          // Avoid adding if a call for the same coin symbol already exists
+          // This helps prevent the same coin from appearing multiple times due to rapid updates
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
-            return prevCalls;
+            return prevCalls; // Or update the existing one if desired
           }
 
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_VISIBLE_CARDS) {
-            calls.shift();
+            calls.shift(); // Remove the oldest call
           }
-          calls.push(newCall);
+          calls.push(newCall); // Add the new call
           return calls;
         });
       }
-    }, 7000);
+    }, 7000); // Attempt to generate a new call every 7 seconds
 
     return () => clearInterval(intervalId);
   }, [isLoadingInitial, generateNewCall]);
@@ -215,3 +230,4 @@ export default function LiveCallsPage() {
     </div>
   );
 }
+
