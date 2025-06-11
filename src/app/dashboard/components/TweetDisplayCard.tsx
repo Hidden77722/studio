@@ -47,7 +47,7 @@ export function TweetDisplayCard({ tweet }: TweetDisplayCardProps) {
     <Card className="w-full shadow-md hover:shadow-primary/10 transition-shadow duration-300 ease-in-out">
       <CardHeader className="flex flex-row items-start space-x-4 p-4">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={tweet.avatarUrl} alt={tweet.userName} data-ai-hint="profile avatar" />
+          <AvatarImage src={tweet.avatarUrl} alt={tweet.userName} data-ai-hint={tweet.dataAiHint || "profile avatar"} />
           <AvatarFallback>{tweet.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
@@ -68,7 +68,7 @@ export function TweetDisplayCard({ tweet }: TweetDisplayCardProps) {
             width={500}
             height={300}
             className="rounded-lg border border-border object-cover w-full max-h-[300px]"
-            data-ai-hint="meme coin chart"
+            data-ai-hint={tweet.dataAiHint || "meme coin chart"}
           />
         </CardContent>
       )}

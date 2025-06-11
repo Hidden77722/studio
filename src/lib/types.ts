@@ -52,4 +52,5 @@ export interface MockTweet {
   replies: number;
   imageUrl?: string;
   coinTags?: string[];
+  dataAiHint?: string; // Added for image placeholder hints
 }

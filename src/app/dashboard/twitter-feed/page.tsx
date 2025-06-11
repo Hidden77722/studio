@@ -7,97 +7,104 @@ import { TweetDisplayCard } from '@/app/dashboard/components/TweetDisplayCard';
 import { Rss, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card'; // Added import
+import { Card } from '@/components/ui/card';
 
 const initialMockTweets: MockTweet[] = [
   {
     id: 't1',
-    userName: 'CryptoWhaleGems',
-    userHandle: 'CryptoWhale',
-    avatarUrl: 'https://placehold.co/48x48.png?text=CW',
-    content: '$DOGE is showing strong support at $0.15. A breakout above $0.17 could send it flying! #Dogecoin #ToTheMoon 🚀\nChart looks bullish on Axiom Trade.',
+    userName: 'Elon Musk (Parody)',
+    userHandle: 'elonmusk_crypto',
+    avatarUrl: 'https://placehold.co/48x48.png?text=EM',
+    content: 'Dogecoin to the moon! 🚀 Literalmente. #DOGE #Memes',
     timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
-    likes: 1250,
-    retweets: 340,
-    replies: 75,
+    likes: 15780,
+    retweets: 2340,
+    replies: 875,
     imageUrl: 'https://placehold.co/600x400.png',
-    coinTags: ['DOGE', 'AxiomTrade'],
+    coinTags: ['DOGE'],
+    dataAiHint: "space dog"
   },
   {
     id: 't2',
-    userName: 'MemeCoinMaster',
-    userHandle: 'MemeLord',
-    avatarUrl: 'https://placehold.co/48x48.png?text=ML',
-    content: 'Just scooped up a bag of $SHIB. The Shibarium ecosystem is growing fast. Potential for 10x this bull run? 🤔 #SHIB #MemeCoin',
+    userName: 'CryptoInfluencerX',
+    userHandle: 'AltcoinGemsDaily',
+    avatarUrl: 'https://placehold.co/48x48.png?text=CI',
+    content: 'Acabei de encontrar uma nova gema $SHIB x1000? 💎 Análise completa no meu canal! Link na bio. Não perca! #SHIB #Altcoin',
     timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(), // 12 minutes ago
     likes: 2100,
     retweets: 550,
     replies: 120,
     coinTags: ['SHIB'],
+    dataAiHint: "glowing crystal"
   },
   {
     id: 't3',
-    userName: 'PepePumpKing',
-    userHandle: 'RealPepeMaxi',
-    avatarUrl: 'https://placehold.co/48x48.png?text=PP',
-    content: "$PEPE army, are you ready? Rumors of a major CEX listing next week! Don't miss out. Volume on Axiom Trade is picking up. #PepeCoin #FrogNation 🐸",
+    userName: 'Saylor Moon 🌙',
+    userHandle: 'MichaelSaylorFan',
+    avatarUrl: 'https://placehold.co/48x48.png?text=SM',
+    content: '$PEPE está mostrando força! Se romper a resistência, pode explodir. De olho no volume da Axiom Trade. #PepeCoin #FrogNation 🐸 #NotFinancialAdvice',
     timestamp: new Date(Date.now() - 1000 * 60 * 25).toISOString(), // 25 minutes ago
     likes: 5300,
     retweets: 1200,
     replies: 300,
     coinTags: ['PEPE', 'AxiomTrade'],
+    dataAiHint: "frog astronaut"
   },
 ];
 
 const moreMockTweets: MockTweet[] = [
     {
     id: 't4',
-    userName: 'BonkHunter',
-    userHandle: 'BonkFiend',
-    avatarUrl: 'https://placehold.co/48x48.png?text=BH',
-    content: '$BONK is consolidating nicely after the recent pump. Watching for a breakout above the current resistance. Solana meme season is far from over! #BONK #Solana',
+    userName: 'Vitalik Buterin (Fan)',
+    userHandle: 'VitalikFanClub',
+    avatarUrl: 'https://placehold.co/48x48.png?text=VB',
+    content: 'Interessante como o ecossistema $BONK na Solana está evoluindo. A comunidade é a chave para memecoins. #BONK #Solana',
     timestamp: new Date().toISOString(),
     likes: 980,
     retweets: 210,
     replies: 55,
     coinTags: ['BONK', 'Solana'],
+    dataAiHint: "dog computer"
   },
   {
     id: 't5',
-    userName: 'WIFWatcher',
-    userHandle: 'DogWifHatFan',
-    avatarUrl: 'https://placehold.co/48x48.png?text=WF',
-    content: "Can't get enough of $WIF! This community is insane. Hat stays ON. 🎩 $WIF to $10 soon? #DogWifHat #WIF",
+    userName: 'CZ Binance (Commentary)',
+    userHandle: 'CZCommentary',
+    avatarUrl: 'https://placehold.co/48x48.png?text=CZ',
+    content: "A volatilidade das memecoins como $WIF é incrível. Lembrem-se: invistam apenas o que podem perder. Mas a diversão é garantida! 🎩 #DogWifHat #WIF #CryptoTrading",
     timestamp: new Date().toISOString(),
     likes: 3200,
     retweets: 800,
     replies: 150,
     imageUrl: 'https://placehold.co/600x350.png',
     coinTags: ['WIF'],
+    dataAiHint: "dog hat chart"
   },
   {
     id: 't6',
     userName: 'AxiomAlpha',
     userHandle: 'AxiomTraderPro',
     avatarUrl: 'https://placehold.co/48x48.png?text=AA',
-    content: "Noticing unusual volume spikes for $FLOKI on Axiom Trade. Something might be brewing. DYOR but could be an interesting setup. #FLOKI #TradingSignal",
+    content: "Notando picos de volume incomuns para $FLOKI na Axiom Trade. Algo pode estar se formando. DYOR, mas pode ser uma configuração interessante. #FLOKI #TradingSignal",
     timestamp: new Date().toISOString(),
     likes: 750,
     retweets: 150,
     replies: 40,
     coinTags: ['FLOKI', 'AxiomTrade'],
+    dataAiHint: "viking dog"
   },
    {
     id: 't7',
-    userName: 'MemeCoinDaily',
-    userHandle: 'DailyMemes',
-    avatarUrl: 'https://placehold.co/48x48.png?text=MD',
-    content: "Top trending meme coins today: $PEPE, $WIF, $DOGE. The classics are still running hard! Which one is your biggest bag? #Crypto #Altcoins",
+    userName: 'Cointelegraph Markets',
+    userHandle: 'Cointelegraph',
+    avatarUrl: 'https://placehold.co/48x48.png?text=CT',
+    content: "Principais memecoins em alta hoje: $PEPE, $WIF, $DOGE. Os clássicos ainda estão com força total! Qual delas é sua maior aposta? #Crypto #Altcoins",
     timestamp: new Date().toISOString(),
     likes: 1500,
     retweets: 400,
     replies: 90,
     coinTags: ['PEPE', 'WIF', 'DOGE'],
+    dataAiHint: "coins rocket"
   },
 ];
 
@@ -133,6 +140,20 @@ export default function TwitterFeedPage() {
   }, [isPaused]);
 
   useEffect(() => {
+    // Adicionar data-ai-hint aos tweets iniciais que não têm
+    setTweets(prevTweets => prevTweets.map(t => ({
+      ...t,
+      dataAiHint: t.dataAiHint || 'crypto meme' // Default hint
+    })));
+
+    // Adicionar data-ai-hint aos tweets que podem ser adicionados dinamicamente
+    moreMockTweets.forEach(tweet => {
+      if (!tweet.dataAiHint) {
+        tweet.dataAiHint = 'crypto meme'; // Default hint
+      }
+    });
+
+
     setIsLoading(false); // Simulate initial load
     const intervalId = setInterval(fetchNewTweet, 7000); // Add a new tweet every 7 seconds
     return () => clearInterval(intervalId);
