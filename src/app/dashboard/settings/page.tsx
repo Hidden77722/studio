@@ -20,7 +20,7 @@ export default function SettingsPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("dark"); // 'dark', 'light', 'system'
   const [notificationSound, setNotificationSound] = React.useState(
-    "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/G-major.wav" 
+    "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3" 
   );
 
 
@@ -52,7 +52,7 @@ export default function SettingsPage() {
           } else if (errorCode === 3) { // MEDIA_ERR_DECODE
             errorMessage += "Erro ao decodificar o arquivo de áudio (formato inválido ou corrompido?).";
           } else if (errorCode === 4) { // MEDIA_ERR_SRC_NOT_SUPPORTED
-            errorMessage += "Formato/URL do áudio não suportado ou inacessível. Verifique o link direto, CORS, e se o formato (ex: MP3, WAV) é válido.";
+            errorMessage += "Formato/URL do áudio não suportado ou inacessível. Verifique o link direto, CORS, e se o formato (ex: MP3, WAV) é válido e compatível com seu navegador. Pode ser um erro de formato específico.";
           } else {
             errorMessage += "Causa desconhecida. Verifique a URL, sua conexão e o console do navegador para mais detalhes.";
           }
@@ -76,7 +76,7 @@ export default function SettingsPage() {
             console.error("Erro ao tentar reproduzir o som (play promise rejected):", playError);
             toast({
               title: "🔇 Erro na Reprodução",
-              description: "Não foi possível iniciar a reprodução. O navegador pode ter bloqueado a reprodução automática ou ocorreu outro erro. Verifique o console do navegador para mais detalhes.",
+              description: "Não foi possível iniciar a reprodução. O navegador pode ter bloqueado a reprodução automática ou ocorrido outro erro. Verifique o console do navegador para mais detalhes.",
               variant: "destructive",
             });
           });
@@ -220,3 +220,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
