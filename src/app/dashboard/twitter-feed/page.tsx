@@ -14,7 +14,8 @@ const initialMockTweets: MockTweet[] = [
     id: 't1',
     userName: 'Elon Musk (Parody)',
     userHandle: 'elonmusk_crypto',
-    avatarUrl: 'https://placehold.co/48x48.png?text=EM',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: "man face",
     content: 'Dogecoin to the moon! 🚀 Literalmente. #DOGE #Memes',
     timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
     likes: 15780,
@@ -22,33 +23,37 @@ const initialMockTweets: MockTweet[] = [
     replies: 875,
     imageUrl: 'https://placehold.co/600x400.png',
     coinTags: ['DOGE'],
-    dataAiHint: "space dog"
+    dataAiHintImage: "space dog"
   },
   {
     id: 't2',
     userName: 'CryptoInfluencerX',
     userHandle: 'AltcoinGemsDaily',
-    avatarUrl: 'https://placehold.co/48x48.png?text=CI',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: "person avatar",
     content: 'Acabei de encontrar uma nova gema $SHIB x1000? 💎 Análise completa no meu canal! Link na bio. Não perca! #SHIB #Altcoin',
     timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(), // 12 minutes ago
     likes: 2100,
     retweets: 550,
     replies: 120,
     coinTags: ['SHIB'],
-    dataAiHint: "glowing crystal"
+    imageUrl: 'https://placehold.co/600x350.png',
+    dataAiHintImage: "glowing crystal"
   },
   {
     id: 't3',
     userName: 'Saylor Moon 🌙',
     userHandle: 'MichaelSaylorFan',
-    avatarUrl: 'https://placehold.co/48x48.png?text=SM',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: "moon face",
     content: '$PEPE está mostrando força! Se romper a resistência, pode explodir. De olho no volume da Axiom Trade. #PepeCoin #FrogNation 🐸 #NotFinancialAdvice',
     timestamp: new Date(Date.now() - 1000 * 60 * 25).toISOString(), // 25 minutes ago
     likes: 5300,
     retweets: 1200,
     replies: 300,
     coinTags: ['PEPE', 'AxiomTrade'],
-    dataAiHint: "frog astronaut"
+    // No image for this one to show variation
+    dataAiHintImage: "frog astronaut"
   },
 ];
 
@@ -57,20 +62,23 @@ const moreMockTweets: MockTweet[] = [
     id: 't4',
     userName: 'Vitalik Buterin (Fan)',
     userHandle: 'VitalikFanClub',
-    avatarUrl: 'https://placehold.co/48x48.png?text=VB',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: "geometric avatar",
     content: 'Interessante como o ecossistema $BONK na Solana está evoluindo. A comunidade é a chave para memecoins. #BONK #Solana',
     timestamp: new Date().toISOString(),
     likes: 980,
     retweets: 210,
     replies: 55,
     coinTags: ['BONK', 'Solana'],
-    dataAiHint: "dog computer"
+    imageUrl: 'https://placehold.co/500x300.png',
+    dataAiHintImage: "dog computer"
   },
   {
     id: 't5',
     userName: 'CZ Binance (Commentary)',
     userHandle: 'CZCommentary',
-    avatarUrl: 'https://placehold.co/48x48.png?text=CZ',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: "man glasses",
     content: "A volatilidade das memecoins como $WIF é incrível. Lembrem-se: invistam apenas o que podem perder. Mas a diversão é garantida! 🎩 #DogWifHat #WIF #CryptoTrading",
     timestamp: new Date().toISOString(),
     likes: 3200,
@@ -78,33 +86,37 @@ const moreMockTweets: MockTweet[] = [
     replies: 150,
     imageUrl: 'https://placehold.co/600x350.png',
     coinTags: ['WIF'],
-    dataAiHint: "dog hat chart"
+    dataAiHintImage: "dog hat chart"
   },
   {
     id: 't6',
     userName: 'AxiomAlpha',
     userHandle: 'AxiomTraderPro',
-    avatarUrl: 'https://placehold.co/48x48.png?text=AA',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: "trading graph",
     content: "Notando picos de volume incomuns para $FLOKI na Axiom Trade. Algo pode estar se formando. DYOR, mas pode ser uma configuração interessante. #FLOKI #TradingSignal",
     timestamp: new Date().toISOString(),
     likes: 750,
     retweets: 150,
     replies: 40,
     coinTags: ['FLOKI', 'AxiomTrade'],
-    dataAiHint: "viking dog"
+    // No image
+    dataAiHintImage: "viking dog"
   },
    {
     id: 't7',
     userName: 'Cointelegraph Markets',
     userHandle: 'Cointelegraph',
-    avatarUrl: 'https://placehold.co/48x48.png?text=CT',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: "news logo",
     content: "Principais memecoins em alta hoje: $PEPE, $WIF, $DOGE. Os clássicos ainda estão com força total! Qual delas é sua maior aposta? #Crypto #Altcoins",
     timestamp: new Date().toISOString(),
     likes: 1500,
     retweets: 400,
     replies: 90,
     coinTags: ['PEPE', 'WIF', 'DOGE'],
-    dataAiHint: "coins rocket"
+    imageUrl: 'https://placehold.co/550x450.png',
+    dataAiHintImage: "coins rocket"
   },
 ];
 
@@ -128,6 +140,9 @@ export default function TwitterFeedPage() {
       likes: Math.floor(Math.random() * 5000) + 50, // Random likes
       retweets: Math.floor(Math.random() * 1000) + 10,
       replies: Math.floor(Math.random() * 200) + 5,
+      // Ensure hints are present
+      dataAiHintAvatar: newTweetTemplate.dataAiHintAvatar || 'profile avatar',
+      dataAiHintImage: newTweetTemplate.dataAiHintImage || (newTweetTemplate.imageUrl ? 'crypto meme' : undefined),
     };
 
     setTweets(prevTweets => {
@@ -143,13 +158,17 @@ export default function TwitterFeedPage() {
     // Adicionar data-ai-hint aos tweets iniciais que não têm
     setTweets(prevTweets => prevTweets.map(t => ({
       ...t,
-      dataAiHint: t.dataAiHint || 'crypto meme' // Default hint
+      dataAiHintAvatar: t.dataAiHintAvatar || 'profile avatar',
+      dataAiHintImage: t.dataAiHintImage || (t.imageUrl ? 'crypto meme' : undefined),
     })));
 
     // Adicionar data-ai-hint aos tweets que podem ser adicionados dinamicamente
     moreMockTweets.forEach(tweet => {
-      if (!tweet.dataAiHint) {
-        tweet.dataAiHint = 'crypto meme'; // Default hint
+      if (!tweet.dataAiHintAvatar) {
+        tweet.dataAiHintAvatar = 'profile avatar'; 
+      }
+      if (tweet.imageUrl && !tweet.dataAiHintImage) {
+        tweet.dataAiHintImage = 'crypto meme';
       }
     });
 

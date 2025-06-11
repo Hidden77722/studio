@@ -1,3 +1,4 @@
+
 export interface MemeCoinCall {
   id: string;
   coinName: string;
@@ -52,5 +53,6 @@ export interface MockTweet {
   replies: number;
   imageUrl?: string;
   coinTags?: string[];
-  dataAiHint?: string; // Added for image placeholder hints
+  dataAiHintAvatar?: string; 
+  dataAiHintImage?: string;
 }
