@@ -1,7 +1,7 @@
 
-"use client"; 
+"use client";
 
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
@@ -16,6 +16,7 @@ const allMockLiveCallsDashboard: MemeCoinCall[] = [
     coinName: "RocketDoge",
     coinSymbol: "RDOGE",
     logoUrl: "https://placehold.co/40x40.png?text=RD",
+    logoAiHint: "rocket doge",
     entryTime: new Date().toISOString(),
     reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento de resistência chave. Observado grande volume na Axiom Trade.",
     entryPrice: 0.0000000250,
@@ -29,6 +30,7 @@ const allMockLiveCallsDashboard: MemeCoinCall[] = [
     coinName: "Pepa Inu",
     coinSymbol: "PEPA",
     logoUrl: "https://placehold.co/40x40.png?text=PP",
+    logoAiHint: "pepa frog",
     entryTime: new Date().toISOString(),
     reason: "Anúncio de parceria com grande influenciador do TikTok e listagem iminente na corretora 'MemeXchange'. Gráfico mostra acumulação. Potencial listagem na Axiom Trade sendo discutida.",
     entryPrice: 0.00000110,
@@ -42,6 +44,7 @@ const allMockLiveCallsDashboard: MemeCoinCall[] = [
     coinName: "BonkZilla",
     coinSymbol: "BONKZ",
     logoUrl: "https://placehold.co/40x40.png?text=BZ",
+    logoAiHint: "bonk zilla",
     entryTime: new Date().toISOString(),
     reason: "Narrativa 'Bonk Killer' ganhando força no Telegram. Análise de contrato sugere bom potencial. Volume de compra na Axiom Trade aumentando.",
     entryPrice: 0.0000000075,
@@ -54,6 +57,8 @@ const allMockLiveCallsDashboard: MemeCoinCall[] = [
     id: "dash-wojak-1",
     coinName: "WojakNextGen",
     coinSymbol: "WOJNX",
+    logoUrl: "https://placehold.co/40x40.png?text=WN",
+    logoAiHint: "wojak meme",
     entryTime: new Date().toISOString(),
     reason: "Meme clássico do Wojak reimaginado com utilidade de IA. Hype no 4chan e Twitter. Equipe anunciou queima de tokens e negociação na Axiom Trade.",
     entryPrice: 0.00050,
@@ -64,61 +69,65 @@ const allMockLiveCallsDashboard: MemeCoinCall[] = [
   }
 ];
 
-const mockHistoricalCalls: HistoricalCall[] = [ 
+const mockHistoricalCalls: HistoricalCall[] = [
   {
     id: "h1",
     coinName: "ShibaMoon",
     coinSymbol: "SHIBM",
     logoUrl: "https://placehold.co/40x40.png?text=SM",
+    logoAiHint: "shiba moon",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 18 * 1).toISOString(), // Saiu 18h depois
     reason: "Rompimento de ATH (All-Time High) com forte apoio da comunidade no Reddit e listagem na Axiom Trade.",
     entryPrice: 0.00000080,
-    exitPrice: 0.00000240, 
+    exitPrice: 0.00000240,
     targets: [{ price: 0.00000120 }, { price: 0.00000180 }, { price: 0.00000220}],
     stopLoss: 0.00000065,
     result: "Win",
-    profitOrLossAmount: 2500, 
-    profitOrLossPercentage: "+212.50%", 
+    profitOrLossAmount: 2500,
+    profitOrLossPercentage: "+212.50%",
   },
   {
     id: "h2",
     coinName: "FlokiRocket",
     coinSymbol: "FLOKIR",
+    logoUrl: "https://placehold.co/40x40.png?text=FR",
+    logoAiHint: "floki rocket",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4.8).toISOString(), // Stopado rapidamente
     reason: "Tentativa de pegar um fundo após grande correção, mas o mercado continuou caindo. Baixo volume na Axiom Trade.",
     entryPrice: 0.000070,
-    exitPrice: 0.000068, 
+    exitPrice: 0.000068,
     targets: [{ price: 0.000080 }, { price: 0.000095 }],
     stopLoss: 0.000068, // Atingiu o stop
     result: "Loss",
-    profitOrLossAmount: -30, 
-    profitOrLossPercentage: "-2.86%", 
+    profitOrLossAmount: -30,
+    profitOrLossPercentage: "-2.86%",
   },
    {
     id: "h3",
     coinName: "DogeYield",
     coinSymbol: "DOGEY",
     logoUrl: "https://placehold.co/40x40.png?text=DY",
+    logoAiHint: "doge yield",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 20 * 1).toISOString(),
     reason: "Lançamento de novo recurso de staking com APY atrativo, gerando buzz no Twitter e aumentando a liquidez na Axiom Trade.",
     entryPrice: 0.0010,
-    exitPrice: 0.0028, 
+    exitPrice: 0.0028,
     targets: [{ price: 0.0015 }, { price: 0.0020 }, { price: 0.0025}],
     stopLoss: 0.0008,
     result: "Win",
-    profitOrLossAmount: 1800, 
-    profitOrLossPercentage: "+180.00%", 
+    profitOrLossAmount: 1800,
+    profitOrLossPercentage: "+180.00%",
   },
 ];
 
-const mockUserPerformance: UserPerformance = { 
-  accuracy: 97.0, 
+const mockUserPerformance: UserPerformance = {
+  accuracy: 97.0,
   averageProfit: 1750.00,
-  totalTrades: 35, 
-  winningTrades: 34, 
+  totalTrades: 35,
+  winningTrades: 34,
   losingTrades: 1,
   accuracyOverTime: [
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 85 },
@@ -129,10 +138,10 @@ const mockUserPerformance: UserPerformance = {
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 95 },
     { date: new Date().toISOString(), value: 97 },
   ],
-  profitOverTime: [ 
+  profitOverTime: [
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 7000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 12000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 19000 }, 
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 19000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 28000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 38000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 50000 },
@@ -143,7 +152,7 @@ const mockUserPerformance: UserPerformance = {
 const NUMBER_OF_VISIBLE_CARDS_DASHBOARD = 2;
 
 export default function DashboardPage() {
-  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(() => 
+  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(() =>
     allMockLiveCallsDashboard.slice(0, NUMBER_OF_VISIBLE_CARDS_DASHBOARD).map(call => ({
       ...call,
       id: `${call.id}-${Date.now()}`, // Unique ID for key prop
@@ -155,10 +164,10 @@ export default function DashboardPage() {
     const intervalId = setInterval(() => {
       setLiveCalls(prevCalls => {
         const newCalls = [...prevCalls];
-        
+
         if (Math.random() < 0.4 && allMockLiveCallsDashboard.length > NUMBER_OF_VISIBLE_CARDS_DASHBOARD) { // 40% de chance de substituir um card
           const callIndexToReplace = Math.floor(Math.random() * newCalls.length);
-          
+
           let newCallData;
           let attempts = 0;
           do {
@@ -176,25 +185,25 @@ export default function DashboardPage() {
           }
         } else { // Atualiza um card existente
           const callIndexToUpdate = Math.floor(Math.random() * newCalls.length);
-          const callToUpdate = {...newCalls[callIndexToUpdate]}; 
-          
+          const callToUpdate = {...newCalls[callIndexToUpdate]};
+
           const now = new Date();
           callToUpdate.entryTime = now.toISOString();
-          
+
           const reasonVariations = [
-            "Forte volume de compra na Axiom Trade agora!", 
-            "Rumores de queima de token se intensificam no Reddit!", 
+            "Forte volume de compra na Axiom Trade agora!",
+            "Rumores de queima de token se intensificam no Reddit!",
             "Indicador MACD acaba de cruzar para alta no gráfico de 15min!"
           ];
           const randomVariation = reasonVariations[Math.floor(Math.random() * reasonVariations.length)];
           const baseReason = allMockLiveCallsDashboard.find(c => c.coinSymbol === callToUpdate.coinSymbol)?.reason.split('.')[0] || callToUpdate.reason.split('.')[0];
           callToUpdate.reason = `ALERTA DASH (${now.toLocaleTimeString('pt-BR')}): ${randomVariation} ${baseReason}.`;
-          
+
           newCalls[callIndexToUpdate] = callToUpdate;
         }
         return newCalls;
       });
-    }, 7000); 
+    }, 7000);
 
     return () => clearInterval(intervalId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -203,7 +212,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-headline font-semibold">Painel MemeTrade Pro</h1>
-      
+
       <Tabs defaultValue="live-calls" className="w-full">
         <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex bg-card border border-border">
           <TabsTrigger value="live-calls" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Alertas ao Vivo</TabsTrigger>
@@ -226,7 +235,7 @@ export default function DashboardPage() {
 
         <TabsContent value="history" className="mt-6">
           <h2 className="text-2xl font-headline mb-4">Desempenho Histórico de Trades</h2>
-           {mockHistoricalCalls.length > 0 ? ( 
+           {mockHistoricalCalls.length > 0 ? (
             <div className="space-y-4">
               {mockHistoricalCalls.map((call) => (
                 <HistoricalCallCard key={call.id} call={call} />
@@ -247,16 +256,16 @@ export default function DashboardPage() {
             <StatCard title="Trades Perdedores" value={mockUserPerformance.losingTrades.toString()} icon={<TrendingDownIcon className="h-6 w-6 text-red-500" />} />
           </div>
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-            <PerformanceChart 
-              data={mockUserPerformance.accuracyOverTime} 
-              title="Precisão ao Longo do Tempo" 
+            <PerformanceChart
+              data={mockUserPerformance.accuracyOverTime}
+              title="Precisão ao Longo do Tempo"
               description="Sua tendência de precisão nos trades."
               dataKey="accuracy"
               color="hsl(var(--accent))"
             />
-            <PerformanceChart 
-              data={mockUserPerformance.profitOverTime} 
-              title="Lucro Acumulado ao Longo do Tempo" 
+            <PerformanceChart
+              data={mockUserPerformance.profitOverTime}
+              title="Lucro Acumulado ao Longo do Tempo"
               description="Sua tendência de acumulação de lucro."
               dataKey="profit"
               chartType="bar"

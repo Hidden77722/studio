@@ -13,8 +13,9 @@ const mockHistoricalCalls: HistoricalCall[] = [
     coinName: "PepeCoin",
     coinSymbol: "PEPE",
     logoUrl: "https://placehold.co/40x40.png?text=PP",
-    entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), 
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), 
+    logoAiHint: "pepe frog",
+    entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
     reason: "Rompimento de canal descendente com forte volume.",
     entryPrice: 0.00000120,
     exitPrice: 0.00000180,
@@ -28,6 +29,8 @@ const mockHistoricalCalls: HistoricalCall[] = [
     id: "h2",
     coinName: "TurboToad",
     coinSymbol: "TURBO",
+    logoUrl: "https://placehold.co/40x40.png?text=TT",
+    logoAiHint: "turbo toad",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
     reason: "Anúncio de parceria antecipado, stop atingido por volatilidade.",
@@ -44,6 +47,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     coinName: "MogCoin",
     coinSymbol: "MOG",
     logoUrl: "https://placehold.co/40x40.png?text=MG",
+    logoAiHint: "mog cat",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 20 * 1).toISOString(),
     reason: "Tendência de meme viral e apoio massivo de influenciadores.",
@@ -60,6 +64,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     coinName: "Bonk Inu",
     coinSymbol: "BONK",
     logoUrl: "https://placehold.co/40x40.png?text=BK",
+    logoAiHint: "bonk dog",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
     reason: "Hype do ecossistema Solana e narrativa de recuperação.",
@@ -87,11 +92,11 @@ export default function TradeHistoryPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-headline font-semibold">Histórico de Trades</h1>
-      
+
       <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-card rounded-lg shadow">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
+          <Input
             type="search"
             placeholder="Buscar por nome ou símbolo da moeda..."
             className="pl-10"

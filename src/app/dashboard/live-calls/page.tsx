@@ -10,6 +10,7 @@ const allMockLiveCalls: MemeCoinCall[] = [
     coinName: "RocketDoge",
     coinSymbol: "RDOGE",
     logoUrl: "https://placehold.co/40x40.png?text=RD",
+    logoAiHint: "rocket doge",
     entryTime: new Date().toISOString(),
     reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento de resistência chave. Alto volume na Axiom Trade.",
     entryPrice: 0.0000000250,
@@ -23,6 +24,7 @@ const allMockLiveCalls: MemeCoinCall[] = [
     coinName: "Pepa Inu",
     coinSymbol: "PEPA",
     logoUrl: "https://placehold.co/40x40.png?text=PI",
+    logoAiHint: "pepa frog",
     entryTime: new Date().toISOString(),
     reason: "Anúncio de parceria com grande influenciador do TikTok e listagem iminente na corretora 'MemeXchange'. Gráfico mostra acumulação. Comentários positivos sobre listagem na Axiom Trade.",
     entryPrice: 0.00000110,
@@ -36,6 +38,7 @@ const allMockLiveCalls: MemeCoinCall[] = [
     coinName: "ShibaXtreme",
     coinSymbol: "SHIBX",
     logoUrl: "https://placehold.co/40x40.png?text=SX",
+    logoAiHint: "shiba xtreme",
     entryTime: new Date().toISOString(),
     reason: "Nova narrativa 'Shiba Killer 2.0' ganhando tração no Reddit. Análise de contrato indica baixo risco de rug pull. Volume na Axiom Trade começando a subir.",
     entryPrice: 0.0000000050,
@@ -49,6 +52,7 @@ const allMockLiveCalls: MemeCoinCall[] = [
     coinName: "CatMoon",
     coinSymbol: "CMOON",
     logoUrl: "https://placehold.co/40x40.png?text=CM",
+    logoAiHint: "cat moon",
     entryTime: new Date().toISOString(),
     reason: "Meme de gato popular sendo associado à moeda. Grande comunidade artística no Twitter criando NFTs e impulsionando o hype. Axiom Trade adicionou par de negociação.",
     entryPrice: 0.000072,
@@ -61,6 +65,8 @@ const allMockLiveCalls: MemeCoinCall[] = [
     id: "flokiz-1",
     coinName: "FlokiZilla",
     coinSymbol: "FLOKIZ",
+    logoUrl: "https://placehold.co/40x40.png?text=FZ",
+    logoAiHint: "floki zilla",
     entryTime: new Date().toISOString(),
     reason: "Combinação de dois memes populares (Floki e Godzilla). Ameaças de 'queima de tokens' pela equipe no Twitter. Rumores de listagem na Axiom Trade.",
     entryPrice: 0.00000012,
@@ -74,7 +80,7 @@ const allMockLiveCalls: MemeCoinCall[] = [
 const NUMBER_OF_VISIBLE_CARDS = 3; // Quantidade de cards a serem exibidos
 
 export default function LiveCallsPage() {
-  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(() => 
+  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(() =>
     allMockLiveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS).map(call => ({
       ...call,
       id: `${call.id}-${Date.now()}`, // Unique ID for key prop
@@ -86,11 +92,11 @@ export default function LiveCallsPage() {
     const intervalId = setInterval(() => {
       setLiveCalls(prevCalls => {
         const newCalls = [...prevCalls];
-        
+
         // Decide se substitui um card ou apenas atualiza um existente
         if (Math.random() < 0.3 && allMockLiveCalls.length > NUMBER_OF_VISIBLE_CARDS) { // 30% de chance de substituir um card
           const callIndexToReplace = Math.floor(Math.random() * newCalls.length);
-          
+
           // Encontra um novo card que não esteja atualmente na lista
           let newCallData;
           let attempts = 0;
@@ -98,7 +104,7 @@ export default function LiveCallsPage() {
             newCallData = allMockLiveCalls[Math.floor(Math.random() * allMockLiveCalls.length)];
             attempts++;
           } while (newCalls.some(c => c.coinSymbol === newCallData.coinSymbol) && attempts < allMockLiveCalls.length * 2);
-          
+
           if (newCallData) {
             newCalls[callIndexToReplace] = {
               ...newCallData,
@@ -110,29 +116,29 @@ export default function LiveCallsPage() {
         } else { // Atualiza um card existente
           const callIndexToUpdate = Math.floor(Math.random() * newCalls.length);
           const callToUpdate = { ...newCalls[callIndexToUpdate] };
-          
+
           const now = new Date();
           callToUpdate.entryTime = now.toISOString();
-          
+
           const reasonVariations = [
-            "Movimentação de baleias detectada na Axiom Trade!", 
-            "Novo tweet de influenciador mencionando esta moeda!", 
+            "Movimentação de baleias detectada na Axiom Trade!",
+            "Novo tweet de influenciador mencionando esta moeda!",
             "Volume na Axiom Trade disparou nos últimos 5 minutos!",
             "Listagem na Axiom Trade confirmada para amanhã!"
           ];
           const randomVariation = reasonVariations[Math.floor(Math.random() * reasonVariations.length)];
           const baseReason = allMockLiveCalls.find(c => c.coinSymbol === callToUpdate.coinSymbol)?.reason.split('.')[0] || callToUpdate.reason.split('.')[0];
           callToUpdate.reason = `${randomVariation} ${baseReason}. (Atualizado: ${now.toLocaleTimeString('pt-BR')})`;
-          
+
           newCalls[callIndexToUpdate] = callToUpdate;
         }
         return newCalls;
       });
     }, 5000); // Atualiza a cada 5 segundos
 
-    return () => clearInterval(intervalId); 
+    return () => clearInterval(intervalId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []);
 
   return (
     <div className="space-y-6">

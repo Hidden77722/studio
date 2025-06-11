@@ -4,8 +4,9 @@ export interface MemeCoinCall {
   coinName: string;
   coinSymbol: string;
   logoUrl?: string;
-  entryTime: string; 
-  reason: string; 
+  logoAiHint?: string; // Adicionado
+  entryTime: string;
+  reason: string;
   entryPrice: number;
   targets: { price: number; percentage?: string }[];
   stopLoss: number;
@@ -14,7 +15,8 @@ export interface MemeCoinCall {
   marketSentimentSummary: string;
 }
 
-export interface HistoricalCall extends Omit<MemeCoinCall, 'technicalAnalysisSummary' | 'marketSentimentSummary'> {
+export interface HistoricalCall extends Omit<MemeCoinCall, 'technicalAnalysisSummary' | 'marketSentimentSummary' | 'logoAiHint'> { // logoAiHint será adicionado abaixo especificamente
+  logoAiHint?: string; // Adicionado
   exitTime?: string;
   exitPrice?: number;
   result: 'Win' | 'Loss' | 'Pending';
@@ -24,7 +26,7 @@ export interface HistoricalCall extends Omit<MemeCoinCall, 'technicalAnalysisSum
 
 export interface UserPerformance {
   accuracy: number;
-  averageProfit: number; 
+  averageProfit: number;
   totalTrades: number;
   winningTrades: number;
   losingTrades: number;

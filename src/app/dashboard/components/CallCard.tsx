@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { MemeCoinCall } from "@/lib/types";
@@ -29,13 +30,13 @@ export function CallCard({ call }: CallCardProps) {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="flex items-center gap-3">
             {call.logoUrl ? (
-              <Image 
-                src={call.logoUrl} 
-                alt={`${call.coinName} logo`} 
-                width={40} 
-                height={40} 
+              <Image
+                src={call.logoUrl}
+                alt={`${call.coinName} logo`}
+                width={40}
+                height={40}
                 className="rounded-full"
-                data-ai-hint="coin logo" 
+                data-ai-hint={call.logoAiHint || "coin logo"}
               />
             ) : (
               <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-primary font-bold text-lg">
@@ -59,7 +60,7 @@ export function CallCard({ call }: CallCardProps) {
             </h4>
             <p className="text-sm">{call.reason}</p>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div className="p-3 bg-muted/50 rounded-md">
               <p className="text-xs text-muted-foreground">Preço de Entrada</p>

@@ -1,3 +1,4 @@
+
 "use client";
 import type { HistoricalCall } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,7 @@ export function HistoricalCallCard({ call }: HistoricalCallProps) {
   const isWin = call.result === 'Win';
   const isLoss = call.result === 'Loss';
   const isPending = call.result === 'Pending';
-  
+
   const [entryLocaleDate, setEntryLocaleDate] = React.useState('');
   const [duration, setDuration] = React.useState('');
 
@@ -33,7 +34,7 @@ export function HistoricalCallCard({ call }: HistoricalCallProps) {
     if (isLoss) return "destructive";
     return "secondary";
   };
-  
+
   const getBadgeClasses = () => {
     if (isWin) return "bg-green-500/20 text-green-400 border-green-500/30";
     if (isLoss) return "bg-red-500/20 text-red-400 border-red-500/30";
@@ -46,13 +47,13 @@ export function HistoricalCallCard({ call }: HistoricalCallProps) {
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="flex items-center gap-3">
            {call.logoUrl ? (
-              <Image 
-                src={call.logoUrl} 
-                alt={`${call.coinName} logo`} 
-                width={32} 
-                height={32} 
+              <Image
+                src={call.logoUrl}
+                alt={`${call.coinName} logo`}
+                width={32}
+                height={32}
                 className="rounded-full"
-                data-ai-hint="coin logo" 
+                data-ai-hint={call.logoAiHint || "coin logo"}
               />
             ) : (
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-primary font-bold">
@@ -78,13 +79,13 @@ export function HistoricalCallCard({ call }: HistoricalCallProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
           <InfoItem label="Preço de Entrada" value={`$${call.entryPrice.toLocaleString()}`} />
           <InfoItem label="Preço de Saída" value={call.exitPrice ? `$${call.exitPrice.toLocaleString()}` : 'N/D'} />
-          <InfoItem 
-            label="Valor G/P" 
-            value={call.profitOrLossAmount ? `${isWin ? '+' : ''}$${call.profitOrLossAmount.toLocaleString()}` : 'N/D'} 
+          <InfoItem
+            label="Valor G/P"
+            value={call.profitOrLossAmount ? `${isWin ? '+' : ''}$${call.profitOrLossAmount.toLocaleString()}` : 'N/D'}
             className={isWin ? 'text-green-400' : isLoss ? 'text-red-400' : ''}
           />
-          <InfoItem 
-            label="% G/P" 
+          <InfoItem
+            label="% G/P"
             value={call.profitOrLossPercentage || 'N/D'}
             className={isWin ? 'text-green-400' : isLoss ? 'text-red-400' : ''}
           />
@@ -123,6 +124,6 @@ function getDuration(startTime: string, endTime: string): string {
   if (days > 0) durationStr += `${days}d `;
   if (hours > 0) durationStr += `${hours}h `;
   if (minutes > 0 || (days === 0 && hours === 0)) durationStr += `${minutes}m`;
-  
+
   return durationStr.trim() || "0m";
 }
