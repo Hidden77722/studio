@@ -115,7 +115,6 @@ export default function LiveCallsPage() {
       while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttempts) {
         const call = await generateNewCall();
         if (call) {
-          // Ensure no duplicate IDs if calls are generated too quickly for the same coin/template
           if (!newLiveCalls.some(existingCall => existingCall.id === call.id)) {
              newLiveCalls.push(call);
           }
@@ -139,13 +138,8 @@ export default function LiveCallsPage() {
           if (calls.length >= NUMBER_OF_VISIBLE_CARDS) {
             calls.shift(); 
           }
-          // Ensure no duplicate IDs from rapid generation
           if (!calls.some(existingCall => existingCall.id === newCall.id)){
             calls.push(newCall); 
-          } else {
-            // If duplicate ID, try to slightly modify or just don't add to prevent key error
-            // For this simulation, we might just not add it, or refresh an existing one if logic allows
-            // For now, simplest is to not add if ID collision happens too fast.
           }
           return calls;
         });
@@ -182,9 +176,11 @@ export default function LiveCallsPage() {
           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-4"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
           <h2 className="text-xl font-headline text-foreground mb-2">Nenhum Alerta Ativo</h2>
           <p className="text-muted-foreground text-center">Nossos analistas estão monitorando os mercados. Novos alertas aparecerão aqui em breve!</p>
-          <p className="text-xs text-muted-foreground mt-2">(Pode haver um problema temporário ao buscar dados de preços. Tente recarregar.)</p>
+          <p className="text-xs text-muted-foreground mt-2">(Pode haver um problema temporário ao buscar dados de preços. Tente recarregar ou verifique sua conexão.)</p>
         </div>
       )}
     </div>
   );
 }
+
+    
