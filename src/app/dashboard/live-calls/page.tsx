@@ -4,33 +4,32 @@ import { CallCard } from "@/app/dashboard/components/CallCard";
 import type { MemeCoinCall } from "@/lib/types";
 import React, { useState, useEffect } from 'react';
 
-// Dados iniciais movidos para fora do componente para não serem recriados
 const initialMockLiveCalls: MemeCoinCall[] = [
   {
     id: "1",
-    coinName: "DogeBonk",
-    coinSymbol: "DOBO",
-    logoUrl: "https://placehold.co/40x40.png?text=DB",
+    coinName: "RocketDoge",
+    coinSymbol: "RDOGE",
+    logoUrl: "https://placehold.co/40x40.png?text=RD",
     entryTime: new Date().toISOString(),
-    reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze com alvo ambicioso.",
-    entryPrice: 0.0000000123,
-    targets: [{ price: 0.0000000160, percentage: "+30%" }, { price: 0.0000000200, percentage: "+62%" }],
-    stopLoss: 0.0000000090,
-    technicalAnalysisSummary: "DOBO mostra uma divergência de alta no RSI de 4H, com volume aumentando significativamente. MACD está prestes a cruzar para alta. A resistência chave em 0.0000000100 foi quebrada e retestada como suporte.",
-    marketSentimentSummary: "Alto engajamento no Twitter e Reddit, com vários influenciadores mencionando DOBO. O Índice de Medo e Ganância para meme coins está neutro, sugerindo espaço para crescimento.",
+    reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento de resistência chave.",
+    entryPrice: 0.0000000250,
+    targets: [{ price: 0.0000000500, percentage: "+100%" }, { price: 0.0000000750, percentage: "+200%" }],
+    stopLoss: 0.0000000180,
+    technicalAnalysisSummary: "RDOGE acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70, indicando forte pressão compradora. Próxima resistência significativa apenas em 0.0000000500, oferecendo grande potencial de alta.",
+    marketSentimentSummary: "Campanha #RocketDogeArmy viralizando no Twitter. Posts em subreddits como r/MemeCoinMoonshots e r/CryptoMars estão explodindo com menções a RDOGE. Sentimento de FOMO generalizado detectado.",
   },
   {
     id: "2",
-    coinName: "ShibaFloki",
-    coinSymbol: "SHIBFLO",
-    logoUrl: "https://placehold.co/40x40.png?text=SF",
-    entryTime: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    reason: "Anúncio de listagem em CEX de grande porte esperado nas próximas 24 horas. Gráfico mostra consolidação pré-alta.",
-    entryPrice: 0.00000056,
-    targets: [{ price: 0.000000075, percentage: "+34%" }, { price: 0.000000095, percentage: "+70%" }],
-    stopLoss: 0.00000048,
-    technicalAnalysisSummary: "SHIBFLO está consolidando dentro de um padrão de triângulo simétrico, tipicamente um padrão de continuação. Um rompimento acima da linha de tendência superior pode levar a uma alta significativa. O volume está atualmente baixo, indicando acumulação.",
-    marketSentimentSummary: "Rumores de listagem em uma grande CEX estão circulando. A comunidade está muito ativa e otimista. O rastreador de carteiras mostra um aumento nas participações de baleias.",
+    coinName: "Pepa Inu",
+    coinSymbol: "PEPA",
+    logoUrl: "https://placehold.co/40x40.png?text=PP",
+    entryTime: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // Entrou 5 minutos atrás
+    reason: "Anúncio de parceria com grande influenciador do TikTok e listagem iminente na corretora 'MemeXchange'. Gráfico mostra acumulação.",
+    entryPrice: 0.00000110,
+    targets: [{ price: 0.00000200, percentage: "+81%" }, { price: 0.00000300, percentage: "+172%" }],
+    stopLoss: 0.00000090,
+    technicalAnalysisSummary: "PEPA formou um padrão 'copo e alça' (cup and handle) no gráfico de 4H, um forte sinal de continuação de alta. Volume de acumulação tem aumentado discretamente. Suporte forte na média móvel de 50 períodos.",
+    marketSentimentSummary: "O influenciador 'CryptoKingGuru' (10M seguidores no TikTok) acaba de postar um vídeo sobre PEPA. Rumores fortes de listagem na MemeXchange nas próximas 48h. Comunidade no Discord e Telegram muito engajada e esperando o 'pump da listagem'.",
   },
 ];
 
@@ -42,31 +41,30 @@ export default function LiveCallsPage() {
       setLiveCalls(prevCalls => {
         if (prevCalls.length === 0) return prevCalls;
 
-        // Clona o array para evitar mutação direta do estado
         const updatedCalls = [...prevCalls];
         
-        // Atualiza o primeiro alerta para demonstração
         const callToUpdate = { ...updatedCalls[0] };
         const now = new Date();
         callToUpdate.entryTime = now.toISOString();
-        // Adiciona um timestamp à razão para tornar a atualização mais visível
+        
         const originalReason = initialMockLiveCalls.find(c => c.id === callToUpdate.id)?.reason || callToUpdate.reason;
-        callToUpdate.reason = `Atualizado ${now.toLocaleTimeString('pt-BR')}: ${originalReason.substring(0, 80)}${originalReason.length > 80 ? '...' : ''}`;
+        // Pequena variação na razão para mostrar atualização
+        const reasonVariations = ["Movimentação de baleias detectada!", "Novo tweet de Elon Musk mencionando 'Doge' indiretamente!", "Volume disparou nos últimos 5 minutos!"];
+        const randomVariation = reasonVariations[Math.floor(Math.random() * reasonVariations.length)];
+        callToUpdate.reason = `${randomVariation} ${originalReason.substring(0,60)}... (Atualizado: ${now.toLocaleTimeString('pt-BR')})`;
         
         updatedCalls[0] = callToUpdate;
         
-        // Para dar um efeito de "novos" alertas, podemos ciclar os alertas
-        // ou embaralhar a ordem, mas vamos manter simples por enquanto.
-        // Exemplo: rotacionar o array de alertas
+        // Rotacionar o array para que o card atualizado não seja sempre o mesmo na UI
         // const firstCall = updatedCalls.shift();
         // if (firstCall) updatedCalls.push(firstCall);
 
         return updatedCalls;
       });
-    }, 5000); // Atualiza a cada 5 segundos
+    }, 5000); 
 
-    return () => clearInterval(intervalId); // Limpa o intervalo quando o componente é desmontado
-  }, []); // O array de dependências vazio garante que o efeito execute apenas uma vez (montagem/desmontagem)
+    return () => clearInterval(intervalId); 
+  }, []); 
 
   return (
     <div className="space-y-6">

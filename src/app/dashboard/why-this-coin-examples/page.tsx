@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -11,12 +12,12 @@ import { Lightbulb, Wand2 } from 'lucide-react';
 
 export default function WhyThisCoinExamplesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [coinName, setCoinName] = useState("ExampleCoin (EXC)");
+  const [coinName, setCoinName] = useState("ApeMax (APEMAX)");
   const [technicalAnalysis, setTechnicalAnalysis] = useState(
-    "O preço rompeu a resistência chave de $0,50 com alto volume. O RSI mostra momentum de alta e o MACD está cruzando para cima. A MA de 50 dias está prestes a cruzar acima da MA de 200 dias (Cruz Dourada)."
+    "APEMAX rompeu uma importante resistência em $0.005 com volume explosivo. RSI em 75, indicando forte momentum de compra, mas ainda não sobrecomprado em prazos maiores. MACD cruzou para cima, sinalizando início de tendência de alta. Médias móveis exponenciais (9 e 21 dias) prestes a realizar um 'cruzamento dourado' no gráfico de 4 horas."
   );
   const [marketSentiment, setMarketSentiment] = useState(
-    "Sentimento positivo nas plataformas de mídia social. Vários influenciadores estão discutindo a moeda. Notícias de uma possível parceria estão impulsionando o hype. O índice Medo e Ganância está na zona de 'Ganância'."
+    "Intenso burburinho sobre APEMAX no Twitter e Reddit nas últimas 12 horas. A hashtag #APEMAXToTheMoon está em alta. Grandes influenciadores de cripto estão postando sobre potencial de 100x. Comunidade no Telegram extremamente ativa e otimista, com menções a 'queima de tokens' e 'novas listagens em corretoras'."
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -81,7 +82,7 @@ export default function WhyThisCoinExamplesPage() {
         </form>
       </Card>
 
-      {isModalOpen && ( // Conditionally render modal to ensure state is fresh on open
+      {isModalOpen && ( 
         <WhyThisCoinModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

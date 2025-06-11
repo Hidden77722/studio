@@ -1,7 +1,7 @@
 
 "use client"; 
 
-import React, { useState, useEffect } from 'react'; // Adicionado useState e useEffect
+import React, { useState, useEffect } from 'react'; 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
@@ -10,108 +10,108 @@ import type { MemeCoinCall, HistoricalCall, UserPerformance } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
 
-// Dados iniciais movidos para fora e renomeados
 const initialMockLiveCalls: MemeCoinCall[] = [
   {
-    id: "1",
-    coinName: "DogeBonk",
-    coinSymbol: "DOBO",
-    logoUrl: "https://placehold.co/40x40.png?text=DB",
+    id: "dash-1",
+    coinName: "RocketDoge",
+    coinSymbol: "RDOGE",
+    logoUrl: "https://placehold.co/40x40.png?text=RD",
     entryTime: new Date().toISOString(),
-    reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze com alvo ambicioso.",
-    entryPrice: 0.0000000123,
-    targets: [{ price: 0.0000000160, percentage: "+30%" }, { price: 0.0000000200, percentage: "+62%" }],
-    stopLoss: 0.0000000090,
-    technicalAnalysisSummary: "DOBO mostra uma divergência de alta no RSI de 4H, com volume aumentando significativamente. MACD está prestes a cruzar para alta. A resistência chave em 0.0000000100 foi quebrada e retestada como suporte.",
-    marketSentimentSummary: "Alto engajamento no Twitter e Reddit, com vários influenciadores mencionando DOBO. O Índice de Medo e Ganância para meme coins está neutro, sugerindo espaço para crescimento.",
+    reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento de resistência chave.",
+    entryPrice: 0.0000000250,
+    targets: [{ price: 0.0000000500, percentage: "+100%" }, { price: 0.0000000750, percentage: "+200%" }],
+    stopLoss: 0.0000000180,
+    technicalAnalysisSummary: "RDOGE acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70, indicando forte pressão compradora.",
+    marketSentimentSummary: "Campanha #RocketDogeArmy viralizando no Twitter. Posts em subreddits como r/MemeCoinMoonshots e r/CryptoMars estão explodindo com menções a RDOGE.",
   },
   {
-    id: "2",
-    coinName: "ShibaFloki",
-    coinSymbol: "SHIBFLO",
-    logoUrl: "https://placehold.co/40x40.png?text=SF",
-    entryTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    reason: "Anúncio de listagem em CEX de grande porte esperado nas próximas 24 horas. Gráfico mostra consolidação pré-alta.",
-    entryPrice: 0.00000056,
-    targets: [{ price: 0.000000075, percentage: "+34%" }, { price: 0.000000095, percentage: "+70%" }],
-    stopLoss: 0.00000048,
-    technicalAnalysisSummary: "SHIBFLO está consolidando dentro de um padrão de triângulo simétrico, tipicamente um padrão de continuação. Um rompimento acima da linha de tendência superior pode levar a uma alta significativa. O volume está atualmente baixo, indicando acumulação.",
-    marketSentimentSummary: "Rumores de listagem em uma grande CEX estão circulando. A comunidade está muito ativa e otimista. O rastreador de carteiras mostra um aumento nas participações de baleias.",
+    id: "dash-2",
+    coinName: "Pepa Inu",
+    coinSymbol: "PEPA",
+    logoUrl: "https://placehold.co/40x40.png?text=PP",
+    entryTime: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    reason: "Anúncio de parceria com grande influenciador do TikTok e listagem iminente na corretora 'MemeXchange'. Gráfico mostra acumulação.",
+    entryPrice: 0.00000110,
+    targets: [{ price: 0.00000200, percentage: "+81%" }, { price: 0.00000300, percentage: "+172%" }],
+    stopLoss: 0.00000090,
+    technicalAnalysisSummary: "PEPA formou um padrão 'copo e alça' (cup and handle) no gráfico de 4H, um forte sinal de continuação de alta. Volume de acumulação tem aumentado.",
+    marketSentimentSummary: "O influenciador 'CryptoKingGuru' (10M seguidores no TikTok) acaba de postar um vídeo sobre PEPA. Rumores fortes de listagem na MemeXchange.",
   },
 ];
 
-const mockHistoricalCalls: HistoricalCall[] = [ // Mantido como constante, pois não precisa de atualização dinâmica aqui
+const mockHistoricalCalls: HistoricalCall[] = [ 
   {
     id: "h1",
-    coinName: "PepeCoin",
-    coinSymbol: "PEPE",
-    logoUrl: "https://placehold.co/40x40.png?text=PP",
+    coinName: "ShibaMoon",
+    coinSymbol: "SHIBM",
+    logoUrl: "https://placehold.co/40x40.png?text=SM",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
-    reason: "Rompimento de canal descendente com forte volume.",
-    entryPrice: 0.00000120,
-    exitPrice: 0.00000180, 
-    targets: [{ price: 0.00000140 }, { price: 0.00000160 }],
-    stopLoss: 0.00000100,
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 18 * 1).toISOString(), // Saiu 18h depois
+    reason: "Rompimento de ATH (All-Time High) com forte apoio da comunidade no Reddit.",
+    entryPrice: 0.00000080,
+    exitPrice: 0.00000240, 
+    targets: [{ price: 0.00000120 }, { price: 0.00000180 }, { price: 0.00000220}],
+    stopLoss: 0.00000065,
     result: "Win",
-    profitOrLossAmount: 500, 
-    profitOrLossPercentage: "+50.00%", 
+    profitOrLossAmount: 2000, 
+    profitOrLossPercentage: "+200.00%", 
   },
   {
     id: "h2",
-    coinName: "TurboToad",
-    coinSymbol: "TURBO",
+    coinName: "FlokiRocket",
+    coinSymbol: "FLOKIR",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
-    reason: "Anúncio de parceria antecipado, stop atingido por volatilidade.",
-    entryPrice: 0.000050,
-    exitPrice: 0.000049, 
-    targets: [{ price: 0.000060 }, { price: 0.000075 }],
-    stopLoss: 0.000048,
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4.8).toISOString(), // Stopado rapidamente
+    reason: "Tentativa de pegar um fundo após grande correção, mas o mercado continuou caindo.",
+    entryPrice: 0.000070,
+    exitPrice: 0.000063, 
+    targets: [{ price: 0.000080 }, { price: 0.000095 }],
+    stopLoss: 0.000063, // Atingiu o stop
     result: "Loss",
-    profitOrLossAmount: -10, 
-    profitOrLossPercentage: "-2.00%", 
+    profitOrLossAmount: -70, 
+    profitOrLossPercentage: "-10.00%", 
   },
    {
     id: "h3",
-    coinName: "MogCoin",
-    coinSymbol: "MOG",
+    coinName: "DogeYield",
+    coinSymbol: "DOGEY",
+    logoUrl: "https://placehold.co/40x40.png?text=DY",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 20 * 1).toISOString(),
-    reason: "Tendência de meme viral e apoio massivo de influenciadores.",
-    entryPrice: 0.00000040,
-    exitPrice: 0.00000070, 
-    targets: [{ price: 0.00000055 }, { price: 0.00000070 }],
-    stopLoss: 0.00000035,
+    reason: "Lançamento de novo recurso de staking com APY atrativo, gerando buzz no Twitter.",
+    entryPrice: 0.0010,
+    exitPrice: 0.0025, 
+    targets: [{ price: 0.0015 }, { price: 0.0020 }, { price: 0.0025}],
+    stopLoss: 0.0008,
     result: "Win",
-    profitOrLossAmount: 750, 
-    profitOrLossPercentage: "+75.00%", 
+    profitOrLossAmount: 1500, 
+    profitOrLossPercentage: "+150.00%", 
   },
 ];
 
-const mockUserPerformance: UserPerformance = { // Mantido como constante
-  accuracy: 90.0, 
-  averageProfit: 450.00, 
-  totalTrades: 25, 
-  winningTrades: 22, 
-  losingTrades: 3, 
+const mockUserPerformance: UserPerformance = { 
+  accuracy: 95.0, 
+  averageProfit: 1200.00, 
+  totalTrades: 30, 
+  winningTrades: 28, 
+  losingTrades: 2, 
   accuracyOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 70 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 75 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 80 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 82 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 85 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 88 },
-    { date: new Date().toISOString(), value: 90 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 80 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 85 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 88 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 90 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 92 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 93 },
+    { date: new Date().toISOString(), value: 95 },
   ],
   profitOverTime: [ 
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 600 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 1000 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 1300 }, 
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 1800 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 2300 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 2900 },
-    { date: new Date().toISOString(), value: 3500 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 5000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 8000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 12000 }, 
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 17000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 23000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 30000 },
+    { date: new Date().toISOString(), value: 36000 }, // Lucro total de $36,000
   ],
 };
 
@@ -124,7 +124,7 @@ export default function DashboardPage() {
         if (prevCalls.length === 0) return prevCalls;
         
         const updatedCalls = [...prevCalls];
-        const callToUpdate = {...updatedCalls[0]}; // Atualiza o primeiro card
+        const callToUpdate = {...updatedCalls[0]}; 
         
         const now = new Date();
         callToUpdate.entryTime = now.toISOString();
@@ -134,7 +134,7 @@ export default function DashboardPage() {
         updatedCalls[0] = callToUpdate;
         return updatedCalls;
       });
-    }, 7000); // Atualiza a cada 7 segundos (diferente de LiveCallsPage)
+    }, 7000); 
 
     return () => clearInterval(intervalId);
   }, []);
@@ -165,7 +165,7 @@ export default function DashboardPage() {
 
         <TabsContent value="history" className="mt-6">
           <h2 className="text-2xl font-headline mb-4">Desempenho Histórico de Trades</h2>
-           {mockHistoricalCalls.length > 0 ? ( // Usando mockHistoricalCalls diretamente
+           {mockHistoricalCalls.length > 0 ? ( 
             <div className="space-y-4">
               {mockHistoricalCalls.map((call) => (
                 <HistoricalCallCard key={call.id} call={call} />
