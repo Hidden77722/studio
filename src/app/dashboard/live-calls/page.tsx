@@ -46,18 +46,30 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
   try {
     const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
     if (!response.ok) {
-      console.error(`Falha ao buscar preço para ${coinId} da CoinGecko: ${response.statusText}`);
+      // Log non-OK responses, could be rate limiting or server errors
+      console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko: ${response.status} ${response.statusText}`);
       return null;
     }
     const data = await response.json();
-    const price = data[coinId]?.usd;
+
+    // Check if the coinId exists as a key in the response data
+    if (!data || typeof data[coinId] === 'undefined') {
+      console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko. Resposta:`, data);
+      return null;
+    }
+
+    const coinData = data[coinId];
+    const price = coinData.usd;
+
     if (typeof price !== 'number') {
-        console.error(`Preço inválido recebido para ${coinId} da CoinGecko:`, price);
-        return null;
+      // This means the coinId was found, but 'usd' field was missing or not a number.
+      console.warn(`Preço USD para ${coinId} está ausente ou não é um número. Dados recebidos para a moeda:`, coinData);
+      return null;
     }
     return price;
   } catch (error) {
-    console.error(`Erro ao buscar preço para ${coinId} da CoinGecko:`, error);
+    // Catch network errors or JSON parsing errors
+    console.error(`Erro de rede ou parse ao buscar preço para ${coinId} da CoinGecko:`, error);
     return null;
   }
 }
@@ -71,7 +83,7 @@ export default function LiveCallsPage() {
     const randomCoinInfo = REAL_COIN_POOL[Math.floor(Math.random() * REAL_COIN_POOL.length)];
 
     const currentPrice = await fetchCoinCurrentPrice(randomCoinInfo.coingeckoId);
-    if (currentPrice === null) return null; // Failed to fetch price
+    if (currentPrice === null) return null; // Failed to fetch price or price was invalid
 
     const entryPrice = currentPrice;
     const targets = randomTemplate.targetsConfig.map(t => ({
@@ -101,9 +113,38 @@ export default function LiveCallsPage() {
   useEffect(() => {
     const loadInitialCalls = async () => {
       setIsLoadingInitial(true);
-      const initialCallsPromises = Array(NUMBER_OF_VISIBLE_CARDS).fill(null).map(() => generateNewCall());
-      const resolvedInitialCalls = (await Promise.all(initialCallsPromises)).filter(call => call !== null) as MemeCoinCall[];
-      setLiveCalls(resolvedInitialCalls);
+      const initialCallsPromises = [];
+      // Ensure we attempt to generate enough valid calls for the initial display
+      let attempts = 0;
+      const maxAttempts = NUMBER_OF_VISIBLE_CARDS * 3; // Try a few times per card needed
+      let successfulCalls = 0;
+      
+      while(successfulCalls < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttempts) {
+        initialCallsPromises.push(generateNewCall());
+        attempts++;
+        // Check results intermittently or after a batch to fill up faster
+        if (initialCallsPromises.length >= NUMBER_OF_VISIBLE_CARDS || attempts % 5 === 0) {
+            const resolved = await Promise.all(initialCallsPromises.splice(0, initialCallsPromises.length)); // process current batch
+            resolved.forEach(call => {
+                if (call && successfulCalls < NUMBER_OF_VISIBLE_CARDS) {
+                    setLiveCalls(prev => [...prev, call]);
+                    successfulCalls++;
+                }
+            });
+        }
+      }
+      // Final check for any remaining promises
+      if(initialCallsPromises.length > 0 && successfulCalls < NUMBER_OF_VISIBLE_CARDS) {
+        const resolved = await Promise.all(initialCallsPromises);
+        resolved.forEach(call => {
+            if (call && successfulCalls < NUMBER_OF_VISIBLE_CARDS) {
+                setLiveCalls(prev => [...prev, call]); // Add to existing, don't replace
+                successfulCalls++;
+            }
+        });
+      }
+
+      setLiveCalls(prev => prev.slice(-NUMBER_OF_VISIBLE_CARDS)); // Ensure only correct number of cards
       setIsLoadingInitial(false);
     };
     loadInitialCalls();
@@ -130,7 +171,7 @@ export default function LiveCallsPage() {
     return () => clearInterval(intervalId);
   }, [isLoadingInitial, generateNewCall]);
 
-  if (isLoadingInitial) {
+  if (isLoadingInitial && liveCalls.length === 0) { // Show loading only if no calls are displayed yet
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-headline font-semibold">Alertas de Trade Ativos</h1>
@@ -148,7 +189,7 @@ export default function LiveCallsPage() {
       <h1 className="text-3xl font-headline font-semibold">Alertas de Trade Ativos</h1>
       {liveCalls.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-          {liveCalls.map((call) => (
+          {liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS).map((call) => ( // Ensure we only render up to NUMBER_OF_VISIBLE_CARDS
             <CallCard key={call.id} call={call} />
           ))}
         </div>
@@ -157,8 +198,10 @@ export default function LiveCallsPage() {
           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-4"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
           <h2 className="text-xl font-headline text-foreground mb-2">Nenhum Alerta Ativo</h2>
           <p className="text-muted-foreground text-center">Nossos analistas estão monitorando os mercados. Novos alertas aparecerão aqui em breve!</p>
+          <p className="text-xs text-muted-foreground mt-2">(Pode haver um problema temporário ao buscar dados de preços. Tente recarregar.)</p>
         </div>
       )}
     </div>
   );
 }
+
