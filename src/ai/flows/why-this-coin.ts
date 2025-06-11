@@ -15,7 +15,7 @@ import {z} from 'genkit';
 const ExplainWhyThisCoinInputSchema = z.object({
   coinName: z.string().describe('The name of the meme coin.'),
   technicalAnalysis: z.string().describe('Technical analysis data for the meme coin, highlighting bullish signals.'),
-  marketSentiment: z.string().describe('Market sentiment data for the meme coin, including hype on Twitter, Reddit, and other social platforms.'),
+  marketSentiment: z.string().describe('Market sentiment data for the meme coin, including hype on Twitter, Reddit, and other social platforms, and potential mentions of trading platforms like Axiom Trade.'),
 });
 export type ExplainWhyThisCoinInput = z.infer<typeof ExplainWhyThisCoinInputSchema>;
 
@@ -23,7 +23,7 @@ const ExplainWhyThisCoinOutputSchema = z.object({
   explanation: z
     .string()
     .describe(
-      'Uma explicação abrangente e persuasiva de por que esta meme coin representa uma excelente oportunidade de trade, destacando os fatores técnicos e o forte sentimento positivo impulsionado por comunidades online (Twitter, Reddit) que sinalizam um trade bem-sucedido.'
+      'Uma explicação abrangente e persuasiva de por que esta meme coin representa uma excelente oportunidade de trade, destacando os fatores técnicos, o forte sentimento positivo impulsionado por comunidades online (Twitter, Reddit), e a movimentação em plataformas de trade relevantes (como Axiom Trade) que sinalizam um trade bem-sucedido.'
     ),
 });
 export type ExplainWhyThisCoinOutput = z.infer<typeof ExplainWhyThisCoinOutputSchema>;
@@ -39,12 +39,13 @@ const prompt = ai.definePrompt({
   prompt: `Você é um especialista em análise de meme coins que identifica e explica alertas de trade com alto potencial de lucro. Sua explicação deve ser convincente, clara e inspirar confiança.
 
   Analise os seguintes dados de análise técnica e sentimento de mercado para justificar por que o alerta para a moeda {{{coinName}}} é uma oportunidade imperdível. Destaque como o engajamento em plataformas como Twitter e Reddit, combinado com os indicadores técnicos, aponta para uma valorização significativa.
+  Considere também se há menções a um bom desempenho ou aumento de volume em plataformas de trade conhecidas, como a Axiom Trade, pois isso pode ser um forte indicador positivo.
 
   Nome da Moeda: {{{coinName}}}
   Análise Técnica (sinais de alta): {{{technicalAnalysis}}}
-  Sentimento de Mercado (hype em redes sociais, especialmente Twitter e Reddit): {{{marketSentiment}}}
+  Sentimento de Mercado (hype em redes sociais, especialmente Twitter e Reddit, e atividade em plataformas de trade como Axiom Trade): {{{marketSentiment}}}
 
-  Construa uma narrativa que conecte a análise técnica robusta com o fervor viral nas mídias sociais, explicando por que essa combinação torna a {{{coinName}}} uma aposta com alta probabilidade de sucesso. Seja direto e use uma linguagem que motive o usuário a considerar o alerta seriamente.`,
+  Construa uma narrativa que conecte a análise técnica robusta com o fervor viral nas mídias sociais e a movimentação em plataformas de trade, explicando por que essa combinação torna a {{{coinName}}} uma aposta com alta probabilidade de sucesso. Seja direto e use uma linguagem que motive o usuário a considerar o alerta seriamente.`,
 });
 
 const explainWhyThisCoinFlow = ai.defineFlow(
@@ -58,3 +59,4 @@ const explainWhyThisCoinFlow = ai.defineFlow(
     return output!;
   }
 );
+

@@ -17,7 +17,7 @@ export default function WhyThisCoinExamplesPage() {
     "APEMAX rompeu uma importante resistência em $0.005 com volume explosivo. RSI em 75, indicando forte momentum de compra, mas ainda não sobrecomprado em prazos maiores. MACD cruzou para cima, sinalizando início de tendência de alta. Médias móveis exponenciais (9 e 21 dias) prestes a realizar um 'cruzamento dourado' no gráfico de 4 horas."
   );
   const [marketSentiment, setMarketSentiment] = useState(
-    "Intenso burburinho sobre APEMAX no Twitter e Reddit nas últimas 12 horas. A hashtag #APEMAXToTheMoon está em alta. Grandes influenciadores de cripto estão postando sobre potencial de 100x. Comunidade no Telegram extremamente ativa e otimista, com menções a 'queima de tokens' e 'novas listagens em corretoras'."
+    "Intenso burburinho sobre APEMAX no Twitter e Reddit nas últimas 12 horas. A hashtag #APEMAXToTheMoon está em alta. Grandes influenciadores de cripto estão postando sobre potencial de 100x. Comunidade no Telegram extremamente ativa e otimista, com menções a 'queima de tokens' e 'novas listagens em corretoras'. Volume na Axiom Trade aumentou 300% nas últimas horas, indicando forte interesse comprador."
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -68,7 +68,7 @@ export default function WhyThisCoinExamplesPage() {
                 id="marketSentiment"
                 value={marketSentiment}
                 onChange={(e) => setMarketSentiment(e.target.value)}
-                placeholder="Insira observações do sentimento de mercado..."
+                placeholder="Insira observações do sentimento de mercado, incluindo menções a plataformas como Axiom Trade..."
                 rows={4}
               />
             </div>
