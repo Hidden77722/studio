@@ -2,143 +2,146 @@
 "use client";
 import { CallCard } from "@/app/dashboard/components/CallCard";
 import type { MemeCoinCall } from "@/lib/types";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
-const allMockLiveCalls: MemeCoinCall[] = [
+const REAL_COIN_POOL = [
+  { coingeckoId: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE', imageUrl: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png', logoAiHint: 'dogecoin logo' },
+  { coingeckoId: 'shiba-inu', name: 'Shiba Inu', symbol: 'SHIB', imageUrl: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png', logoAiHint: 'shiba inu' },
+  { coingeckoId: 'pepe', name: 'Pepe', symbol: 'PEPE', imageUrl: 'https://assets.coingecko.com/coins/images/29850/large/pepe.jpeg', logoAiHint: 'pepe frog' },
+  { coingeckoId: 'bonk', name: 'Bonk', symbol: 'BONK', imageUrl: 'https://assets.coingecko.com/coins/images/28600/large/bonk.jpg', logoAiHint: 'bonk dog' },
+  { coingeckoId: 'dogwifhat', name: 'dogwifhat', symbol: 'WIF', imageUrl: 'https://assets.coingecko.com/coins/images/33566/large/dogwifhat.jpg', logoAiHint: 'dog wif hat' },
+  { coingeckoId: 'floki', name: 'FLOKI', symbol: 'FLOKI', imageUrl: 'https://assets.coingecko.com/coins/images/16746/large/floki-inu.png', logoAiHint: 'floki inu' }
+];
+
+const ALERT_TEMPLATES = [
   {
-    id: "rdoge-1",
-    coinName: "RocketDoge",
-    coinSymbol: "RDOGE",
-    logoUrl: "https://placehold.co/40x40.png?text=RD",
-    logoAiHint: "rocket doge",
-    entryTime: new Date().toISOString(),
-    reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento de resistência chave. Alto volume na Axiom Trade.",
-    entryPrice: 0.0000000250,
-    targets: [{ price: 0.0000000500, percentage: "+100%" }, { price: 0.0000000750, percentage: "+200%" }],
-    stopLoss: 0.0000000180,
-    technicalAnalysisSummary: "RDOGE acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70, indicando forte pressão compradora. Próxima resistência significativa apenas em 0.0000000500, oferecendo grande potencial de alta.",
-    marketSentimentSummary: "Campanha #RocketDogeArmy viralizando no Twitter. Posts em subreddits como r/MemeCoinMoonshots e r/CryptoMars estão explodindo com menções a RDOGE. Sentimento de FOMO generalizado detectado. Grande volume de negociação observado na Axiom Trade, sugerindo interesse institucional.",
+    idBase: "template1",
+    reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento. Volume na Axiom Trade subindo.",
+    targetsConfig: [{ multiplier: 1.5, percentageFormat: "+50%" }, { multiplier: 2.0, percentageFormat: "+100%" }],
+    stopLossConfig: { multiplier: 0.85 }, // Stop at 15% loss
+    technicalAnalysisSummary: "Acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70. Próxima resistência significativa distante.",
+    marketSentimentSummary: "Campanha #ToTheMoon viralizando no Twitter. Posts em r/MemeCoinMoonshots explodindo. Sentimento de FOMO. Grande volume na Axiom Trade.",
   },
   {
-    id: "pepa-1",
-    coinName: "Pepa Inu",
-    coinSymbol: "PEPA",
-    logoUrl: "https://placehold.co/40x40.png?text=PI",
-    logoAiHint: "pepa frog",
-    entryTime: new Date().toISOString(),
-    reason: "Anúncio de parceria com grande influenciador do TikTok e listagem iminente na corretora 'MemeXchange'. Gráfico mostra acumulação. Comentários positivos sobre listagem na Axiom Trade.",
-    entryPrice: 0.00000110,
-    targets: [{ price: 0.00000200, percentage: "+81%" }, { price: 0.00000300, percentage: "+172%" }],
-    stopLoss: 0.00000090,
-    technicalAnalysisSummary: "PEPA formou um padrão 'copo e alça' (cup and handle) no gráfico de 4H, um forte sinal de continuação de alta. Volume de acumulação tem aumentado discretamente. Suporte forte na média móvel de 50 períodos.",
-    marketSentimentSummary: "O influenciador 'CryptoKingGuru' (10M seguidores no TikTok) acaba de postar um vídeo sobre PEPA. Rumores fortes de listagem na MemeXchange nas próximas 48h. Comunidade no Discord e Telegram muito engajada e esperando o 'pump da listagem'. Especulações positivas sobre futura listagem na Axiom Trade também impulsionam o sentimento.",
+    idBase: "template2",
+    reason: "Anúncio de parceria com grande influenciador e listagem iminente em corretora. Gráfico mostra acumulação. Comentários positivos sobre Axiom Trade.",
+    targetsConfig: [{ multiplier: 1.8, percentageFormat: "+80%" }, { multiplier: 2.5, percentageFormat: "+150%" }],
+    stopLossConfig: { multiplier: 0.9 }, // Stop at 10% loss
+    technicalAnalysisSummary: "Formou um padrão 'copo e alça' no gráfico de 4H. Volume de acumulação tem aumentado. Suporte forte na média móvel de 50 períodos.",
+    marketSentimentSummary: "Influenciador 'CryptoGuru' (10M seguidores) postou sobre a moeda. Rumores de listagem na 'MemeXchange'. Comunidade no Discord e Telegram engajada.",
   },
   {
-    id: "shibx-1",
-    coinName: "ShibaXtreme",
-    coinSymbol: "SHIBX",
-    logoUrl: "https://placehold.co/40x40.png?text=SX",
-    logoAiHint: "shiba xtreme",
-    entryTime: new Date().toISOString(),
-    reason: "Nova narrativa 'Shiba Killer 2.0' ganhando tração no Reddit. Análise de contrato indica baixo risco de rug pull. Volume na Axiom Trade começando a subir.",
-    entryPrice: 0.0000000050,
-    targets: [{ price: 0.0000000100, percentage: "+100%" }, { price: 0.0000000150, percentage: "+200%" }],
-    stopLoss: 0.0000000035,
-    technicalAnalysisSummary: "SHIBX está formando um fundo arredondado no gráfico de 15min, com divergência bullish no MACD. Rompimento da neckline pode levar a uma rápida valorização. Volume na Axiom Trade em ascensão.",
-    marketSentimentSummary: "Thread viral em r/SatoshiStreetBets sobre o potencial de SHIBX. Diversos tweets de contas de 'crypto gems' mencionando SHIBX. Sentimento extremamente positivo.",
-  },
-  {
-    id: "catmoon-1",
-    coinName: "CatMoon",
-    coinSymbol: "CMOON",
-    logoUrl: "https://placehold.co/40x40.png?text=CM",
-    logoAiHint: "cat moon",
-    entryTime: new Date().toISOString(),
-    reason: "Meme de gato popular sendo associado à moeda. Grande comunidade artística no Twitter criando NFTs e impulsionando o hype. Axiom Trade adicionou par de negociação.",
-    entryPrice: 0.000072,
-    targets: [{ price: 0.000150, percentage: "+108%" }, { price: 0.000220, percentage: "+205%" }],
-    stopLoss: 0.000060,
-    technicalAnalysisSummary: "CMOON está consolidando acima da EMA de 20 dias no gráfico diário. Um rompimento da atual faixa de consolidação com volume confirmaria a continuação da tendência de alta. Grande liquidez na Axiom Trade.",
-    marketSentimentSummary: "Artistas e colecionadores de NFT estão promovendo CMOON no Twitter com a hashtag #CatMoonToMars. Sorteios e competições no Discord para aumentar o engajamento.",
-  },
-  {
-    id: "flokiz-1",
-    coinName: "FlokiZilla",
-    coinSymbol: "FLOKIZ",
-    logoUrl: "https://placehold.co/40x40.png?text=FZ",
-    logoAiHint: "floki zilla",
-    entryTime: new Date().toISOString(),
-    reason: "Combinação de dois memes populares (Floki e Godzilla). Ameaças de 'queima de tokens' pela equipe no Twitter. Rumores de listagem na Axiom Trade.",
-    entryPrice: 0.00000012,
-    targets: [{ price: 0.00000024, percentage: "+100%" }, { price: 0.00000036, percentage: "+200%" }],
-    stopLoss: 0.00000009,
-    technicalAnalysisSummary: "FLOKIZ está testando uma linha de tendência de baixa de curto prazo. Rompimento com volume seria um forte sinal de compra. RSI no gráfico de 1H está saindo da zona de sobrevenda.",
-    marketSentimentSummary: "Comunidade #FlokiZillaArmy muito ativa, promovendo a moeda em todos os canais. AMAs (Ask Me Anything) com a equipe de desenvolvimento gerando confiança. Especulação forte sobre listagem na Axiom Trade.",
+    idBase: "template3",
+    reason: "Nova narrativa 'Killer 2.0' ganhando tração no Reddit. Análise de contrato indica baixo risco. Volume na Axiom Trade começando a subir.",
+    targetsConfig: [{ multiplier: 2.0, percentageFormat: "+100%" }, { multiplier: 3.0, percentageFormat: "+200%" }],
+    stopLossConfig: { multiplier: 0.8 }, // Stop at 20% loss
+    technicalAnalysisSummary: "Formando um fundo arredondado no gráfico de 15min, com divergência bullish no MACD. Rompimento da neckline pode levar a uma rápida valorização.",
+    marketSentimentSummary: "Thread viral em r/SatoshiStreetBets. Diversos tweets de contas de 'crypto gems' mencionando. Sentimento extremamente positivo. Axiom Trade com volume crescente.",
   }
 ];
 
-const NUMBER_OF_VISIBLE_CARDS = 3; // Quantidade de cards a serem exibidos
+const NUMBER_OF_VISIBLE_CARDS = 3;
+
+async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
+  try {
+    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
+    if (!response.ok) {
+      console.error(`Falha ao buscar preço para ${coinId} da CoinGecko: ${response.statusText}`);
+      return null;
+    }
+    const data = await response.json();
+    const price = data[coinId]?.usd;
+    if (typeof price !== 'number') {
+        console.error(`Preço inválido recebido para ${coinId} da CoinGecko:`, price);
+        return null;
+    }
+    return price;
+  } catch (error) {
+    console.error(`Erro ao buscar preço para ${coinId} da CoinGecko:`, error);
+    return null;
+  }
+}
 
 export default function LiveCallsPage() {
-  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(() =>
-    allMockLiveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS).map(call => ({
-      ...call,
-      id: `${call.id}-${Date.now()}`, // Unique ID for key prop
-      entryTime: new Date().toISOString(),
-    }))
-  );
+  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>([]);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+
+  const generateNewCall = useCallback(async (): Promise<MemeCoinCall | null> => {
+    const randomTemplate = ALERT_TEMPLATES[Math.floor(Math.random() * ALERT_TEMPLATES.length)];
+    const randomCoinInfo = REAL_COIN_POOL[Math.floor(Math.random() * REAL_COIN_POOL.length)];
+
+    const currentPrice = await fetchCoinCurrentPrice(randomCoinInfo.coingeckoId);
+    if (currentPrice === null) return null; // Failed to fetch price
+
+    const entryPrice = currentPrice;
+    const targets = randomTemplate.targetsConfig.map(t => ({
+      price: entryPrice * t.multiplier,
+      percentage: t.percentageFormat,
+    }));
+    const stopLoss = entryPrice * randomTemplate.stopLossConfig.multiplier;
+    const now = new Date();
+
+    return {
+      id: `${randomTemplate.idBase}-${randomCoinInfo.coingeckoId}-${now.getTime()}`,
+      coinName: randomCoinInfo.name,
+      coinSymbol: randomCoinInfo.symbol,
+      logoUrl: randomCoinInfo.imageUrl,
+      logoAiHint: randomCoinInfo.logoAiHint,
+      entryTime: now.toISOString(),
+      reason: `[${now.toLocaleTimeString('pt-BR')}] ${randomTemplate.reason}`,
+      entryPrice,
+      targets,
+      stopLoss,
+      technicalAnalysisSummary: randomTemplate.technicalAnalysisSummary,
+      marketSentimentSummary: randomTemplate.marketSentimentSummary,
+    };
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    const loadInitialCalls = async () => {
+      setIsLoadingInitial(true);
+      const initialCallsPromises = Array(NUMBER_OF_VISIBLE_CARDS).fill(null).map(() => generateNewCall());
+      const resolvedInitialCalls = (await Promise.all(initialCallsPromises)).filter(call => call !== null) as MemeCoinCall[];
+      setLiveCalls(resolvedInitialCalls);
+      setIsLoadingInitial(false);
+    };
+    loadInitialCalls();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // generateNewCall is memoized
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setLiveCalls(prevCalls => {
-        const newCalls = [...prevCalls];
+    if (isLoadingInitial) return; // Don't start interval if initial calls are still loading
 
-        // Decide se substitui um card ou apenas atualiza um existente
-        if (Math.random() < 0.3 && allMockLiveCalls.length > NUMBER_OF_VISIBLE_CARDS) { // 30% de chance de substituir um card
-          const callIndexToReplace = Math.floor(Math.random() * newCalls.length);
-
-          // Encontra um novo card que não esteja atualmente na lista
-          let newCallData;
-          let attempts = 0;
-          do {
-            newCallData = allMockLiveCalls[Math.floor(Math.random() * allMockLiveCalls.length)];
-            attempts++;
-          } while (newCalls.some(c => c.coinSymbol === newCallData.coinSymbol) && attempts < allMockLiveCalls.length * 2);
-
-          if (newCallData) {
-            newCalls[callIndexToReplace] = {
-              ...newCallData,
-              id: `${newCallData.id}-${Date.now()}`, // Unique ID for key prop
-              entryTime: new Date().toISOString(),
-              reason: `[NOVO!] ${newCallData.reason.substring(0,70)}... (${new Date().toLocaleTimeString('pt-BR')})`
-            };
+    const intervalId = setInterval(async () => {
+      const newCall = await generateNewCall();
+      if (newCall) {
+        setLiveCalls(prevCalls => {
+          const calls = [...prevCalls];
+          if (calls.length >= NUMBER_OF_VISIBLE_CARDS) {
+            calls.shift(); // Remove the oldest call
           }
-        } else { // Atualiza um card existente
-          const callIndexToUpdate = Math.floor(Math.random() * newCalls.length);
-          const callToUpdate = { ...newCalls[callIndexToUpdate] };
-
-          const now = new Date();
-          callToUpdate.entryTime = now.toISOString();
-
-          const reasonVariations = [
-            "Movimentação de baleias detectada na Axiom Trade!",
-            "Novo tweet de influenciador mencionando esta moeda!",
-            "Volume na Axiom Trade disparou nos últimos 5 minutos!",
-            "Listagem na Axiom Trade confirmada para amanhã!"
-          ];
-          const randomVariation = reasonVariations[Math.floor(Math.random() * reasonVariations.length)];
-          const baseReason = allMockLiveCalls.find(c => c.coinSymbol === callToUpdate.coinSymbol)?.reason.split('.')[0] || callToUpdate.reason.split('.')[0];
-          callToUpdate.reason = `${randomVariation} ${baseReason}. (Atualizado: ${now.toLocaleTimeString('pt-BR')})`;
-
-          newCalls[callIndexToUpdate] = callToUpdate;
-        }
-        return newCalls;
-      });
-    }, 5000); // Atualiza a cada 5 segundos
+          calls.push(newCall); // Add the new call
+          return calls;
+        });
+      }
+    }, 7000); // Generate a new call every 7 seconds, replacing an old one
 
     return () => clearInterval(intervalId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoadingInitial, generateNewCall]);
+
+  if (isLoadingInitial) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-headline font-semibold">Alertas de Trade Ativos</h1>
+        <div className="flex flex-col items-center justify-center h-64 bg-card rounded-lg p-8">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader-circle animate-spin text-primary mb-4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <h2 className="text-xl font-headline text-foreground mb-2">Carregando Alertas Iniciais...</h2>
+          <p className="text-muted-foreground text-center">Buscando os dados mais recentes do mercado.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
