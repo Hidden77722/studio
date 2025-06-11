@@ -7,6 +7,7 @@ import { TweetDisplayCard } from '@/app/dashboard/components/TweetDisplayCard';
 import { Rss, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card'; // Added import
 
 const initialMockTweets: MockTweet[] = [
   {
@@ -202,4 +203,3 @@ export default function TwitterFeedPage() {
     </div>
   );
 }
-
