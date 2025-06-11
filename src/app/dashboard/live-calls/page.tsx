@@ -41,33 +41,52 @@ const ALERT_TEMPLATES = [
 ];
 
 const NUMBER_OF_VISIBLE_CARDS = 3;
+const MAX_FETCH_RETRIES = 3;
+const RETRY_DELAY_MS = 1000; // 1 second
 
 async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
-  try {
-    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
-    if (!response.ok) {
-      console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko: ${response.status} ${response.statusText}`);
-      return null;
-    }
-    const data = await response.json();
+  let attempts = 0;
+  while (attempts < MAX_FETCH_RETRIES) {
+    try {
+      const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
+      if (!response.ok) {
+        console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}): ${response.status} ${response.statusText}`);
+        // Não retry para erros de status HTTP (4xx, 5xx) que não sejam 'Failed to fetch' diretamente, pois podem não ser transientes.
+        // A menos que seja um erro conhecido de rate limiting, que pode valer a pena tentar novamente.
+        if (response.status === 429) { // Too Many Requests
+            attempts++;
+            if (attempts < MAX_FETCH_RETRIES) await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (attempts +1) )); // Exponential backoff for rate limit
+            else return null; // All retries failed for rate limit
+            continue;
+        }
+        return null; // For other non-ok responses, fail immediately
+      }
+      const data = await response.json();
 
-    if (!data || typeof data[coinId] === 'undefined') {
-      console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko. Resposta:`, data);
-      return null;
-    }
+      if (!data || typeof data[coinId] === 'undefined') {
+        console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Resposta:`, data);
+        return null; // Dados ausentes, não há o que tentar novamente com a mesma requisição
+      }
 
-    const coinData = data[coinId];
-    const price = coinData.usd;
+      const coinData = data[coinId];
+      const price = coinData.usd;
 
-    if (typeof price !== 'number') {
-      console.warn(`Preço USD para ${coinId} está ausente ou não é um número. Dados recebidos para a moeda:`, coinData);
-      return null;
+      if (typeof price !== 'number') {
+        console.warn(`Preço USD para ${coinId} está ausente ou não é um número (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Dados recebidos para a moeda:`, coinData);
+        return null; // Formato de preço inesperado
+      }
+      return price; // Sucesso
+    } catch (error) {
+      attempts++;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Erro de rede (verifique sua conexão) ou parse ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}`, error);
+      if (attempts >= MAX_FETCH_RETRIES) {
+        return null; // Todas as tentativas falharam
+      }
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS)); // Espera antes de tentar novamente
     }
-    return price;
-  } catch (error) {
-    console.error(`Erro de rede (verifique sua conexão) ou parse ao buscar preço para ${coinId} da CoinGecko (${(error as Error).message}):`, error);
-    return null;
   }
+  return null; // Se sair do loop sem sucesso
 }
 
 export default function LiveCallsPage() {
@@ -110,18 +129,18 @@ export default function LiveCallsPage() {
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
       let attempts = 0;
-      const maxAttempts = NUMBER_OF_VISIBLE_CARDS * 5; // Aumentado para mais resiliência
+      // Aumentar um pouco o maxAttempts para dar mais chance de popular os cards iniciais
+      const maxAttemptsForInitialLoad = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2); 
       
-      while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttempts) {
+      while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttemptsForInitialLoad) {
         const call = await generateNewCall();
         if (call) {
-          if (!newLiveCalls.some(existingCall => existingCall.id === call.id)) {
+          if (!newLiveCalls.some(existingCall => existingCall.coinSymbol === call.coinSymbol)) { // Evitar duplicatas da mesma moeda no load inicial
              newLiveCalls.push(call);
           }
         } else {
-          // Se a geração da call falhar (provavelmente erro de fetch), adiciona um pequeno delay
-          if (newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS) { // Apenas se ainda precisarmos de mais calls
-             await new Promise(resolve => setTimeout(resolve, 500)); // Delay de 0.5 segundos
+          if (newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS) {
+             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2)); // Pequeno delay se uma chamada falhar
           }
         }
         attempts++;
@@ -139,13 +158,16 @@ export default function LiveCallsPage() {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
+          // Evitar adicionar uma call para uma moeda que já está sendo exibida
+          if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
+            return prevCalls; 
+          }
+
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_VISIBLE_CARDS) {
             calls.shift(); 
           }
-          if (!calls.some(existingCall => existingCall.id === newCall.id)){
-            calls.push(newCall); 
-          }
+          calls.push(newCall); 
           return calls;
         });
       }
@@ -161,7 +183,7 @@ export default function LiveCallsPage() {
         <div className="flex flex-col items-center justify-center h-64 bg-card rounded-lg p-8">
           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader-circle animate-spin text-primary mb-4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
           <h2 className="text-xl font-headline text-foreground mb-2">Carregando Alertas Iniciais...</h2>
-          <p className="text-muted-foreground text-center">Buscando os dados mais recentes do mercado.</p>
+          <p className="text-muted-foreground text-center">Buscando os dados mais recentes do mercado. Isso pode levar alguns instantes.</p>
         </div>
       </div>
     );
@@ -181,11 +203,9 @@ export default function LiveCallsPage() {
           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-4"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
           <h2 className="text-xl font-headline text-foreground mb-2">Nenhum Alerta Ativo</h2>
           <p className="text-muted-foreground text-center">Nossos analistas estão monitorando os mercados. Novos alertas aparecerão aqui em breve!</p>
-          <p className="text-xs text-muted-foreground mt-2">(Pode haver um problema temporário ao buscar dados de preços. Tente recarregar ou verifique sua conexão.)</p>
+          <p className="text-xs text-muted-foreground mt-2">(Pode haver um problema temporário ao buscar dados de preços. Verifique sua conexão ou tente recarregar.)</p>
         </div>
       )}
     </div>
   );
 }
-
-    
