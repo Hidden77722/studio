@@ -60,6 +60,14 @@ interface DexScreenerApiResponse {
   pairs: DexScreenerPair[];
 }
 
+interface DexScreenerCacheEntry {
+  data: DexScreenerApiResponse;
+  timestamp: number;
+}
+const dexScreenerCache = new Map<string, DexScreenerCacheEntry>();
+const DEXSCREENER_CACHE_TTL_MS = 30 * 1000; // Cache por 30 segundos
+const DEXSCREENER_API_TIMEOUT_MS = 8000; // Timeout da API de 8 segundos
+
 
 const generateTradeCallPrompt = ai.definePrompt({
   name: 'generateTradeCallPrompt',
@@ -94,9 +102,34 @@ const generateTradeCallFlow = ai.defineFlow(
   },
   async (): Promise<GeneratedTradeCallOutput> => {
     let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento.";
+    let pairs: DexScreenerPair[] = [];
+    const apiUrl = "https://api.dexscreener.com/latest/dex/pairs/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp,82ZJj2gXhL7p7tSAmE2z4hMv5f5sKRjS2wWqS6u6VBiM,32CKP31hST2bvaGKMEMLh2Xm9sN6gQp64t56pjpCMg1T,DezXAZ8z7PnrnRJjz3wXBoRgixCa6xPgt7QCUsKSDbEBA,JUPyiWgKj3p5V4x4zzq9W9gUf2g8JBvWcK2x2Azft3p,KNCRHVxYSH4uLKejZFSjdz2WwXJtre4CZRPSXkahrwp";
+    let servedFromCache = false;
+
     try {
-      const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp,82ZJj2gXhL7p7tSAmE2z4hMv5f5sKRjS2wWqS6u6VBiM,32CKP31hST2bvaGKMEMLh2Xm9sN6gQp64t56pjpCMg1T,DezXAZ8z7PnrnRJjz3wXBoRgixCa6xPgt7QCUsKSDbEBA,JUPyiWgKj3p5V4x4zzq9W9gUf2g8JBvWcK2x2Azft3p,KNCRHVxYSH4uLKejZFSjdz2WwXJtre4CZRPSXkahrwp");
-      const pairs = response.data.pairs || [];
+      if (dexScreenerCache.has(apiUrl)) {
+        const entry = dexScreenerCache.get(apiUrl)!;
+        if (Date.now() - entry.timestamp < DEXSCREENER_CACHE_TTL_MS) {
+          console.log("Usando dados da DexScreener do cache.");
+          pairs = entry.data.pairs || [];
+          servedFromCache = true;
+        } else {
+          dexScreenerCache.delete(apiUrl);
+          console.log("Cache da DexScreener expirado.");
+        }
+      }
+
+      if (!servedFromCache) {
+        console.log(`Buscando dados da DexScreener API: ${apiUrl}`);
+        const response = await axios.get<DexScreenerApiResponse>(apiUrl, { timeout: DEXSCREENER_API_TIMEOUT_MS });
+        pairs = response.data.pairs || [];
+        if (pairs.length > 0) {
+          dexScreenerCache.set(apiUrl, { data: response.data, timestamp: Date.now() });
+          console.log("Dados da DexScreener cacheados.");
+        } else {
+          console.log("Nenhum par retornado pela API DexScreener, não cacheando.");
+        }
+      }
 
       const filtered = pairs.filter((pair) => {
         const vol = parseFloat(pair.volume?.h24 || '0');
@@ -121,7 +154,11 @@ const generateTradeCallFlow = ai.defineFlow(
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error("Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
-      marketAnalysisData = `Erro ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
+      if (axios.isAxiosError(err) && err.code === 'ECONNABORTED') { // Especificamente para timeout
+        marketAnalysisData = `Erro: Timeout ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
+      } else {
+        marketAnalysisData = `Erro ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
+      }
     }
 
     console.log("Dados enviados para a IA:", marketAnalysisData);
