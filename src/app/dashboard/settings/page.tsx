@@ -1,3 +1,4 @@
+
 "use client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { User, BellDot, ShieldCheck, Palette, Volume2 } from "lucide-react";
+import { User, BellDot, ShieldCheck, Palette, Volume2, PlayCircle } from "lucide-react";
 import React from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SettingsPage() {
+  const { toast } = useToast();
   // Mock states, in a real app these would come from user data / context
   const [name, setName] = React.useState("Pro Trader");
   const [email, setEmail] = React.useState("pro@memetrade.com");
@@ -17,6 +20,41 @@ export default function SettingsPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("dark"); // 'dark', 'light', 'system'
   const [notificationSound, setNotificationSound] = React.useState("default_sound.mp3");
+
+
+  const handleTestSoundNotification = () => {
+    toast({
+      title: "🔔 Notificação de Teste",
+      description: "Este é um alerta de teste com som!",
+    });
+    try {
+      if (notificationSound) {
+        const audio = new Audio(notificationSound);
+        audio.play().catch(error => {
+          console.error("Erro ao tentar reproduzir o som:", error);
+          toast({
+            title: "🔇 Erro no Áudio",
+            description: "Não foi possível reproduzir o som. Verifique a URL ou as permissões do navegador.",
+            variant: "destructive",
+          });
+        });
+        console.log(`Tentando reproduzir som: ${notificationSound}`);
+      } else {
+         toast({
+            title: "🔇 Som não configurado",
+            description: "Nenhum som de notificação foi configurado.",
+            variant: "destructive",
+          });
+      }
+    } catch (error) {
+      console.error("Exceção ao tentar reproduzir o som:", error);
+      toast({
+        title: "🔇 Erro Crítico no Áudio",
+        description: "Ocorreu uma exceção ao tentar configurar a reprodução do som.",
+        variant: "destructive",
+      });
+    }
+  };
 
 
   return (
@@ -81,10 +119,15 @@ export default function SettingsPage() {
           <div className="space-y-1">
             <Label htmlFor="notification-sound" className="flex items-center"><Volume2 className="mr-2 h-4 w-4" /> Som de Notificação</Label>
             {/* In a real app, this would be a select dropdown with sound options */}
-            <Input id="notification-sound" value={notificationSound} onChange={e => setNotificationSound(e.target.value)} placeholder="default_sound.mp3" />
-            <p className="text-xs text-muted-foreground">Personalize o som para alertas de novos trades.</p>
+            <Input id="notification-sound" value={notificationSound} onChange={e => setNotificationSound(e.target.value)} placeholder="URL do arquivo de som ou nome do arquivo" />
+            <p className="text-xs text-muted-foreground">Personalize o som para alertas de novos trades. Insira uma URL válida para um arquivo de som.</p>
           </div>
-          <Button>Salvar Configurações de Notificação</Button>
+          <div className="flex gap-2">
+            <Button>Salvar Configurações de Notificação</Button>
+            <Button variant="outline" onClick={handleTestSoundNotification}>
+              <PlayCircle className="mr-2 h-4 w-4" /> Testar Notificação Sonora
+            </Button>
+          </div>
         </CardContent>
       </Card>
       
