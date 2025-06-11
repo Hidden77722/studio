@@ -68,24 +68,23 @@ const generateTradeCallPrompt = ai.definePrompt({
   input: {schema: z.object({ marketAnalysisData: z.string() })},
   output: {schema: GeneratedTradeCallOutputSchema},
   prompt: `
-Você é um analista profissional de criptomoedas focado em identificar oportunidades de trade com base em dados de mercado, especialmente em meme coins.
+Você é um especialista em análise técnica e trading de criptomoedas, com foco em meme coins. Seu trabalho é tomar decisões com base em dados do mercado, mesmo que estejam incompletos ou apresentem riscos.
 
-Abaixo estão moedas reais do mercado com volume, liquidez e variações recentes. Sua missão é:
+Seu objetivo: analisar os dados abaixo e escolher a **melhor moeda possível** para indicar uma call.
 
-1. Escolher **apenas uma** moeda mais promissora entre as listadas.
-2. Gerar uma **call completa**, com:
-   - Nome da moeda
-   - Preço de entrada
-   - Alvo 1 e Alvo 2 (Take Profit)
-   - Stop Loss
-   - Hora ideal da entrada (UTC)
-   - Motivo técnico da entrada
-   - Classificação de risco: Baixo, Médio ou Alto
+Você deve fornecer:
 
-📌 Mesmo que o risco seja Alto, escolha a **menos arriscada entre as disponíveis** e gere uma call.  
-Você deve SEMPRE gerar uma call baseada na melhor moeda listada. **Não diga que não há oportunidades.**
+- Nome da moeda
+- Preço de entrada
+- Alvo 1 e Alvo 2 (Take Profit)
+- Stop Loss
+- Horário ideal da entrada (UTC)
+- Motivo técnico (breve análise)
+- Risco: Baixo, Médio ou Alto
 
-🔍 Lista de moedas disponíveis:
+📌 **Você deve sempre dar uma resposta, mesmo que o cenário tenha risco alto. Não pode responder que não há oportunidade. Faça a melhor escolha possível com o que tem.**
+
+📊 Lista de moedas:
 {{{marketAnalysisData}}}
     `.trim(),
 });
@@ -97,14 +96,13 @@ const generateTradeCallFlow = ai.defineFlow(
     outputSchema: GeneratedTradeCallOutputSchema,
   },
   async (): Promise<GeneratedTradeCallOutput> => {
-    let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento."; // Default message if no coins pass filters or API fails
+    let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento."; 
     try {
-      // Using a limited set of pairs for example, replace with the full API for more results
-      // const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs");
+      
       const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp,82ZJj2gXhL7p7tSAmE2z4hMv5f5sKRjS2wWqS6u6VBiM,32CKP31hST2bvaGKMEMLh2Xm9sN6gQp64t56pjpCMg1T,DezXAZ8z7PnrnRJjz3wXBoRgixCa6xPgt7QCUsKSDbEBA,JUPyiWgKj3p5V4x4zzq9W9gUf2g8JBvWcK2x2Azft3p,KNCRHVxYSH4uLKejZFSjdz2WwXJtre4CZRPSXkahrwp");
       const pairs = response.data.pairs || [];
 
-      // Updated filter criteria: vol >= 20k, liq >= 5k, (priceChange1h > 5% OR priceChange24h > 10%)
+      
       const filtered = pairs.filter((pair) => {
         const vol = parseFloat(pair.volume?.h24 || '0');
         const liq = parseFloat(pair.liquidity?.usd || '0');
@@ -116,7 +114,7 @@ const generateTradeCallFlow = ai.defineFlow(
       if (filtered.length > 0) {
         const topCoins = filtered
           .sort((a, b) => parseFloat(b.volume?.h24 || '0') - parseFloat(a.volume?.h24 || '0'))
-          .slice(0, 3); // Consider top 3
+          .slice(0, 3); 
 
         marketAnalysisData = topCoins.map((coin) => {
           return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
@@ -125,7 +123,7 @@ const generateTradeCallFlow = ai.defineFlow(
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error("Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
-      // marketAnalysisData remains the default message if API fails, this will instruct AI to not make a call
+      // marketAnalysisData remains the default message. The AI is instructed to provide a "Nenhuma call..." if no valid data.
     }
     
     console.log("Dados enviados para a IA:", marketAnalysisData);
@@ -135,7 +133,6 @@ const generateTradeCallFlow = ai.defineFlow(
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
     
-    // Add current time if a call is made, hora_call is not provided by AI, and the AI did not say "Nenhuma call..."
     if (output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
         const now = new Date();
         output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
@@ -146,6 +143,5 @@ const generateTradeCallFlow = ai.defineFlow(
 );
 
 export async function generateTradeCall(): Promise<GeneratedTradeCallOutput> {
-  return generateTradeCallFlow({}); // Pass an empty object as input
+  return generateTradeCallFlow({}); 
 }
-
