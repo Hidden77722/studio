@@ -5,9 +5,9 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea"; // Changed from Input
-import { generateTradeCall, type GenerateTradeCallInput, type GeneratedTradeCallOutput } from "@/ai/flows/generate-trade-call-flow";
-import { Loader2, Wand2, AlertTriangle, FileJson, TrendingUp, ShieldAlert, BarChart2, SearchSlash } from 'lucide-react';
+// Textarea is no longer needed as input is fetched by the flow
+import { generateTradeCall, type GeneratedTradeCallOutput } from "@/ai/flows/generate-trade-call-flow";
+import { Loader2, Wand2, AlertTriangle, FileJson, TrendingUp, ShieldAlert, BarChart2, SearchSlash, Server } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
@@ -16,9 +16,10 @@ export default function GenerateTradeCallPage() {
   const [error, setError] = useState<string | null>(null);
   const [tradeCallResult, setTradeCallResult] = useState<GeneratedTradeCallOutput | null>(null);
 
-  const [marketAnalysisData, setMarketAnalysisData] = useState(
-    "- PEPE: volume $150M, liquidez $20M, +5% 1h, +25% 24h, preço: $0.00001234\n- WIF: volume $100M, liquidez $15M, +2% 1h, +15% 24h, preço: $2.50\n- BONK: volume $80M, liquidez $10M, +8% 1h, +30% 24h, preço: $0.00002876"
-  );
+  // marketAnalysisData state is no longer needed here
+  // const [marketAnalysisData, setMarketAnalysisData] = useState(
+  //   "- PEPE: volume $150M, liquidez $20M, +5% 1h, +25% 24h, preço: $0.00001234\\n- WIF: volume $100M, liquidez $15M, +2% 1h, +15% 24h, preço: $2.50\\n- BONK: volume $80M, liquidez $10M, +8% 1h, +30% 24h, preço: $0.00002876"
+  // );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,17 +27,9 @@ export default function GenerateTradeCallPage() {
     setError(null);
     setTradeCallResult(null);
 
-    if (!marketAnalysisData.trim()) {
-      setError("Os dados de análise de mercado não podem estar vazios.");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const input: GenerateTradeCallInput = {
-        marketAnalysisData,
-      };
-      const result = await generateTradeCall(input);
+      // No input is passed to generateTradeCall anymore
+      const result = await generateTradeCall();
       setTradeCallResult(result);
     } catch (e) {
       console.error("Error generating AI trade call:", e);
@@ -80,37 +73,29 @@ export default function GenerateTradeCallPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <Wand2 className="mr-3 h-8 w-8 text-primary" />
-          Gerador de Call de Trade com IA (Multi-Moeda)
+          Gerador de Call de Trade com IA (DexScreener)
         </h1>
       </div>
 
       <Card className="max-w-2xl mx-auto shadow-xl">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Gerar Call de Trade Estratégica</CardTitle>
+          <CardTitle className="font-headline text-2xl">Gerar Call de Trade Automatizada</CardTitle>
           <CardDescription>
-            Insira os dados de mercado pré-filtrados de moedas promissoras. A IA escolherá a melhor e gerará uma call.
+            Clique no botão abaixo. A IA buscará dados da DexScreener, analisará moedas promissoras, escolherá a melhor e gerará uma call.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="marketAnalysisData">Dados de Análise de Mercado Pré-Filtrados</Label>
-              <Textarea
-                id="marketAnalysisData"
-                value={marketAnalysisData}
-                onChange={(e) => setMarketAnalysisData(e.target.value)}
-                rows={6}
-                placeholder="Exemplo:\n- MOEDA1: volume $X, liquidez $Y, +Z% 1h, +W% 24h, preço: $P\n- MOEDA2: ..."
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Forneça uma lista de moedas com seus dados relevantes. A IA analisará e escolherá uma.
-              </p>
+            <div className="p-4 bg-muted/30 rounded-md text-sm text-muted-foreground">
+              <Server className="inline-block mr-2 h-4 w-4" />
+              Este processo envolve buscar dados em tempo real da API pública da DexScreener,
+              filtrá-los e então usar a IA para análise. Pode levar alguns segundos.
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
-              Gerar Call Estratégica
+              Gerar Nova Call com IA
             </Button>
           </CardFooter>
         </form>
@@ -119,7 +104,7 @@ export default function GenerateTradeCallPage() {
       {isLoading && (
         <div className="flex flex-col items-center justify-center space-y-2 p-8 bg-card rounded-lg shadow-md mt-6">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">Analisando e gerando call...</p>
+          <p className="text-muted-foreground">Buscando dados e gerando call...</p>
         </div>
       )}
 
@@ -142,7 +127,7 @@ export default function GenerateTradeCallPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                A IA analisou os dados fornecidos e concluiu que nenhuma moeda apresenta uma oportunidade de trade clara no momento.
+                A IA analisou os dados da DexScreener e concluiu que nenhuma moeda atende aos critérios para uma call clara no momento, ou não foi possível buscar dados.
               </p>
               {tradeCallResult.motivo && (
                  <div className="mt-3">
@@ -222,4 +207,3 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value, valueClassName 
         {value && <span className={`text-sm text-foreground ${valueClassName || ''}`}>{value}</span>}
     </div>
 );
-

@@ -1,24 +1,23 @@
 
 'use server';
 /**
- * @fileOverview Analisa dados de mercado pré-filtrados de múltiplas moedas,
- * escolhe a mais promissora e gera uma call de trade completa.
+ * @fileOverview Fetches data from DexScreener, filters promising coins,
+ * and uses an AI to choose the best one and generate a complete trade call.
  *
- * - generateTradeCall - A função que gera a call de trade.
- * - GenerateTradeCallInput - O tipo de entrada para a função generateTradeCall.
- * - GeneratedTradeCallOutput - O tipo de retorno para a função generateTradeCall.
+ * - generateTradeCall - The function that fetches data and generates the trade call.
+ * - GeneratedTradeCallOutput - The return type for the generateTradeCall function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import axios from 'axios'; // Using axios as per user's script example
 
-// Schema de entrada: espera uma string com dados de mercado pré-filtrados
-const GenerateTradeCallInputSchema = z.object({
-  marketAnalysisData: z.string().describe(
-    'Uma string contendo dados de mercado pré-filtrados de várias moedas promissoras. Exemplo: "- MOEDA_A: volume $X, liquidez $Y, +Z% 1h, +W% 24h, preço $P\\n- MOEDA_B: volume $X2, liquidez $Y2, +Z2% 1h, +W2% 24h, preço $P2"'
-  ),
-});
+// Input schema is no longer needed as the flow fetches its own data.
+// We can define it as z.undefined() if the flow truly takes no parameters,
+// or z.object({}) if it's an action that might take some optional config in the future.
+const GenerateTradeCallInputSchema = z.undefined();
 export type GenerateTradeCallInput = z.infer<typeof GenerateTradeCallInputSchema>;
+
 
 // Schema de saída: a call de trade gerada ou indicação de nenhuma call
 const GeneratedTradeCallOutputSchema = z.object({
@@ -28,6 +27,7 @@ const GeneratedTradeCallOutputSchema = z.object({
   alvos: z.array(
     z.object({
       preco: z.string().describe("Preço alvo para take profit, formatado como string com '$'."),
+      observacao: z.string().optional().describe("Observação adicional para o alvo, se houver.")
     })
   ).length(2).optional().describe("Uma lista contendo exatamente dois alvos de lucro (take profit) para a moeda escolhida. Opcional se nenhuma call for recomendada."),
   stop: z.string().optional().describe('O preço de stop loss sugerido para a moeda escolhida, formatado como string com "$" (ex: "$0.00000390"). Opcional se nenhuma call for recomendada.'),
@@ -37,9 +37,38 @@ const GeneratedTradeCallOutputSchema = z.object({
 export type GeneratedTradeCallOutput = z.infer<typeof GeneratedTradeCallOutputSchema>;
 
 
+interface DexScreenerPair {
+  pairAddress: string;
+  baseToken: {
+    address: string;
+    name: string;
+    symbol: string;
+  };
+  priceUsd?: string;
+  priceChange: {
+    h1?: string;
+    h24?: string;
+  };
+  liquidity?: {
+    usd?: string;
+    base?: number;
+    quote?: number;
+  };
+  volume: {
+    h24?: string;
+  };
+  // Add other fields if necessary based on your filtering needs
+}
+
+interface DexScreenerApiResponse {
+  pairs: DexScreenerPair[];
+}
+
+
 const generateTradeCallPrompt = ai.definePrompt({
   name: 'generateTradeCallPrompt',
-  input: {schema: GenerateTradeCallInputSchema},
+  // The input to the prompt is now the market analysis data string
+  input: {schema: z.object({ marketAnalysisData: z.string() })},
   output: {schema: GeneratedTradeCallOutputSchema},
   prompt: `Você é um analista de criptomoedas especializado em identificar oportunidades de trade com alta probabilidade de sucesso, focado principalmente em meme coins.
 
@@ -70,18 +99,58 @@ Instruções Importantes:
 const generateTradeCallFlow = ai.defineFlow(
   {
     name: 'generateTradeCallFlow',
-    inputSchema: GenerateTradeCallInputSchema,
+    inputSchema: GenerateTradeCallInputSchema, // Takes no input now
     outputSchema: GeneratedTradeCallOutputSchema,
   },
-  async (input: GenerateTradeCallInput): Promise<GeneratedTradeCallOutput> => {
-    const {output} = await generateTradeCallPrompt(input);
+  async (): Promise<GeneratedTradeCallOutput> => {
+    let marketAnalysisData = "Nenhuma moeda promissora encontrada após filtragem.";
+    try {
+      const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp,82ZJj2gXhL7p7tSAmE2z4hMv5f5sKRjS2wWqS6u6VBiM,32CKP31hST2bvaGKMEMLh2Xm9sN6gQp64t56pjpCMg1T,DezXAZ8z7PnrnRJjz3wXBoRgixCa6xPgt7QCUsKSDbEBA,JUPyiWgKj3p5V4x4zzq9W9gUf2g8JBvWcK2x2Azft3p,KNCRHVxYSH4uLKejZFSjdz2WwXJtre4CZRPSXkahrwp"); // Example with a few SOL pairs to limit data
+      // const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs"); // Full API might be too large
+      const pairs = response.data.pairs || [];
+
+      const filtered = pairs.filter((pair) => {
+        const vol = parseFloat(pair.volume?.h24 || '0');
+        const liq = parseFloat(pair.liquidity?.usd || '0');
+        const priceChange1h = parseFloat(pair.priceChange?.h1 || '0');
+        const priceChange24h = parseFloat(pair.priceChange?.h24 || '0');
+        return vol >= 10000 && liq >= 5000 && priceChange1h > 0 && priceChange24h > 0; // Adjusted filters for more results with limited pairs
+        // return vol >= 50000 && liq >= 10000 && priceChange1h > 0 && priceChange24h > 0;
+      });
+
+      if (filtered.length > 0) {
+        const topCoins = filtered
+          .sort((a, b) => parseFloat(b.volume?.h24 || '0') - parseFloat(a.volume?.h24 || '0'))
+          .slice(0, 5); // Take top 5 to give AI more choice
+
+        marketAnalysisData = topCoins.map((coin) => {
+          return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
+        }).join("\n");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
+      // If API fails, marketAnalysisData remains "Nenhuma moeda promissora..."
+      // The AI prompt will handle this message.
+    }
+    
+    console.log("Dados enviados para a IA:", marketAnalysisData);
+
+    const {output} = await generateTradeCallPrompt({ marketAnalysisData });
     if (!output) {
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
+    
+    // Add current time for hora_call if not provided by AI and a call is made
+    if (output.moeda !== "Nenhuma call no momento" && !output.hora_call) {
+        const now = new Date();
+        output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
+    }
+
     return output;
   }
 );
 
-export async function generateTradeCall(input: GenerateTradeCallInput): Promise<GeneratedTradeCallOutput> {
-  return generateTradeCallFlow(input);
+export async function generateTradeCall(): Promise<GeneratedTradeCallOutput> {
+  return generateTradeCallFlow();
 }

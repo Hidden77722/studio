@@ -100,9 +100,8 @@ export interface MarketSentimentOutput {
 }
 
 // Tipos para o novo fluxo de geração de call de trade
-export interface GenerateTradeCallInput {
-  marketAnalysisData: string; // String contendo dados de múltiplas moedas pré-filtradas
-}
+// GenerateTradeCallInput is no longer needed as the flow fetches its own data.
+export type GenerateTradeCallInput = undefined; // Or an empty object: z.object({})
 
 export interface GeneratedTradeCallOutput {
   moeda: string; // Nome da moeda escolhida ou "Nenhuma call no momento"
@@ -113,4 +112,3 @@ export interface GeneratedTradeCallOutput {
   motivo?: string; // Motivo da call, opcional
   risco?: "Baixo" | "Médio" | "Alto" | "Nenhum"; // Classificação de risco, opcional
 }
-
