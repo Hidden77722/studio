@@ -44,31 +44,35 @@ const ALERT_TEMPLATES = [
 
 const NUMBER_OF_CALLS_MANAGED_BY_HOOK = 3;
 const MAX_FETCH_RETRIES = 5;
-const RETRY_DELAY_MS = 2000; // Base delay for Birdeye (placeholder) attempts
+const RETRY_DELAY_MS = 2000; // Base delay for Birdeye/DexScreener (placeholder) attempts
 
 // Placeholder para a função de busca da API Birdeye
-// Em uma implementação real, esta função chamaria seu backend que, por sua vez, chamaria a Birdeye com uma chave de API.
 async function fetchPriceFromBirdeyeAPI(contractAddress: string | null): Promise<number | null> {
   if (!contractAddress) {
-    console.warn(`Tentando buscar preço da Birdeye, mas o endereço do contrato não foi fornecido.`);
+    console.warn(`[Birdeye Placeholder] Tentando buscar preço, mas o endereço do contrato não foi fornecido.`);
     return null;
   }
-
-  console.log(`[Birdeye Placeholder] Simulating fetch for contract: ${contractAddress}`);
-  // Simula uma chamada de API. Substitua pela sua lógica de backend.
-  // Para fins de teste, retorna um preço mockado ou null para simular falhas.
-  await new Promise(resolve => setTimeout(resolve, 500)); // Simula latência da rede
-
-  // Chance de simular falha
-  // if (Math.random() < 0.3) {
-  //   console.warn(`[Birdeye Placeholder] Simulated API fetch failure for ${contractAddress}`);
-  //   return null;
-  // }
-
-  // Retorna um preço mockado
+  console.log(`[Birdeye Placeholder] Simulating price fetch for contract: ${contractAddress}`);
+  await new Promise(resolve => setTimeout(resolve, 500));
   const mockPrice = Math.random() * 0.001 + 0.00001;
   console.log(`[Birdeye Placeholder] Mock price for ${contractAddress}: ${mockPrice}`);
   return mockPrice;
+}
+
+// Placeholder para a função de busca da API DexScreener
+async function fetchDexScreenerData(pairAddress: string | null): Promise<{ volume24h: number; liquidityUSD: number } | null> {
+  if (!pairAddress) {
+    console.warn(`[DexScreener Placeholder] Tentando buscar dados, mas o endereço do par não foi fornecido.`);
+    return null;
+  }
+  console.log(`[DexScreener Placeholder] Simulating data fetch for pair: ${pairAddress}`);
+  await new Promise(resolve => setTimeout(resolve, 600)); // Simula latência
+  const mockData = {
+    volume24h: Math.floor(Math.random() * 1000000) + 50000, // Mock volume
+    liquidityUSD: Math.floor(Math.random() * 500000) + 10000, // Mock liquidity
+  };
+  console.log(`[DexScreener Placeholder] Mock data for ${pairAddress}:`, mockData);
+  return mockData;
 }
 
 
@@ -78,13 +82,13 @@ async function fetchCoinPrice(contractAddress: string | null): Promise<number | 
 
   while (attempts < MAX_FETCH_RETRIES) {
     try {
-      const price = await fetchPriceFromBirdeyeAPI(contractAddress); // Tenta Birdeye (placeholder)
+      // Apenas tenta Birdeye (placeholder), já que CoinGecko foi removida
+      const price = await fetchPriceFromBirdeyeAPI(contractAddress);
 
       if (price !== null) {
         console.log(`Preço obtido da Birdeye (placeholder) para ${contractAddress || 'N/A'} na tentativa ${attempts + 1}: ${price}`);
         return price;
       }
-      // Se Birdeye (placeholder) falhar, loga e tenta novamente se houver tentativas
       console.warn(`Falha ao obter preço da Birdeye (placeholder) para ${contractAddress || 'N/A'} (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}).`);
 
     } catch (error) {
@@ -112,11 +116,14 @@ export function useLiveCalls() {
     const randomTemplate = ALERT_TEMPLATES[Math.floor(Math.random() * ALERT_TEMPLATES.length)];
     const randomCoinInfo = REAL_COIN_POOL[Math.floor(Math.random() * REAL_COIN_POOL.length)];
 
-    const currentPrice = await fetchCoinPrice(randomCoinInfo.contractAddress); // Usa a nova função
+    const currentPrice = await fetchCoinPrice(randomCoinInfo.contractAddress);
     if (currentPrice === null) {
       console.warn(`Não foi possível gerar alerta para ${randomCoinInfo.name} porque o preço não pôde ser obtido.`);
       return null;
     }
+
+    // Buscar dados da DexScreener (mockado)
+    const dexData = await fetchDexScreenerData(randomCoinInfo.contractAddress);
 
     const entryPrice = currentPrice;
     const targets = randomTemplate.targetsConfig.map(t => ({
@@ -127,7 +134,7 @@ export function useLiveCalls() {
     const now = new Date();
 
     return {
-      id: `${randomTemplate.idBase}-${randomCoinInfo.symbol}-${now.getTime()}`, // Usa symbol para id
+      id: `${randomTemplate.idBase}-${randomCoinInfo.symbol}-${now.getTime()}`,
       coinName: randomCoinInfo.name,
       coinSymbol: randomCoinInfo.symbol,
       logoUrl: randomCoinInfo.imageUrl,
@@ -139,6 +146,8 @@ export function useLiveCalls() {
       stopLoss,
       technicalAnalysisSummary: randomTemplate.technicalAnalysisSummary,
       marketSentimentSummary: randomTemplate.marketSentimentSummary,
+      volume24h: dexData?.volume24h,
+      liquidityUSD: dexData?.liquidityUSD,
     };
   }, []);
 
@@ -159,14 +168,13 @@ export function useLiveCalls() {
         }
         generationAttempts++;
         if (newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK && generationAttempts < maxGenerationAttempts && !call) {
-            // Adiciona um pequeno atraso se a geração da chamada falhar para não sobrecarregar
             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2));
         }
       }
       setLiveCalls(newLiveCalls);
       setIsLoadingInitial(false);
       if (newLiveCalls.length === 0 && generationAttempts >= maxGenerationAttempts) {
-        console.warn("Não foi possível carregar nenhum alerta inicial (useLiveCalls) após várias tentativas. Verifique a implementação da API Birdeye e a conexão.");
+        console.warn("Não foi possível carregar nenhum alerta inicial (useLiveCalls) após várias tentativas. Verifique a implementação da API Birdeye/DexScreener e a conexão.");
       } else if (newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
         console.warn(`Carregados ${newLiveCalls.length}/${NUMBER_OF_CALLS_MANAGED_BY_HOOK} alertas iniciais (useLiveCalls).`);
       } else {
@@ -183,24 +191,21 @@ export function useLiveCalls() {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
-          // Evita adicionar duplicatas pelo símbolo da moeda, caso o ID seja muito similar
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
-            // Poderia atualizar o existente aqui, mas para este exemplo, vamos apenas manter o antigo
             return prevCalls;
           }
-
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-            calls.shift(); // Remove o mais antigo para manter o número de cards
+            calls.shift();
           }
-          calls.push(newCall); // Adiciona o novo
+          calls.push(newCall);
           return calls;
         });
       }
-    }, 7000); // Intervalo para tentar gerar novo alerta
+    }, 7000); 
 
     return () => clearInterval(intervalId);
-  }, [isLoadingInitial, generateNewCall, liveCalls.length]); // Adicionado liveCalls.length como dependência
+  }, [isLoadingInitial, generateNewCall, liveCalls.length]);
 
   return { liveCalls, isLoadingInitial };
 }

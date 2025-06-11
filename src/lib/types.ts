@@ -4,7 +4,7 @@ export interface MemeCoinCall {
   coinName: string;
   coinSymbol: string;
   logoUrl?: string;
-  logoAiHint?: string; // Adicionado
+  logoAiHint?: string;
   entryTime: string;
   reason: string;
   entryPrice: number;
@@ -13,9 +13,12 @@ export interface MemeCoinCall {
   // For AI explanation
   technicalAnalysisSummary: string;
   marketSentimentSummary: string;
+  // Data from DexScreener (mocked for now)
+  volume24h?: number;
+  liquidityUSD?: number;
 }
 
-export interface HistoricalCall extends Omit<MemeCoinCall, 'technicalAnalysisSummary' | 'marketSentimentSummary' | 'logoAiHint'> { // logoAiHint será adicionado abaixo especificamente
+export interface HistoricalCall extends Omit<MemeCoinCall, 'technicalAnalysisSummary' | 'marketSentimentSummary' | 'logoAiHint' | 'volume24h' | 'liquidityUSD'> { // logoAiHint será adicionado abaixo especificamente
   logoAiHint?: string; // Adicionado
   exitTime?: string;
   exitPrice?: number;

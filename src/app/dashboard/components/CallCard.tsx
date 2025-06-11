@@ -5,7 +5,7 @@ import type { MemeCoinCall } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Info, AlertTriangle, Clock, Target, ShieldAlert, FileText } from "lucide-react";
+import { TrendingUp, TrendingDown, Info, AlertTriangle, Clock, Target, ShieldAlert, FileText, DollarSign, Droplets } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import { WhyThisCoinModal } from "./WhyThisCoinModal";
@@ -85,6 +85,33 @@ export function CallCard({ call }: CallCardProps) {
               <p className="font-semibold text-red-400 text-lg">${call.stopLoss.toLocaleString()}</p>
             </div>
           </div>
+
+          {(call.volume24h || call.liquidityUSD) && (
+            <div className="mt-3 border-t border-border pt-3">
+              <h5 className="text-xs font-medium text-muted-foreground mb-1">Dados de Mercado (DexScreener - Mock):</h5>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {call.volume24h && (
+                  <div className="flex items-center">
+                    <DollarSign className="h-4 w-4 mr-1.5 text-primary/70" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Volume (24h)</p>
+                      <p className="font-semibold">${call.volume24h.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+                {call.liquidityUSD && (
+                  <div className="flex items-center">
+                     <Droplets className="h-4 w-4 mr-1.5 text-primary/70" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Liquidez</p>
+                      <p className="font-semibold">${call.liquidityUSD.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
         </CardContent>
         <CardFooter>
           <Button variant="outline" size="sm" className="w-full text-primary border-primary hover:bg-primary/10 hover:text-primary" onClick={() => setIsModalOpen(true)}>
