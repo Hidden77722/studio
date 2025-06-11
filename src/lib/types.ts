@@ -101,21 +101,16 @@ export interface MarketSentimentOutput {
 
 // Tipos para o novo fluxo de geração de call de trade
 export interface GenerateTradeCallInput {
-  coinName: string;
-  volume24h: number;
-  liquidity: number;
-  currentPrice: number;
-  priceChange1h: number; // percentage
-  priceChange24h: number; // percentage
-  isOnHotList: boolean;
+  marketAnalysisData: string; // String contendo dados de múltiplas moedas pré-filtradas
 }
 
 export interface GeneratedTradeCallOutput {
-  moeda: string;
-  hora_call: string;
-  entrada: string; // Formatted price string e.g., "$0.00000421"
-  alvos: Array<{ preco: string; observacao?: string }>; // Array for two targets
-  stop: string; // Formatted price string
-  motivo: string;
-  risco: "Baixo" | "Médio" | "Alto";
+  moeda: string; // Nome da moeda escolhida ou "Nenhuma call no momento"
+  hora_call?: string; // Hora ideal de entrada (UTC), opcional
+  entrada?: string; // Formatted price string e.g., "$0.00000421", opcional
+  alvos?: Array<{ preco: string; observacao?: string }>; // Array for two targets, opcional
+  stop?: string; // Formatted price string, opcional
+  motivo?: string; // Motivo da call, opcional
+  risco?: "Baixo" | "Médio" | "Alto" | "Nenhum"; // Classificação de risco, opcional
 }
+
