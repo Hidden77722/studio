@@ -9,7 +9,7 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinName: "DogeBonk",
     coinSymbol: "DOBO",
     logoUrl: "https://placehold.co/40x40.png?text=DB",
-    entryTime: new Date().toISOString(),
+    entryTime: new Date().toISOString(), // Atualizado para tempo real
     reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze com alvo ambicioso.",
     entryPrice: 0.0000000123,
     targets: [{ price: 0.0000000160, percentage: "+30%" }, { price: 0.0000000200, percentage: "+62%" }],
@@ -22,7 +22,7 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinName: "ShibaFloki",
     coinSymbol: "SHIBFLO",
     logoUrl: "https://placehold.co/40x40.png?text=SF",
-    entryTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
+    entryTime: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // Atualizado para 15 minutos atrás
     reason: "Anúncio de listagem em CEX de grande porte esperado nas próximas 24 horas. Gráfico mostra consolidação pré-alta.",
     entryPrice: 0.00000056,
     targets: [{ price: 0.000000075, percentage: "+34%" }, { price: 0.000000095, percentage: "+70%" }],
