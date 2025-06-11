@@ -60,7 +60,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Lady of Crypto',
     handle: 'LadyofCrypto1',
     description: 'Focada em encontrar gemas de memecoin de baixa capitalização e engajamento comunitário. Análises e insights sobre novas tendências.',
-    twitterUrl: 'https://twitter.com/LadyofCrypto1', // Exemplo
+    twitterUrl: 'https://twitter.com/LadyofCrypto1', 
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'woman avatar'
   },
@@ -69,7 +69,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'DogeWhale',
     handle: 'DogeWhaleAlert',
     description: 'Rastreia grandes transações de Dogecoin e movimentos de mercado. Frequentemente tuíta sobre tendências de memecoins e alertas de "baleias".',
-    twitterUrl: 'https://twitter.com/DogeWhaleAlert', // Exemplo
+    twitterUrl: 'https://twitter.com/DogeWhaleAlert', 
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'whale logo'
   },
@@ -78,9 +78,9 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Memecoin Max',
     handle: 'MemecoinMax',
     description: 'Entusiasta de todas as coisas sobre memecoin, desde as últimas modas até análises profundas de tokenomics. Sempre de olho no próximo grande hype.',
-    twitterUrl: 'https://twitter.com/MemecoinMax', // Exemplo
+    twitterUrl: 'https://twitter.com/MemecoinMax', 
     avatarUrl: 'https://placehold.co/48x48.png',
-    dataAiHintAvatar: 'rocket emoji'
+    dataAiHintAvatar: 'rocket ship'
   },
    {
     id: 'shibetoshi',
@@ -109,7 +109,7 @@ export default function InfluencersPage() {
         Influenciadores de MemeCoin (Twitter)
       </h1>
       <p className="text-muted-foreground">
-        Acompanhe o que os principais influenciadores estão falando sobre o universo das meme coins. As opiniões aqui são deles e não constituem aconselhamento financeiro.
+        Acompanhe o que os principais influenciadores estão falando sobre o universo das meme coins. As opiniões aqui são deles e não constituem aconselhamento financeiro. Para ver imagens de perfil reais, você precisará substituir as URLs de placeholder no código pelas URLs das imagens desejadas.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
