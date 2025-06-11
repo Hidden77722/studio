@@ -64,11 +64,11 @@ export function TweetDisplayCard({ tweet }: TweetDisplayCardProps) {
         <CardContent className="px-4 pt-0 pb-2">
           <Image
             src={tweet.imageUrl}
-            alt="Tweet image"
-            width={500}
-            height={300}
+            alt="Imagem do Tweet"
+            width={600} 
+            height={338}
             className="rounded-lg border border-border object-cover w-full max-h-[300px]"
-            data-ai-hint={tweet.dataAiHintImage || "crypto chart"}
+            data-ai-hint={tweet.dataAiHintImage || "imagem cripto"}
           />
         </CardContent>
       )}

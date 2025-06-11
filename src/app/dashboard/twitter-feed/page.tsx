@@ -7,7 +7,9 @@ import { TweetDisplayCard } from '@/app/dashboard/components/TweetDisplayCard';
 import { Rss, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card'; // Ensure Card is imported
+import { Card } from '@/components/ui/card'; 
+
+const PLACEHOLDER_IMAGE_URL = "https://placehold.co/600x338.png";
 
 const initialMockTweets: MockTweet[] = [
   {
@@ -21,9 +23,9 @@ const initialMockTweets: MockTweet[] = [
     likes: 15780,
     retweets: 2340,
     replies: 875,
-    imageUrl: 'https://placehold.co/600x400.png',
+    imageUrl: PLACEHOLDER_IMAGE_URL,
     coinTags: ['DOGE'],
-    dataAiHintImage: "space dog"
+    dataAiHintImage: "dogecoin logo"
   },
   {
     id: 't2',
@@ -37,8 +39,8 @@ const initialMockTweets: MockTweet[] = [
     retweets: 550,
     replies: 120,
     coinTags: ['SHIB'],
-    imageUrl: 'https://placehold.co/600x350.png',
-    dataAiHintImage: "glowing crystal"
+    imageUrl: PLACEHOLDER_IMAGE_URL,
+    dataAiHintImage: "shiba coin"
   },
   {
     id: 't3',
@@ -69,8 +71,8 @@ const moreMockTweets: MockTweet[] = [
     retweets: 210,
     replies: 55,
     coinTags: ['BONK', 'Solana'],
-    imageUrl: 'https://placehold.co/500x300.png',
-    dataAiHintImage: "dog computer"
+    imageUrl: PLACEHOLDER_IMAGE_URL,
+    dataAiHintImage: "bonk coin"
   },
   {
     id: 't5',
@@ -83,7 +85,7 @@ const moreMockTweets: MockTweet[] = [
     likes: 3200,
     retweets: 800,
     replies: 150,
-    imageUrl: 'https://placehold.co/600x350.png',
+    imageUrl: PLACEHOLDER_IMAGE_URL,
     coinTags: ['WIF'],
     dataAiHintImage: "dog hat"
   },
@@ -113,8 +115,8 @@ const moreMockTweets: MockTweet[] = [
     retweets: 400,
     replies: 90,
     coinTags: ['PEPE', 'WIF', 'DOGE'],
-    imageUrl: 'https://placehold.co/550x450.png',
-    dataAiHintImage: "coins rocket"
+    imageUrl: PLACEHOLDER_IMAGE_URL,
+    dataAiHintImage: "meme coins"
   },
 ];
 
@@ -129,9 +131,9 @@ export default function TwitterFeedPage() {
   const processTweets = (tweetArray: MockTweet[]): MockTweet[] => {
     return tweetArray.map(t => ({
       ...t,
-      imageUrl: t.imageUrl, // Ensure imageUrl is explicitly passed
+      imageUrl: t.imageUrl ? PLACEHOLDER_IMAGE_URL : undefined, 
       dataAiHintAvatar: t.dataAiHintAvatar || 'profile avatar',
-      dataAiHintImage: t.imageUrl ? (t.dataAiHintImage || (t.coinTags?.[0] ? `${t.coinTags[0].toLowerCase()} image` : 'crypto image')) : undefined,
+      dataAiHintImage: t.imageUrl ? (t.dataAiHintImage || (t.coinTags?.[0] ? `${t.coinTags[0].toLowerCase()} image` : 'imagem cripto')) : undefined,
     }));
   };
 
@@ -139,7 +141,7 @@ export default function TwitterFeedPage() {
     setTweets(processTweets(initialMockTweets));
     setIsLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
+  }, []); 
 
 
   const fetchNewTweet = useCallback(() => {
@@ -240,4 +242,3 @@ export default function TwitterFeedPage() {
     </div>
   );
 }
-
