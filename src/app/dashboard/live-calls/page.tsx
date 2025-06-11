@@ -46,13 +46,11 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
   try {
     const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
     if (!response.ok) {
-      // Log non-OK responses, could be rate limiting or server errors
       console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko: ${response.status} ${response.statusText}`);
       return null;
     }
     const data = await response.json();
 
-    // Check if the coinId exists as a key in the response data
     if (!data || typeof data[coinId] === 'undefined') {
       console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko. Resposta:`, data);
       return null;
@@ -62,13 +60,11 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
     const price = coinData.usd;
 
     if (typeof price !== 'number') {
-      // This means the coinId was found, but 'usd' field was missing or not a number.
       console.warn(`Preço USD para ${coinId} está ausente ou não é um número. Dados recebidos para a moeda:`, coinData);
       return null;
     }
     return price;
   } catch (error) {
-    // Catch network errors or JSON parsing errors
     console.error(`Erro de rede ou parse ao buscar preço para ${coinId} da CoinGecko:`, error);
     return null;
   }
@@ -83,7 +79,7 @@ export default function LiveCallsPage() {
     const randomCoinInfo = REAL_COIN_POOL[Math.floor(Math.random() * REAL_COIN_POOL.length)];
 
     const currentPrice = await fetchCoinCurrentPrice(randomCoinInfo.coingeckoId);
-    if (currentPrice === null) return null; // Failed to fetch price or price was invalid
+    if (currentPrice === null) return null;
 
     const entryPrice = currentPrice;
     const targets = randomTemplate.targetsConfig.map(t => ({
@@ -109,50 +105,32 @@ export default function LiveCallsPage() {
     };
   }, []);
 
-  // Initial load
   useEffect(() => {
     const loadInitialCalls = async () => {
       setIsLoadingInitial(true);
-      const initialCallsPromises = [];
-      // Ensure we attempt to generate enough valid calls for the initial display
+      const newLiveCalls: MemeCoinCall[] = [];
       let attempts = 0;
-      const maxAttempts = NUMBER_OF_VISIBLE_CARDS * 3; // Try a few times per card needed
-      let successfulCalls = 0;
+      const maxAttempts = NUMBER_OF_VISIBLE_CARDS * 3; 
       
-      while(successfulCalls < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttempts) {
-        initialCallsPromises.push(generateNewCall());
-        attempts++;
-        // Check results intermittently or after a batch to fill up faster
-        if (initialCallsPromises.length >= NUMBER_OF_VISIBLE_CARDS || attempts % 5 === 0) {
-            const resolved = await Promise.all(initialCallsPromises.splice(0, initialCallsPromises.length)); // process current batch
-            resolved.forEach(call => {
-                if (call && successfulCalls < NUMBER_OF_VISIBLE_CARDS) {
-                    setLiveCalls(prev => [...prev, call]);
-                    successfulCalls++;
-                }
-            });
+      while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttempts) {
+        const call = await generateNewCall();
+        if (call) {
+          // Ensure no duplicate IDs if calls are generated too quickly for the same coin/template
+          if (!newLiveCalls.some(existingCall => existingCall.id === call.id)) {
+             newLiveCalls.push(call);
+          }
         }
+        attempts++;
       }
-      // Final check for any remaining promises
-      if(initialCallsPromises.length > 0 && successfulCalls < NUMBER_OF_VISIBLE_CARDS) {
-        const resolved = await Promise.all(initialCallsPromises);
-        resolved.forEach(call => {
-            if (call && successfulCalls < NUMBER_OF_VISIBLE_CARDS) {
-                setLiveCalls(prev => [...prev, call]); // Add to existing, don't replace
-                successfulCalls++;
-            }
-        });
-      }
-
-      setLiveCalls(prev => prev.slice(-NUMBER_OF_VISIBLE_CARDS)); // Ensure only correct number of cards
+      setLiveCalls(newLiveCalls);
       setIsLoadingInitial(false);
     };
     loadInitialCalls();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // generateNewCall is memoized
+  }, [generateNewCall]); // generateNewCall is memoized
 
   useEffect(() => {
-    if (isLoadingInitial) return; // Don't start interval if initial calls are still loading
+    if (isLoadingInitial) return;
 
     const intervalId = setInterval(async () => {
       const newCall = await generateNewCall();
@@ -160,18 +138,25 @@ export default function LiveCallsPage() {
         setLiveCalls(prevCalls => {
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_VISIBLE_CARDS) {
-            calls.shift(); // Remove the oldest call
+            calls.shift(); 
           }
-          calls.push(newCall); // Add the new call
+          // Ensure no duplicate IDs from rapid generation
+          if (!calls.some(existingCall => existingCall.id === newCall.id)){
+            calls.push(newCall); 
+          } else {
+            // If duplicate ID, try to slightly modify or just don't add to prevent key error
+            // For this simulation, we might just not add it, or refresh an existing one if logic allows
+            // For now, simplest is to not add if ID collision happens too fast.
+          }
           return calls;
         });
       }
-    }, 7000); // Generate a new call every 7 seconds, replacing an old one
+    }, 7000); 
 
     return () => clearInterval(intervalId);
   }, [isLoadingInitial, generateNewCall]);
 
-  if (isLoadingInitial && liveCalls.length === 0) { // Show loading only if no calls are displayed yet
+  if (isLoadingInitial && liveCalls.length === 0) { 
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-headline font-semibold">Alertas de Trade Ativos</h1>
@@ -189,7 +174,7 @@ export default function LiveCallsPage() {
       <h1 className="text-3xl font-headline font-semibold">Alertas de Trade Ativos</h1>
       {liveCalls.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-          {liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS).map((call) => ( // Ensure we only render up to NUMBER_OF_VISIBLE_CARDS
+          {liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS).map((call) => (
             <CallCard key={call.id} call={call} />
           ))}
         </div>
@@ -204,4 +189,3 @@ export default function LiveCallsPage() {
     </div>
   );
 }
-
