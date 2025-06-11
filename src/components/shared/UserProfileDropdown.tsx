@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CreditCard, LogOut, Settings, User, Bell } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+
 
 interface UserProfileDropdownProps {
   userName: string;
@@ -21,13 +27,31 @@ interface UserProfileDropdownProps {
 }
 
 export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProfileDropdownProps) {
+  const router = useRouter();
+  const { isProUser } = useAuth();
+
   const getInitials = (name: string) => {
+    if (!name) return "?";
     const names = name.split(' ');
-    if (names.length > 1) {
+    if (names.length > 1 && names[0] && names[names.length - 1]) {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    if (name && name.length > 1) {
+      return name.substring(0, 2).toUpperCase();
+    }
+    return name[0]?.toUpperCase() || "?";
   };
+  
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push('/auth/login');
+    } catch (error) {
+      console.error("Error signing out: ", error);
+      // Optionally show a toast or error message to the user
+    }
+  };
+
 
   return (
     <div className="flex items-center gap-4">
@@ -49,7 +73,7 @@ export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProf
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{userName}</p>
+              <p className="text-sm font-medium leading-none">{userName} {isProUser && <span className="text-xs text-primary">(PRO)</span>}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {userEmail}
               </p>
@@ -77,10 +101,9 @@ export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProf
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
             <LogOut className="mr-2 h-4 w-4" />
-            {/* In a real app, this would trigger a sign-out function */}
-            <Link href="/auth/login">Sair</Link>
+            <span>Sair</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

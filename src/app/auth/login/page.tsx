@@ -1,13 +1,18 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { AppLogo } from "@/components/shared/AppLogo";
 import Link from "next/link";
-import { KeyRound, Mail, LogIn } from "lucide-react";
-import React from "react";
+import { LogIn } from "lucide-react";
+import React, { useEffect } from "react";
+import { auth } from "@/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup, UserCredential, AuthError } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 // Placeholder for Google Icon
 const GoogleIcon = () => (
@@ -22,30 +27,57 @@ const GoogleIcon = () => (
 
 
 export default function LoginPage() {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    // On successful login, redirect to dashboard
-    // For now, we can just log or alert
-    alert("Tentativa de login com: " + email);
-    // In a real app: router.push('/dashboard');
-  };
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    // Simulate Google Sign-In
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    alert("Tentativa de login com Google");
-    // In a real app: signInWithGoogle().then(() => router.push('/dashboard'));
+    setError(null);
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged in AuthContext will handle user state update
+      // and the useEffect above will redirect.
+      // No explicit router.push('/dashboard') here needed immediately after signInWithPopup
+      // as the redirect is handled by the AuthContext user state change.
+    } catch (e) {
+      const authError = e as AuthError;
+      console.error("Google Sign-In Error:", authError);
+      if (authError.code === 'auth/popup-closed-by-user') {
+        setError("O login com Google foi cancelado.");
+      } else if (authError.code === 'auth/network-request-failed') {
+        setError("Erro de rede. Verifique sua conexão e tente novamente.");
+      } else {
+        setError("Falha ao fazer login com Google. Tente novamente.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (authLoading || (!authLoading && user)) {
+    // Show a loading spinner or null while AuthProvider is initializing or redirecting
+     return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4">
+            <AppLogo />
+             <div className="mt-8 flex items-center space-x-2">
+                <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-lg text-muted-foreground">Verificando sessão...</p>
+            </div>
+        </div>
+    );
+  }
 
 
   return (
@@ -55,81 +87,28 @@ export default function LoginPage() {
       </div>
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Bem-vindo(a) de Volta</CardTitle>
-          <CardDescription>Faça login para acessar sua conta MemeTrade Pro.</CardDescription>
+          <CardTitle className="text-2xl font-headline">Acesse o MemeTrade Pro</CardTitle>
+          <CardDescription>Use sua conta Google para continuar.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Endereço de Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="voce@exemplo.com" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Senha</Label>
-                <Link href="#" className="text-sm text-primary hover:underline">
-                  Esqueceu a senha?
-                </Link>
-              </div>
-              <div className="relative">
-                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            {/* Placeholder for 2FA input if needed */}
-            {/* <div className="space-y-2">
-              <Label htmlFor="2fa">Two-Factor Code (if enabled)</Label>
-              <Input id="2fa" type="text" placeholder="123456" />
-            </div> */}
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
-              {isLoading ? "Entrando..." : <> <LogIn className="mr-2 h-4 w-4" /> Entrar </>}
-            </Button>
-          </form>
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Ou continue com
-              </span>
-            </div>
-          </div>
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
-            {isLoading ? "Processando..." : <><GoogleIcon /> Google</>}
+        <CardContent className="space-y-6">
+           {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Erro de Login</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <Button variant="outline" className="w-full text-lg py-6" onClick={handleGoogleSignIn} disabled={isLoading}>
+            {isLoading ? "Processando..." : <><GoogleIcon /> Entrar com Google</>}
           </Button>
+           <p className="text-xs text-muted-foreground text-center px-4">
+            Ao continuar, você concorda com nossos <Link href="#" className="underline hover:text-primary">Termos de Serviço</Link> e <Link href="#" className="underline hover:text-primary">Política de Privacidade</Link>.
+          </p>
         </CardContent>
         <CardFooter className="text-center text-sm">
-          <p className="text-muted-foreground">
-            Não tem uma conta?{" "}
-            <Link href="#" className="text-primary hover:underline font-medium">
-              Cadastre-se
-            </Link>
-          </p>
+           {/* Placeholder for other login methods or sign up if needed */}
         </CardFooter>
       </Card>
-      <p className="mt-8 text-xs text-muted-foreground">
-        Ao fazer login, você concorda com nossos Termos de Serviço e Política de Privacidade.
-      </p>
     </div>
   );
 }
