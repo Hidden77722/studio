@@ -22,16 +22,16 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard Home", icon: Home },
-  { href: "/dashboard/live-calls", label: "Live Calls", icon: Newspaper },
-  { href: "/dashboard/history", label: "Trade History", icon: History },
-  { href: "/dashboard/performance", label: "Performance", icon: BarChart3 },
-  { href: "/dashboard/why-this-coin-examples", label: "AI Insights", icon: Info },
+  { href: "/dashboard", label: "Início do Painel", icon: Home },
+  { href: "/dashboard/live-calls", label: "Alertas ao Vivo", icon: Newspaper },
+  { href: "/dashboard/history", label: "Histórico de Trades", icon: History },
+  { href: "/dashboard/performance", label: "Desempenho", icon: BarChart3 },
+  { href: "/dashboard/why-this-coin-examples", label: "Insights de IA", icon: Info },
 ];
 
 const bottomNavItems = [
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-  { href: "/dashboard/support", label: "Support", icon: HelpCircle },
+  { href: "/dashboard/settings", label: "Configurações", icon: Settings },
+  { href: "/dashboard/support", label: "Suporte", icon: HelpCircle },
 ];
 
 function DashboardSidebar() {
@@ -104,7 +104,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <SidebarTrigger />
             </div>
             <div className="hidden md:block font-headline text-xl">
-              Welcome, {user.name}!
+              Bem-vindo(a), {user.name}!
             </div>
             <UserProfileDropdown
               userName={user.name}

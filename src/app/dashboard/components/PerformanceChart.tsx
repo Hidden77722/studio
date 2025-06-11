@@ -38,7 +38,14 @@ export function PerformanceChart({ data, title, description, dataKey, chartType 
                   tickLine={false} 
                   axisLine={false} 
                   tickMargin={8} 
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  tickFormatter={(value) => {
+                    // Check if value is a valid date string before formatting
+                    const date = new Date(value);
+                    if (isNaN(date.getTime())) { // If it's not a valid date (e.g., 'Jan', 'Feb')
+                      return value; // Return the original string (like month abbreviation)
+                    }
+                    return date.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' });
+                  }}
                   stroke="hsl(var(--muted-foreground))"
                   fontSize={12}
                 />
@@ -71,7 +78,13 @@ export function PerformanceChart({ data, title, description, dataKey, chartType 
                   tickLine={false} 
                   axisLine={false} 
                   tickMargin={8} 
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  tickFormatter={(value) => {
+                     const date = new Date(value);
+                    if (isNaN(date.getTime())) {
+                      return value; 
+                    }
+                    return date.toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' });
+                  }}
                   stroke="hsl(var(--muted-foreground))"
                   fontSize={12}
                 />

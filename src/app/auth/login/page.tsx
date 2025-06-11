@@ -34,7 +34,7 @@ export default function LoginPage() {
     setIsLoading(false);
     // On successful login, redirect to dashboard
     // For now, we can just log or alert
-    alert("Login attempt with: " + email);
+    alert("Tentativa de login com: " + email);
     // In a real app: router.push('/dashboard');
   };
 
@@ -43,7 +43,7 @@ export default function LoginPage() {
     // Simulate Google Sign-In
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsLoading(false);
-    alert("Google Sign-In attempt");
+    alert("Tentativa de login com Google");
     // In a real app: signInWithGoogle().then(() => router.push('/dashboard'));
   };
 
@@ -55,19 +55,19 @@ export default function LoginPage() {
       </div>
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access your MemeTrade Pro account.</CardDescription>
+          <CardTitle className="text-2xl font-headline">Bem-vindo(a) de Volta</CardTitle>
+          <CardDescription>Faça login para acessar sua conta MemeTrade Pro.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">Endereço de Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
                   id="email" 
                   type="email" 
-                  placeholder="you@example.com" 
+                  placeholder="voce@exemplo.com" 
                   required 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -77,9 +77,9 @@ export default function LoginPage() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Senha</Label>
                 <Link href="#" className="text-sm text-primary hover:underline">
-                  Forgot password?
+                  Esqueceu a senha?
                 </Link>
               </div>
               <div className="relative">
@@ -101,7 +101,7 @@ export default function LoginPage() {
               <Input id="2fa" type="text" placeholder="123456" />
             </div> */}
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
-              {isLoading ? "Signing In..." : <> <LogIn className="mr-2 h-4 w-4" /> Sign In </>}
+              {isLoading ? "Entrando..." : <> <LogIn className="mr-2 h-4 w-4" /> Entrar </>}
             </Button>
           </form>
           <div className="relative my-6">
@@ -110,25 +110,25 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
+                Ou continue com
               </span>
             </div>
           </div>
           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
-            {isLoading ? "Processing..." : <><GoogleIcon /> Google</>}
+            {isLoading ? "Processando..." : <><GoogleIcon /> Google</>}
           </Button>
         </CardContent>
         <CardFooter className="text-center text-sm">
           <p className="text-muted-foreground">
-            Don't have an account?{" "}
+            Não tem uma conta?{" "}
             <Link href="#" className="text-primary hover:underline font-medium">
-              Sign Up
+              Cadastre-se
             </Link>
           </p>
         </CardFooter>
       </Card>
       <p className="mt-8 text-xs text-muted-foreground">
-        By signing in, you agree to our Terms of Service and Privacy Policy.
+        Ao fazer login, você concorda com nossos Termos de Serviço e Política de Privacidade.
       </p>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +23,16 @@ const userProfile = {
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = React.useState(false);
   const [name, setName] = React.useState(userProfile.name);
+  const [joinDateLocale, setJoinDateLocale] = React.useState('');
+  const [lastLoginLocale, setLastLoginLocale] = React.useState('');
+  const [renewsOnLocale, setRenewsOnLocale] = React.useState('');
+
+  React.useEffect(() => {
+    setJoinDateLocale(new Date(userProfile.joinDate).toLocaleDateString('pt-BR'));
+    setLastLoginLocale(new Date(userProfile.lastLogin).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }));
+    setRenewsOnLocale(new Date(userProfile.subscriptionRenews).toLocaleDateString('pt-BR'));
+  }, []);
+
 
   const getInitials = (nameStr: string) => {
     const names = nameStr.split(' ');
@@ -34,13 +44,13 @@ export default function ProfilePage() {
 
   const handleSave = () => {
     // API call to save profile
-    console.log("Saving profile with name:", name);
+    console.log("Salvando perfil com nome:", name);
     setIsEditing(false);
   };
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-headline font-semibold">My Profile</h1>
+      <h1 className="text-3xl font-headline font-semibold">Meu Perfil</h1>
 
       <Card className="shadow-xl">
         <CardHeader className="items-center text-center">
@@ -51,9 +61,9 @@ export default function ProfilePage() {
                 {getInitials(userProfile.name)}
               </AvatarFallback>
             </Avatar>
-            <Button variant="outline" size="icon" className="absolute bottom-0 right-0 rounded-full bg-card hover:bg-muted" onClick={() => alert("Edit avatar functionality TBD")}>
+            <Button variant="outline" size="icon" className="absolute bottom-0 right-0 rounded-full bg-card hover:bg-muted" onClick={() => alert("Funcionalidade de editar avatar A SER DEFINIDA")}>
               <Edit3 className="h-4 w-4" />
-              <span className="sr-only">Edit Avatar</span>
+              <span className="sr-only">Editar Avatar</span>
             </Button>
           </div>
           {isEditing ? (
@@ -68,26 +78,26 @@ export default function ProfilePage() {
           <CardDescription className="text-muted-foreground">{userProfile.email}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <InfoRow icon={<UserCircle className="h-5 w-5 text-primary"/>} label="Username" value={name} isEditing={isEditing} onChange={setName} />
+          <InfoRow icon={<UserCircle className="h-5 w-5 text-primary"/>} label="Nome de Usuário" value={name} isEditing={isEditing} onChange={setName} />
           <InfoRow icon={<Mail className="h-5 w-5 text-primary"/>} label="Email" value={userProfile.email} editable={false} />
-          <InfoRow icon={<CalendarDays className="h-5 w-5 text-primary"/>} label="Joined" value={new Date(userProfile.joinDate).toLocaleDateString()} editable={false} />
-          <InfoRow icon={<CalendarDays className="h-5 w-5 text-primary"/>} label="Last Login" value={new Date(userProfile.lastLogin).toLocaleString()} editable={false} />
+          <InfoRow icon={<CalendarDays className="h-5 w-5 text-primary"/>} label="Entrou em" value={joinDateLocale} editable={false} />
+          <InfoRow icon={<CalendarDays className="h-5 w-5 text-primary"/>} label="Último Login" value={lastLoginLocale} editable={false} />
           
           <Separator className="my-6" />
 
-          <h3 className="text-lg font-semibold font-headline flex items-center"><Shield className="mr-2 h-5 w-5 text-primary"/> Subscription</h3>
-          <InfoRow label="Current Tier" value={userProfile.subscriptionTier} editable={false} />
-          <InfoRow label="Renews On" value={new Date(userProfile.subscriptionRenews).toLocaleDateString()} editable={false} />
-           <Button variant="link" className="p-0 h-auto text-primary">Manage Subscription</Button>
+          <h3 className="text-lg font-semibold font-headline flex items-center"><Shield className="mr-2 h-5 w-5 text-primary"/> Assinatura</h3>
+          <InfoRow label="Plano Atual" value={userProfile.subscriptionTier} editable={false} />
+          <InfoRow label="Renova em" value={renewsOnLocale} editable={false} />
+           <Button variant="link" className="p-0 h-auto text-primary">Gerenciar Assinatura</Button>
         </CardContent>
         <CardFooter className="flex justify-end gap-2">
           {isEditing ? (
             <>
-              <Button variant="outline" onClick={() => { setIsEditing(false); setName(userProfile.name); }}>Cancel</Button>
-              <Button onClick={handleSave}>Save Changes</Button>
+              <Button variant="outline" onClick={() => { setIsEditing(false); setName(userProfile.name); }}>Cancelar</Button>
+              <Button onClick={handleSave}>Salvar Alterações</Button>
             </>
           ) : (
-            <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+            <Button onClick={() => setIsEditing(true)}>Editar Perfil</Button>
           )}
         </CardFooter>
       </Card>

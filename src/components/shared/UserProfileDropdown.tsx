@@ -31,9 +31,9 @@ export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProf
 
   return (
     <div className="flex items-center gap-4">
-      <Button variant="ghost" size="icon" aria-label="Notifications">
+      <Button variant="ghost" size="icon" aria-label="Notificações">
         <Bell className="h-5 w-5 text-foreground" />
-        <span className="sr-only">Notifications</span>
+        <span className="sr-only">Notificações</span>
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -60,19 +60,19 @@ export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProf
             <DropdownMenuItem asChild>
               <Link href="/dashboard/profile">
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>Perfil</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/dashboard/billing">
                 <CreditCard className="mr-2 h-4 w-4" />
-                <span>Billing</span>
+                <span>Faturamento</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
              <Link href="/dashboard/settings">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span>Configurações</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -80,7 +80,7 @@ export function UserProfileDropdown({ userName, userEmail, avatarUrl }: UserProf
           <DropdownMenuItem>
             <LogOut className="mr-2 h-4 w-4" />
             {/* In a real app, this would trigger a sign-out function */}
-            <Link href="/auth/login">Log out</Link>
+            <Link href="/auth/login">Sair</Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -13,10 +13,10 @@ export default function WhyThisCoinExamplesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [coinName, setCoinName] = useState("ExampleCoin (EXC)");
   const [technicalAnalysis, setTechnicalAnalysis] = useState(
-    "Price broke above key resistance at $0.50 with high volume. RSI shows bullish momentum, and MACD is crossing upwards. 50-day MA is about to cross above 200-day MA (Golden Cross)."
+    "O preço rompeu a resistência chave de $0,50 com alto volume. O RSI mostra momentum de alta e o MACD está cruzando para cima. A MA de 50 dias está prestes a cruzar acima da MA de 200 dias (Cruz Dourada)."
   );
   const [marketSentiment, setMarketSentiment] = useState(
-    "Positive sentiment on social media platforms. Several influencers are discussing the coin. News of a potential partnership is driving hype. Fear & Greed index is in 'Greed' zone."
+    "Sentimento positivo nas plataformas de mídia social. Vários influenciadores estão discutindo a moeda. Notícias de uma possível parceria estão impulsionando o hype. O índice Medo e Ganância está na zona de 'Ganância'."
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,45 +29,45 @@ export default function WhyThisCoinExamplesPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <Lightbulb className="mr-3 h-8 w-8 text-primary" />
-          AI-Powered Trade Rationale
+          Lógica de Trade com IA
         </h1>
       </div>
 
       <Card className="max-w-2xl mx-auto shadow-xl">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Test the "Why This Coin?" AI</CardTitle>
+          <CardTitle className="font-headline text-2xl">Teste a IA "Por que esta Moeda?"</CardTitle>
           <CardDescription>
-            Input mock data to see how our AI explains the reasoning behind a trade call. This tool is integrated into each live call for real-time insights.
+            Insira dados fictícios para ver como nossa IA explica o racional por trás de um alerta de trade. Esta ferramenta é integrada a cada alerta ao vivo para insights em tempo real.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="coinName">Coin Name</Label>
+              <Label htmlFor="coinName">Nome da Moeda</Label>
               <Input
                 id="coinName"
                 value={coinName}
                 onChange={(e) => setCoinName(e.target.value)}
-                placeholder="e.g., DogeBonk (DOBO)"
+                placeholder="ex: DogeBonk (DOBO)"
               />
             </div>
             <div>
-              <Label htmlFor="technicalAnalysis">Technical Analysis Summary</Label>
+              <Label htmlFor="technicalAnalysis">Resumo da Análise Técnica</Label>
               <Textarea
                 id="technicalAnalysis"
                 value={technicalAnalysis}
                 onChange={(e) => setTechnicalAnalysis(e.target.value)}
-                placeholder="Enter technical analysis points..."
+                placeholder="Insira pontos da análise técnica..."
                 rows={4}
               />
             </div>
             <div>
-              <Label htmlFor="marketSentiment">Market Sentiment Summary</Label>
+              <Label htmlFor="marketSentiment">Resumo do Sentimento de Mercado</Label>
               <Textarea
                 id="marketSentiment"
                 value={marketSentiment}
                 onChange={(e) => setMarketSentiment(e.target.value)}
-                placeholder="Enter market sentiment observations..."
+                placeholder="Insira observações do sentimento de mercado..."
                 rows={4}
               />
             </div>
@@ -75,7 +75,7 @@ export default function WhyThisCoinExamplesPage() {
           <CardFooter>
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
               <Wand2 className="mr-2 h-5 w-5" />
-              Generate AI Explanation
+              Gerar Explicação da IA
             </Button>
           </CardFooter>
         </form>

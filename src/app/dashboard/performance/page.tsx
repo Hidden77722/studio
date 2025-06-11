@@ -38,38 +38,38 @@ export default function PerformancePage() {
   // Mock data for win/loss streak chart
   const winLossData = [
     { name: 'Jan', wins: 4, losses: 2 },
-    { name: 'Feb', wins: 5, losses: 1 },
+    { name: 'Fev', wins: 5, losses: 1 },
     { name: 'Mar', wins: 3, losses: 3 },
-    { name: 'Apr', wins: 6, losses: 1 },
-    { name: 'May', wins: 4, losses: 2 },
+    { name: 'Abr', wins: 6, losses: 1 },
+    { name: 'Mai', wins: 4, losses: 2 },
   ];
 
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-headline font-semibold">Performance Dashboard</h1>
+      <h1 className="text-3xl font-headline font-semibold">Painel de Desempenho</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-        <StatCard title="Overall Accuracy" value={`${mockUserPerformance.accuracy.toFixed(1)}%`} icon={<Percent className="h-8 w-8 text-primary" />} description="Percentage of winning trades." />
-        <StatCard title="Average Profit/Trade" value={`$${mockUserPerformance.averageProfit.toFixed(2)}`} icon={<DollarSign className="h-8 w-8 text-primary" />} description="Average P/L per closed trade." />
-        <StatCard title="Total Trades" value={mockUserPerformance.totalTrades.toString()} icon={<ListChecks className="h-8 w-8 text-primary" />} description="Total number of trades taken." />
-        <StatCard title="Winning Trades" value={mockUserPerformance.winningTrades.toString()} icon={<TrendingUpIcon className="h-8 w-8 text-green-500" />} description="Number of profitable trades." />
-        <StatCard title="Losing Trades" value={mockUserPerformance.losingTrades.toString()} icon={<TrendingDownIcon className="h-8 w-8 text-red-500" />} description="Number of trades with a loss." />
-        <StatCard title="Profit Factor" value={isFinite(profitFactor) ? profitFactor.toFixed(2) : "N/A"} icon={<BarChartHorizontalBig className="h-8 w-8 text-primary" />} description="Gross profit / Gross loss." />
+        <StatCard title="Precisão Geral" value={`${mockUserPerformance.accuracy.toFixed(1)}%`} icon={<Percent className="h-8 w-8 text-primary" />} description="Porcentagem de trades vencedores." />
+        <StatCard title="Lucro Médio/Trade" value={`$${mockUserPerformance.averageProfit.toFixed(2)}`} icon={<DollarSign className="h-8 w-8 text-primary" />} description="G/P médio por trade fechado." />
+        <StatCard title="Total de Trades" value={mockUserPerformance.totalTrades.toString()} icon={<ListChecks className="h-8 w-8 text-primary" />} description="Número total de trades realizados." />
+        <StatCard title="Trades Vencedores" value={mockUserPerformance.winningTrades.toString()} icon={<TrendingUpIcon className="h-8 w-8 text-green-500" />} description="Número de trades lucrativos." />
+        <StatCard title="Trades Perdedores" value={mockUserPerformance.losingTrades.toString()} icon={<TrendingDownIcon className="h-8 w-8 text-red-500" />} description="Número de trades com perda." />
+        <StatCard title="Fator de Lucro" value={isFinite(profitFactor) ? profitFactor.toFixed(2) : "N/D"} icon={<BarChartHorizontalBig className="h-8 w-8 text-primary" />} description="Lucro bruto / Perda bruta." />
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         <PerformanceChart 
           data={mockUserPerformance.accuracyOverTime} 
-          title="Accuracy Over Time" 
-          description="Track your trade accuracy trend over recent periods."
+          title="Precisão ao Longo do Tempo" 
+          description="Acompanhe sua tendência de precisão nos trades em períodos recentes."
           dataKey="accuracy"
           color="hsl(var(--accent))"
         />
         <PerformanceChart 
           data={mockUserPerformance.profitOverTime} 
-          title="Cumulative Profit" 
-          description="Visualize your profit accumulation over time."
+          title="Lucro Acumulado" 
+          description="Visualize sua acumulação de lucro ao longo do tempo."
           dataKey="profit"
           chartType="bar"
           color="hsl(var(--primary))"
@@ -78,15 +78,15 @@ export default function PerformancePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Monthly Win/Loss Ratio</CardTitle>
-          <CardDescription>Comparison of winning vs. losing trades per month.</CardDescription>
+          <CardTitle className="font-headline">Taxa Mensal de Ganhos/Perdas</CardTitle>
+          <CardDescription>Comparação de trades vencedores vs. perdedores por mês.</CardDescription>
         </CardHeader>
         <CardContent className="h-[300px]">
            <PerformanceChart 
               data={winLossData.map(d => ({ date: d.name, value: d.wins - d.losses }))} // Simple representation for single line
               title="" 
               description=""
-              dataKey="winLossDiff"
+              dataKey="winLossDiff" // Use a different dataKey for the chartConfig
               chartType="line"
               color="hsl(var(--chart-3))"
             />

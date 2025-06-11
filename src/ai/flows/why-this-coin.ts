@@ -22,7 +22,7 @@ const ExplainWhyThisCoinOutputSchema = z.object({
   explanation: z
     .string()
     .describe(
-      'A comprehensive explanation of why the meme coin was selected, based on technical analysis and market sentiment.'
+      'Uma explicação abrangente de por que a meme coin foi selecionada, com base na análise técnica e no sentimento de mercado.'
     ),
 });
 export type ExplainWhyThisCoinOutput = z.infer<typeof ExplainWhyThisCoinOutputSchema>;
@@ -35,13 +35,13 @@ const prompt = ai.definePrompt({
   name: 'explainWhyThisCoinPrompt',
   input: {schema: ExplainWhyThisCoinInputSchema},
   output: {schema: ExplainWhyThisCoinOutputSchema},
-  prompt: `You are an AI assistant that provides concise and informative explanations for why a particular meme coin was chosen for a trade call.
+  prompt: `Você é um assistente de IA que fornece explicações concisas e informativas sobre por que uma determinada meme coin foi escolhida para um alerta de trade.
 
-  Summarize the following technical analysis and market sentiment data to justify the call. Be clear, direct, and instill confidence in the user.
+  Resuma os seguintes dados de análise técnica e sentimento de mercado para justificar o alerta. Seja claro, direto e inspire confiança no usuário.
 
-  Coin Name: {{{coinName}}}
-  Technical Analysis: {{{technicalAnalysis}}}
-  Market Sentiment: {{{marketSentiment}}}`,
+  Nome da Moeda: {{{coinName}}}
+  Análise Técnica: {{{technicalAnalysis}}}
+  Sentimento de Mercado: {{{marketSentiment}}}`,
 });
 
 const explainWhyThisCoinFlow = ai.defineFlow(

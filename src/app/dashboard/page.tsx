@@ -14,12 +14,12 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinSymbol: "DOBO",
     logoUrl: "https://placehold.co/40x40.png?text=DB",
     entryTime: new Date().toISOString(),
-    reason: "Strong volume increase and positive social media sentiment. Potential short squeeze.",
+    reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze.",
     entryPrice: 0.0000000123,
     targets: [{ price: 0.0000000150, percentage: "+22%" }, { price: 0.0000000180, percentage: "+46%" }],
     stopLoss: 0.0000000090,
-    technicalAnalysisSummary: "DOBO shows a bullish divergence on the 4H RSI, with volume picking up significantly. MACD is about to cross bullishly. Key resistance at 0.0000000100 has been broken and retested as support.",
-    marketSentimentSummary: "High engagement on Twitter and Reddit, with several influencers mentioning DOBO. Fear & Greed Index for meme coins is neutral, suggesting room for growth.",
+    technicalAnalysisSummary: "DOBO mostra uma divergência de alta no RSI de 4H, com volume aumentando significativamente. MACD está prestes a cruzar para alta. A resistência chave em 0.0000000100 foi quebrada e retestada como suporte.",
+    marketSentimentSummary: "Alto engajamento no Twitter e Reddit, com vários influenciadores mencionando DOBO. O Índice de Medo e Ganância para meme coins está neutro, sugerindo espaço para crescimento.",
   },
   {
     id: "2",
@@ -27,12 +27,12 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinSymbol: "SHIBFLO",
     logoUrl: "https://placehold.co/40x40.png?text=SF",
     entryTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-    reason: "Upcoming CEX listing announcement expected within 24 hours. Chart shows consolidation.",
+    reason: "Anúncio de listagem em CEX esperado nas próximas 24 horas. Gráfico mostra consolidação.",
     entryPrice: 0.00000056,
     targets: [{ price: 0.00000070, percentage: "+25%" }, { price: 0.00000090, percentage: "+60%" }],
     stopLoss: 0.00000048,
-    technicalAnalysisSummary: "SHIBFLO is consolidating within a symmetrical triangle pattern, typically a continuation pattern. A breakout above the upper trendline could lead to a significant rally. Volume is currently low, indicating accumulation.",
-    marketSentimentSummary: "Rumors of a major CEX listing are circulating. Community is highly active and optimistic. Wallet tracker shows an increase in whale holdings.",
+    technicalAnalysisSummary: "SHIBFLO está consolidando dentro de um padrão de triângulo simétrico, tipicamente um padrão de continuação. Um rompimento acima da linha de tendência superior pode levar a uma alta significativa. O volume está atualmente baixo, indicando acumulação.",
+    marketSentimentSummary: "Rumores de listagem em uma grande CEX estão circulando. A comunidade está muito ativa e otimista. O rastreador de carteiras mostra um aumento nas participações de baleias.",
   },
 ];
 
@@ -44,7 +44,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     logoUrl: "https://placehold.co/40x40.png?text=PP",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), // 1 day ago
-    reason: "Breakout from descending channel.",
+    reason: "Rompimento de canal descendente.",
     entryPrice: 0.00000120,
     exitPrice: 0.00000150,
     targets: [{ price: 0.00000140 }, { price: 0.00000160 }],
@@ -59,7 +59,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     coinSymbol: "TURBO",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5 days ago
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), // 4 days ago
-    reason: "Anticipated partnership announcement.",
+    reason: "Anúncio de parceria antecipado.",
     entryPrice: 0.000050,
     exitPrice: 0.000045,
     targets: [{ price: 0.000060 }, { price: 0.000075 }],
@@ -74,7 +74,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     coinSymbol: "MOG",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 20 * 1).toISOString(),
-    reason: "Meme trend and influencer backing.",
+    reason: "Tendência de meme e apoio de influenciadores.",
     entryPrice: 0.00000040,
     exitPrice: 0.00000062,
     targets: [{ price: 0.00000055 }, { price: 0.00000070 }],
@@ -114,17 +114,17 @@ const mockUserPerformance: UserPerformance = {
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-headline font-semibold">MemeTrade Pro Dashboard</h1>
+      <h1 className="text-3xl font-headline font-semibold">Painel MemeTrade Pro</h1>
       
       <Tabs defaultValue="live-calls" className="w-full">
         <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-flex bg-card border border-border">
-          <TabsTrigger value="live-calls" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Live Calls</TabsTrigger>
-          <TabsTrigger value="history" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Trade History</TabsTrigger>
-          <TabsTrigger value="performance" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Performance</TabsTrigger>
+          <TabsTrigger value="live-calls" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Alertas ao Vivo</TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Histórico de Trades</TabsTrigger>
+          <TabsTrigger value="performance" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Desempenho</TabsTrigger>
         </TabsList>
 
         <TabsContent value="live-calls" className="mt-6">
-          <h2 className="text-2xl font-headline mb-4">Active Trade Calls</h2>
+          <h2 className="text-2xl font-headline mb-4">Alertas de Trade Ativos</h2>
           {mockLiveCalls.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
               {mockLiveCalls.map((call) => (
@@ -132,12 +132,12 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">No active calls at the moment. Stay tuned!</p>
+            <p className="text-muted-foreground">Nenhum alerta ativo no momento. Fique ligado!</p>
           )}
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
-          <h2 className="text-2xl font-headline mb-4">Historical Trade Performance</h2>
+          <h2 className="text-2xl font-headline mb-4">Desempenho Histórico de Trades</h2>
            {mockHistoricalCalls.length > 0 ? (
             <div className="space-y-4">
               {mockHistoricalCalls.map((call) => (
@@ -145,31 +145,31 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">No trade history available yet.</p>
+            <p className="text-muted-foreground">Nenhum histórico de trades disponível ainda.</p>
           )}
         </TabsContent>
 
         <TabsContent value="performance" className="mt-6">
-          <h2 className="text-2xl font-headline mb-4">Your Trading Statistics</h2>
+          <h2 className="text-2xl font-headline mb-4">Suas Estatísticas de Trading</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 mb-6">
-            <StatCard title="Accuracy" value={`${mockUserPerformance.accuracy.toFixed(1)}%`} icon={<Percent className="h-6 w-6 text-primary" />} />
-            <StatCard title="Avg. Profit" value={`$${mockUserPerformance.averageProfit.toFixed(2)}`} icon={<DollarSign className="h-6 w-6 text-primary" />} />
-            <StatCard title="Total Trades" value={mockUserPerformance.totalTrades.toString()} icon={<ListChecks className="h-6 w-6 text-primary" />} />
-            <StatCard title="Winning Trades" value={mockUserPerformance.winningTrades.toString()} icon={<TrendingUpIcon className="h-6 w-6 text-green-500" />} />
-            <StatCard title="Losing Trades" value={mockUserPerformance.losingTrades.toString()} icon={<TrendingDownIcon className="h-6 w-6 text-red-500" />} />
+            <StatCard title="Precisão" value={`${mockUserPerformance.accuracy.toFixed(1)}%`} icon={<Percent className="h-6 w-6 text-primary" />} />
+            <StatCard title="Lucro Médio" value={`$${mockUserPerformance.averageProfit.toFixed(2)}`} icon={<DollarSign className="h-6 w-6 text-primary" />} />
+            <StatCard title="Total de Trades" value={mockUserPerformance.totalTrades.toString()} icon={<ListChecks className="h-6 w-6 text-primary" />} />
+            <StatCard title="Trades Vencedores" value={mockUserPerformance.winningTrades.toString()} icon={<TrendingUpIcon className="h-6 w-6 text-green-500" />} />
+            <StatCard title="Trades Perdedores" value={mockUserPerformance.losingTrades.toString()} icon={<TrendingDownIcon className="h-6 w-6 text-red-500" />} />
           </div>
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
             <PerformanceChart 
               data={mockUserPerformance.accuracyOverTime} 
-              title="Accuracy Over Time" 
-              description="Your trade accuracy trend."
+              title="Precisão ao Longo do Tempo" 
+              description="Sua tendência de precisão nos trades."
               dataKey="accuracy"
               color="hsl(var(--accent))"
             />
             <PerformanceChart 
               data={mockUserPerformance.profitOverTime} 
-              title="Cumulative Profit Over Time" 
-              description="Your profit accumulation trend."
+              title="Lucro Acumulado ao Longo do Tempo" 
+              description="Sua tendência de acumulação de lucro."
               dataKey="profit"
               chartType="bar"
               color="hsl(var(--primary))"

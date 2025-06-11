@@ -15,6 +15,13 @@ interface CallCardProps {
 
 export function CallCard({ call }: CallCardProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [entryLocaleTime, setEntryLocaleTime] = React.useState('');
+
+  React.useEffect(() => {
+    if (call.entryTime) {
+      setEntryLocaleTime(new Date(call.entryTime).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short'}));
+    }
+  }, [call.entryTime]);
 
   return (
     <>
@@ -38,29 +45,29 @@ export function CallCard({ call }: CallCardProps) {
             <div>
               <CardTitle className="text-xl font-headline">{call.coinName} ({call.coinSymbol})</CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                <Clock className="inline-block mr-1 h-3 w-3" /> Entry: {new Date(call.entryTime).toLocaleString()}
+                <Clock className="inline-block mr-1 h-3 w-3" /> Entrada: {entryLocaleTime}
               </CardDescription>
             </div>
           </div>
-          <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">Live Call</Badge>
+          <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">Alerta ao Vivo</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-1 flex items-center">
               <FileText className="h-4 w-4 mr-2 text-primary" />
-              Reason for Entry
+              Motivo da Entrada
             </h4>
             <p className="text-sm">{call.reason}</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div className="p-3 bg-muted/50 rounded-md">
-              <p className="text-xs text-muted-foreground">Entry Price</p>
+              <p className="text-xs text-muted-foreground">Preço de Entrada</p>
               <p className="font-semibold text-lg">${call.entryPrice.toLocaleString()}</p>
             </div>
             <div className="p-3 bg-muted/50 rounded-md">
               <p className="text-xs text-muted-foreground flex items-center">
-                <Target className="h-3 w-3 mr-1 text-green-400" /> Profit Targets
+                <Target className="h-3 w-3 mr-1 text-green-400" /> Alvos de Lucro
               </p>
               <ul className="list-none space-y-0.5">
                 {call.targets.map((target, index) => (
@@ -80,7 +87,7 @@ export function CallCard({ call }: CallCardProps) {
         </CardContent>
         <CardFooter>
           <Button variant="outline" size="sm" className="w-full text-primary border-primary hover:bg-primary/10 hover:text-primary" onClick={() => setIsModalOpen(true)}>
-            <Info className="mr-2 h-4 w-4" /> Why this coin? (AI Analysis)
+            <Info className="mr-2 h-4 w-4" /> Por que esta moeda? (Análise IA)
           </Button>
         </CardFooter>
       </Card>

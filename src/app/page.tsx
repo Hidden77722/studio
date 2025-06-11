@@ -11,39 +11,39 @@ export default function HomePage() {
         <div className="container mx-auto flex justify-between items-center">
           <AppLogo />
           <Button asChild variant="outline">
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/dashboard">Painel</Link>
           </Button>
         </div>
       </header>
 
       <main className="flex-grow container mx-auto px-4 py-12 sm:py-24 flex flex-col items-center text-center">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-headline font-bold mb-6">
-          Unlock <span className="text-primary">Profitable</span> Meme Coin Trades
+          Desbloqueie <span className="text-primary">Negociações Lucrativas</span> de Meme Coins
         </h1>
         <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mb-10">
-          MemeTrade Pro delivers high-accuracy, real-time trade calls for meme coins, empowering you to navigate the volatile crypto market with confidence.
+          O MemeTrade Pro oferece alertas de negociação de meme coins em tempo real e com alta precisão, capacitando você a navegar no volátil mercado de criptomoedas com confiança.
         </p>
         <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href="/auth/login">
-            Get Started <ArrowRight className="ml-2 h-5 w-5" />
+            Começar Agora <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>
 
         <div className="mt-16 sm:mt-24 w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="p-6 bg-card rounded-lg shadow-lg flex flex-col items-center">
             <Zap className="h-12 w-12 text-primary mb-4" />
-            <h3 className="text-xl font-headline font-semibold mb-2">Real-Time Calls</h3>
-            <p className="text-muted-foreground text-sm">Instant notifications for promising meme coin entries.</p>
+            <h3 className="text-xl font-headline font-semibold mb-2">Alertas em Tempo Real</h3>
+            <p className="text-muted-foreground text-sm">Notificações instantâneas para entradas promissoras em meme coins.</p>
           </div>
           <div className="p-6 bg-card rounded-lg shadow-lg flex flex-col items-center">
             <BarChart3 className="h-12 w-12 text-primary mb-4" />
-            <h3 className="text-xl font-headline font-semibold mb-2">Proven Accuracy</h3>
-            <p className="text-muted-foreground text-sm">Track our historical performance and trade with data-backed insights.</p>
+            <h3 className="text-xl font-headline font-semibold mb-2">Precisão Comprovada</h3>
+            <p className="text-muted-foreground text-sm">Acompanhe nosso desempenho histórico e negocie com insights baseados em dados.</p>
           </div>
           <div className="p-6 bg-card rounded-lg shadow-lg flex flex-col items-center">
             <ShieldCheck className="h-12 w-12 text-primary mb-4" />
-            <h3 className="text-xl font-headline font-semibold mb-2">Secure & Exclusive</h3>
-            <p className="text-muted-foreground text-sm">Reliable platform with subscription-based access for dedicated traders.</p>
+            <h3 className="text-xl font-headline font-semibold mb-2">Seguro e Exclusivo</h3>
+            <p className="text-muted-foreground text-sm">Plataforma confiável com acesso por assinatura para traders dedicados.</p>
           </div>
         </div>
       </main>
@@ -51,10 +51,10 @@ export default function HomePage() {
       <footer className="py-8 border-t border-border text-center">
         <AppLogo />
         <p className="text-sm text-muted-foreground mt-2">
-          © {new Date().getFullYear()} MemeTrade Pro. All rights reserved.
+          © {new Date().getFullYear()} MemeTrade Pro. Todos os direitos reservados.
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Disclaimer: Trading cryptocurrency involves significant risk of loss.
+          Aviso Legal: A negociação de criptomoedas envolve risco significativo de perda.
         </p>
       </footer>
     </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { explainWhyThisCoin, type ExplainWhyThisCoinInput, type ExplainWhyThisCoinOutput } from "@/ai/flows/why-this-coin";
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface WhyThisCoinModalProps {
@@ -24,7 +24,8 @@ export function WhyThisCoinModal({ isOpen, onClose, coinName, technicalAnalysis,
     if (isOpen && !explanation && !isLoading) { // Only fetch if modal is open and no explanation yet
       fetchExplanation();
     }
-  }, [isOpen]); // Re-fetch if modal is reopened and dependencies changed (though they shouldn't here)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]); // Re-fetch if modal is reopened
 
   const fetchExplanation = async () => {
     setIsLoading(true);
@@ -40,7 +41,7 @@ export function WhyThisCoinModal({ isOpen, onClose, coinName, technicalAnalysis,
       setExplanation(result.explanation);
     } catch (e) {
       console.error("Error fetching AI explanation:", e);
-      setError("Failed to generate AI explanation. Please try again.");
+      setError("Falha ao gerar a explicação da IA. Por favor, tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -52,10 +53,10 @@ export function WhyThisCoinModal({ isOpen, onClose, coinName, technicalAnalysis,
         <DialogHeader>
           <DialogTitle className="flex items-center text-2xl font-headline">
             <Wand2 className="mr-2 h-6 w-6 text-primary" />
-            AI Analysis: Why {coinName}?
+            Análise IA: Por que {coinName}?
           </DialogTitle>
           <DialogDescription>
-            An AI-powered breakdown of the rationale behind this trade call.
+            Uma análise detalhada, com tecnologia de IA, da lógica por trás deste alerta de trade.
           </DialogDescription>
         </DialogHeader>
         
@@ -63,13 +64,13 @@ export function WhyThisCoinModal({ isOpen, onClose, coinName, technicalAnalysis,
           {isLoading && (
             <div className="flex flex-col items-center justify-center space-y-2 p-8">
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="text-muted-foreground">Generating insights...</p>
+              <p className="text-muted-foreground">Gerando insights...</p>
             </div>
           )}
           {error && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>Erro</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -82,12 +83,12 @@ export function WhyThisCoinModal({ isOpen, onClose, coinName, technicalAnalysis,
 
         <DialogFooter className="sm:justify-between gap-2">
            <Button variant="outline" onClick={onClose}>
-            Close
+            Fechar
           </Button>
           {!isLoading && (explanation || error) && ( // Show refresh only if not loading and there's content or error
             <Button onClick={fetchExplanation} variant="ghost" className="text-primary hover:bg-primary/10">
               <Loader2 className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh Analysis
+              Atualizar Análise
             </Button>
           )}
         </DialogFooter>
