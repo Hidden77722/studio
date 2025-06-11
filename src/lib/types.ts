@@ -84,7 +84,7 @@ export interface HotPair {
   dexScreenerUrl?: string;
 }
 
-// Tipos para o novo fluxo de análise de sentimento
+// Tipos para o fluxo de análise de sentimento
 export interface MarketSentimentInput {
   coinName: string;
   description: string;
@@ -97,4 +97,24 @@ export type HypePotential = "Alta" | "Moderada" | "Baixa";
 export interface MarketSentimentOutput {
   hypePotential: HypePotential;
   justification: string;
+}
+
+// Tipos para o novo fluxo de geração de call de trade
+export interface GenerateTradeCallInput {
+  coinName: string;
+  volume24h: number;
+  liquidity: number;
+  currentPrice: number;
+  priceChange1h: number; // percentage
+  priceChange24h: number; // percentage
+  isOnHotList: boolean;
+}
+
+export interface GeneratedTradeCallOutput {
+  moeda: string;
+  hora_call: string; 
+  entrada: string; // Formatted price string e.g., "$0.00000421"
+  alvo: string; // Formatted price string
+  stop: string; // Formatted price string
+  motivo: string;
 }
