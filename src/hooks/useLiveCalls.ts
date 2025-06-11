@@ -11,7 +11,7 @@ const REAL_COIN_POOL = [
   { contractAddress: 'shib_contract_placeholder', name: 'Shiba Inu (Simulado)', symbol: 'SHIB', imageUrl: 'https://placehold.co/40x40.png?text=SH', logoAiHint: 'shiba inu' },
   { contractAddress: 'pepe_contract_placeholder', name: 'Pepe (Simulado)', symbol: 'PEPE', imageUrl: 'https://placehold.co/40x40.png?text=PP', logoAiHint: 'pepe frog' },
   { contractAddress: 'bonk_contract_placeholder', name: 'Bonk (Simulado)', symbol: 'BONK', imageUrl: 'https://placehold.co/40x40.png?text=BK', logoAiHint: 'bonk dog' },
-  { contractAddress: 'wif_contract_placeholder', name: 'Dogwifhat (Simulado)', symbol: 'WIF', imageUrl: 'https://placehold.co/40x40.png?text=WF', logoAiHint: 'dog wif hat' },
+  { contractAddress: 'wif_contract_placeholder', name: 'Dogwifhat (Simulado)', symbol: 'WIF', imageUrl: 'https://placehold.co/40x40.png', logoAiHint: 'dog hat' },
   { contractAddress: 'floki_contract_placeholder', name: 'FLOKI (Simulado)', symbol: 'FLOKI', imageUrl: 'https://placehold.co/40x40.png?text=FL', logoAiHint: 'floki inu' }
 ];
 
@@ -177,28 +177,30 @@ export function useLiveCalls() {
   }, [generateNewCall]);
 
   useEffect(() => {
-    if (isLoadingInitial || liveCalls.length === 0) return;
+    if (isLoadingInitial || liveCalls.length === 0) return; 
 
     const intervalId = setInterval(async () => {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
+          // Evita adicionar duplicatas pelo símbolo da moeda, caso o ID seja muito similar
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
+            // Poderia atualizar o existente aqui, mas para este exemplo, vamos apenas manter o antigo
             return prevCalls;
           }
 
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-            calls.shift();
+            calls.shift(); // Remove o mais antigo para manter o número de cards
           }
-          calls.push(newCall);
+          calls.push(newCall); // Adiciona o novo
           return calls;
         });
       }
-    }, 7000);
+    }, 7000); // Intervalo para tentar gerar novo alerta
 
     return () => clearInterval(intervalId);
-  }, [isLoadingInitial, generateNewCall, liveCalls.length]);
+  }, [isLoadingInitial, generateNewCall, liveCalls.length]); // Adicionado liveCalls.length como dependência
 
   return { liveCalls, isLoadingInitial };
 }
