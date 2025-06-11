@@ -15,7 +15,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Home, BarChart3, History, Settings, Info, HelpCircle, Newspaper, Rss } from "lucide-react";
+import { Home, BarChart3, History, Settings, Info, HelpCircle, Newspaper, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -23,7 +23,7 @@ import React from "react";
 const navItems = [
   { href: "/dashboard", label: "Início do Painel", icon: Home },
   { href: "/dashboard/live-calls", label: "Alertas ao Vivo", icon: Newspaper },
-  { href: "/dashboard/twitter-feed", label: "Feed de MemeCoins", icon: Rss },
+  { href: "/dashboard/influencers", label: "Influenciadores", icon: Users },
   { href: "/dashboard/history", label: "Histórico de Trades", icon: History },
   { href: "/dashboard/performance", label: "Desempenho", icon: BarChart3 },
   { href: "/dashboard/why-this-coin-examples", label: "Insights de IA", icon: Info },

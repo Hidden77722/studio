@@ -41,18 +41,12 @@ export interface UserProfile {
   subscriptionEndDate?: string;
 }
 
-export interface MockTweet {
+export interface TwitterInfluencer {
   id: string;
-  userName: string;
-  userHandle: string;
+  name: string;
+  handle: string;
+  description: string;
+  twitterUrl: string;
   avatarUrl: string;
-  content: string;
-  timestamp: string; 
-  likes: number;
-  retweets: number;
-  replies: number;
-  imageUrl?: string;
-  coinTags?: string[];
-  dataAiHintAvatar?: string; 
-  dataAiHintImage?: string;
+  dataAiHintAvatar?: string;
 }
