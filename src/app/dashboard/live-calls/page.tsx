@@ -126,8 +126,7 @@ export default function LiveCallsPage() {
       setIsLoadingInitial(false);
     };
     loadInitialCalls();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generateNewCall]); // generateNewCall is memoized
+  }, [generateNewCall]);
 
   useEffect(() => {
     if (isLoadingInitial) return;
