@@ -12,12 +12,13 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import axios from 'axios';
 
+// Input schema is an empty object because the flow fetches its own data.
 const GenerateTradeCallInputSchema = z.object({});
 export type GenerateTradeCallInput = z.infer<typeof GenerateTradeCallInputSchema>;
 
 
 const GeneratedTradeCallOutputSchema = z.object({
-  moeda: z.string().describe('O nome da moeda escolhida para a call, ou "Nenhuma call no momento" se nenhuma for considerada promissora.'),
+  moeda: z.string().describe('O nome da moeda escolhida para a call, ou "Nenhuma call no momento" se nenhuma for considerada promissora ou se os dados de entrada indicarem ausência de informação.'),
   hora_call: z.string().optional().describe('A hora ideal de entrada sugerida em formato HH:MM UTC (ex: "14:30 UTC"). Opcional se nenhuma call for recomendada, mas esperado se uma call for gerada.'),
   entrada: z.string().optional().describe('O preço de entrada ideal (Entry) sugerido para a moeda escolhida, formatado como string com "$" (ex: "$0.00000421"). Opcional se nenhuma call for recomendada.'),
   alvos: z.array(
@@ -27,7 +28,7 @@ const GeneratedTradeCallOutputSchema = z.object({
     })
   ).length(2).optional().describe("Uma lista contendo exatamente dois alvos de lucro (take profit) para a moeda escolhida. Opcional se nenhuma call for recomendada."),
   stop: z.string().optional().describe('O preço de stop loss sugerido para a moeda escolhida, formatado como string com "$" (ex: "$0.00000390"). Opcional se nenhuma call for recomendada.'),
-  motivo: z.string().optional().describe('Um motivo técnico conciso para a call de trade da moeda escolhida, ou uma explicação se nenhuma call for gerada. Baseado nos dados de mercado fornecidos.'),
+  motivo: z.string().optional().describe('Um motivo técnico conciso para a call de trade da moeda escolhida, ou uma explicação se nenhuma call for gerada ou se os dados de entrada indicarem ausência de informação. Baseado nos dados de mercado fornecidos.'),
   risco: z.enum(["Baixo", "Médio", "Alto", "Nenhum"]).optional().describe("A classificação de risco da call de trade para a moeda escolhida (Baixo, Médio, ou Alto). 'Nenhum' se nenhuma call for recomendada.")
 });
 export type GeneratedTradeCallOutput = z.infer<typeof GeneratedTradeCallOutputSchema>;
@@ -62,14 +63,13 @@ interface DexScreenerApiResponse {
 
 const generateTradeCallPrompt = ai.definePrompt({
   name: 'generateTradeCallPrompt',
-  // model: 'openai/gpt-3.5-turbo', // Reverted to use global default (Google AI) due to previous npm install issues
   input: {schema: z.object({ marketAnalysisData: z.string() })},
   output: {schema: GeneratedTradeCallOutputSchema},
   prompt: `
-Você é um analista de criptomoedas. Sua função é gerar uma call de trade com base na moeda (ou na melhor das moedas) listada abaixo.
-**Nunca diga que não há oportunidades.** Sempre gere uma call, mesmo que o risco seja alto, escolhendo a melhor opção disponível.
+Você é um trader profissional.
+Sua principal diretriz é: **Sempre gere uma call de trade**, mesmo que o risco seja alto. Escolha a melhor oportunidade disponível com base nos dados fornecidos. **Nunca responda que não há oportunidades.**
 
-Com base na(s) moeda(s) fornecida(s) em 'Moeda(s) Analisada(s)', gere uma call completa incluindo:
+Analise a(s) moeda(s) listada(s) abaixo em 'Moeda(s) Analisada(s)'. Escolha **apenas uma** moeda e gere uma call completa incluindo:
 - Nome da moeda
 - Preço de entrada ideal (Entry)
 - Alvo 1 e Alvo 2 (Take Profit)
@@ -81,25 +81,23 @@ Com base na(s) moeda(s) fornecida(s) em 'Moeda(s) Analisada(s)', gere uma call c
 Moeda(s) Analisada(s):
 {{{marketAnalysisData}}}
 
-Se os dados em 'Moeda(s) Analisada(s)' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas erros, então sua resposta DEVE ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" explicando a ausência de dados ou o problema. Caso contrário, VOCÊ DEVE ESCOLHER UMA MOEDA E GERAR UMA CALL COMPLETA.
+Se os dados em 'Moeda(s) Analisada(s)' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas erros, então sua resposta DEVE ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" explicando a ausência de dados ou o problema.
+Caso contrário, VOCÊ DEVE ESCOLHER UMA MOEDA E GERAR UMA CALL COMPLETA.
     `.trim(),
 });
 
 const generateTradeCallFlow = ai.defineFlow(
   {
     name: 'generateTradeCallFlow',
-    inputSchema: GenerateTradeCallInputSchema, // Still expects an empty object as input
+    inputSchema: GenerateTradeCallInputSchema,
     outputSchema: GeneratedTradeCallOutputSchema,
   },
-  async (): Promise<GeneratedTradeCallOutput> => { // Input parameter is not used as data is fetched internally
+  async (): Promise<GeneratedTradeCallOutput> => {
     let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento.";
     try {
-      // Example: Fetch data for a few specific Solana pairs.
-      // Replace with "https://api.dexscreener.com/latest/dex/pairs" to get all, but be mindful of data volume.
       const response = await axios.get<DexScreenerApiResponse>("https://api.dexscreener.com/latest/dex/pairs/solana/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp,82ZJj2gXhL7p7tSAmE2z4hMv5f5sKRjS2wWqS6u6VBiM,32CKP31hST2bvaGKMEMLh2Xm9sN6gQp64t56pjpCMg1T,DezXAZ8z7PnrnRJjz3wXBoRgixCa6xPgt7QCUsKSDbEBA,JUPyiWgKj3p5V4x4zzq9W9gUf2g8JBvWcK2x2Azft3p,KNCRHVxYSH4uLKejZFSjdz2WwXJtre4CZRPSXkahrwp");
       const pairs = response.data.pairs || [];
 
-      // Relaxed Filter: volume >= 20k, liquidez >= 5k, (crescimento 5% em 1h OR 10% em 24h)
       const filtered = pairs.filter((pair) => {
         const vol = parseFloat(pair.volume?.h24 || '0');
         const liq = parseFloat(pair.liquidity?.usd || '0');
@@ -112,7 +110,7 @@ const generateTradeCallFlow = ai.defineFlow(
       if (filtered.length > 0) {
         const topCoins = filtered
           .sort((a, b) => parseFloat(b.volume?.h24 || '0') - parseFloat(a.volume?.h24 || '0'))
-          .slice(0, 3); // Limit to top 3
+          .slice(0, 3); 
 
         marketAnalysisData = topCoins.map((coin) => {
           return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
@@ -132,8 +130,7 @@ const generateTradeCallFlow = ai.defineFlow(
     if (!output) {
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
-
-    // Add current UTC time if a call is generated and hora_call is missing
+    
     if (output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
         const now = new Date();
         output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
