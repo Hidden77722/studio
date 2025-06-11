@@ -1,17 +1,16 @@
 
 "use client";
 
-import React from 'react'; // Removed useState, useEffect as they are now in the hook
+import React from 'react'; 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
 import { PerformanceChart } from "./components/PerformanceChart";
-import type { HistoricalCall, UserPerformance } from "@/lib/types"; // MemeCoinCall removed as it comes from hook
+import type { HistoricalCall, UserPerformance } from "@/lib/types"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
-import { useLiveCalls } from '@/hooks/useLiveCalls'; // Import the new hook
+import { useLiveCalls } from '@/hooks/useLiveCalls'; 
 
-// Mock historical calls and user performance remain local to this page if not shared elsewhere
 const mockHistoricalCalls: HistoricalCall[] = [
   {
     id: "h1",
@@ -95,7 +94,7 @@ const mockUserPerformance: UserPerformance = {
 const NUMBER_OF_VISIBLE_CARDS_DASHBOARD = 2;
 
 export default function DashboardPage() {
-  const { liveCalls, isLoadingInitial } = useLiveCalls(); // Use the hook
+  const { liveCalls, isLoadingInitial } = useLiveCalls(); 
 
   return (
     <div className="space-y-6">
@@ -124,7 +123,8 @@ export default function DashboardPage() {
           ) : (
             <div className="flex flex-col items-center justify-center h-48 bg-card rounded-lg p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-3"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
-                <p className="text-muted-foreground">Nenhum alerta ativo no momento. Fique ligado!</p>
+                <p className="text-muted-foreground text-center">Nenhum alerta ativo no momento. Fique ligado!</p>
+                {!isLoadingInitial && <p className="text-xs text-muted-foreground mt-2 text-center">(Se este problema persistir, pode haver uma dificuldade em buscar dados da API CoinGecko. Verifique sua conexão ou o status da API.)</p>}
             </div>
           )}
         </TabsContent>
@@ -193,5 +193,3 @@ function StatCard({ title, value, icon }: StatCardProps) {
     </Card>
   );
 }
-
-    

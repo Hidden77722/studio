@@ -18,7 +18,7 @@ const ALERT_TEMPLATES = [
     idBase: "template1",
     reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento. Volume na Axiom Trade subindo.",
     targetsConfig: [{ multiplier: 1.5, percentageFormat: "+50%" }, { multiplier: 2.0, percentageFormat: "+100%" }],
-    stopLossConfig: { multiplier: 0.85 }, // Stop at 15% loss
+    stopLossConfig: { multiplier: 0.85 }, 
     technicalAnalysisSummary: "Acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70. Próxima resistência significativa distante.",
     marketSentimentSummary: "Campanha #ToTheMoon viralizando no Twitter. Posts em r/MemeCoinMoonshots explodindo. Sentimento de FOMO. Grande volume na Axiom Trade.",
   },
@@ -26,7 +26,7 @@ const ALERT_TEMPLATES = [
     idBase: "template2",
     reason: "Anúncio de parceria com grande influenciador e listagem iminente em corretora. Gráfico mostra acumulação. Comentários positivos sobre Axiom Trade.",
     targetsConfig: [{ multiplier: 1.8, percentageFormat: "+80%" }, { multiplier: 2.5, percentageFormat: "+150%" }],
-    stopLossConfig: { multiplier: 0.9 }, // Stop at 10% loss
+    stopLossConfig: { multiplier: 0.9 }, 
     technicalAnalysisSummary: "Formou um padrão 'copo e alça' no gráfico de 4H. Volume de acumulação tem aumentado. Suporte forte na média móvel de 50 períodos.",
     marketSentimentSummary: "Influenciador 'CryptoGuru' (10M seguidores) postou sobre a moeda. Rumores de listagem na 'MemeXchange'. Comunidade no Discord e Telegram engajada.",
   },
@@ -34,15 +34,15 @@ const ALERT_TEMPLATES = [
     idBase: "template3",
     reason: "Nova narrativa 'Killer 2.0' ganhando tração no Reddit. Análise de contrato indica baixo risco. Volume na Axiom Trade começando a subir.",
     targetsConfig: [{ multiplier: 2.0, percentageFormat: "+100%" }, { multiplier: 3.0, percentageFormat: "+200%" }],
-    stopLossConfig: { multiplier: 0.8 }, // Stop at 20% loss
+    stopLossConfig: { multiplier: 0.8 }, 
     technicalAnalysisSummary: "Formando um fundo arredondado no gráfico de 15min, com divergência bullish no MACD. Rompimento da neckline pode levar a uma rápida valorização.",
     marketSentimentSummary: "Thread viral em r/SatoshiStreetBets. Diversos tweets de contas de 'crypto gems' mencionando. Sentimento extremamente positivo. Axiom Trade com volume crescente.",
   }
 ];
 
 const NUMBER_OF_CALLS_MANAGED_BY_HOOK = 3;
-const MAX_FETCH_RETRIES = 3;
-const RETRY_DELAY_MS = 1000; // 1 second
+const MAX_FETCH_RETRIES = 5; // Aumentado de 3 para 5
+const RETRY_DELAY_MS = 2000; // Aumentado de 1000 para 2000 (delay base para backoff)
 
 async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
   let attempts = 0;
@@ -52,20 +52,19 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
       if (!response.ok) {
         const statusText = response.statusText || 'Unknown error';
         console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}): ${response.status} ${statusText}`);
-        if (response.status === 429) { // Rate limit
+        if (response.status === 429) { 
             attempts++;
             if (attempts < MAX_FETCH_RETRIES) {
-                const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); // Exponential backoff
+                const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); 
                 console.warn(`Rate limit (429) para ${coinId}. Tentando novamente em ${delay / 1000}s...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } else {
                  console.warn(`Rate limit (429) para ${coinId} após ${MAX_FETCH_RETRIES} tentativas. Desistindo.`);
                  return null;
             }
-            continue;
+            continue; 
         }
-        // For other non-OK responses, don't retry indefinitely, fail after first attempt if not a rate limit
-        return null;
+        return null; // Para outros erros não OK, não tenta novamente indefinidamente.
       }
       const data = await response.json();
 
@@ -86,7 +85,7 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
       attempts++;
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (attempts < MAX_FETCH_RETRIES) {
-        const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); // Exponential backoff
+        const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); 
         console.warn(`Falha de rede ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}. Tentando novamente em ${delay / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       } else {
@@ -140,23 +139,20 @@ export function useLiveCalls() {
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
       let generationAttempts = 0;
-      const maxGenerationAttempts = NUMBER_OF_CALLS_MANAGED_BY_HOOK * (MAX_FETCH_RETRIES + 2); // Increased attempts margin
+      const maxGenerationAttempts = NUMBER_OF_CALLS_MANAGED_BY_HOOK * (MAX_FETCH_RETRIES + 2); 
 
       while(newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK && generationAttempts < maxGenerationAttempts) {
         const call = await generateNewCall();
         if (call) {
-          // Avoid duplicate coin symbols in initial load if possible
           if (!newLiveCalls.some(existingCall => existingCall.coinSymbol === call.coinSymbol)) {
              newLiveCalls.push(call);
           } else {
-            // If coin already exists, try generating for a different one to fill slots faster
-            generationAttempts++; // Count this as an attempt
+            generationAttempts++; 
             continue;
           }
         } else {
-          // If call generation failed (e.g., price fetch failed), add a small delay before retrying
           if (newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2));
+             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2)); // Delay if generation fails
           }
         }
         generationAttempts++;
@@ -181,26 +177,22 @@ export function useLiveCalls() {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
-          // Avoid adding if the same coin is already present to prevent immediate visual duplicates
-          // This logic can be adjusted based on desired behavior (e.g., update existing)
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
             return prevCalls; 
           }
 
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-            calls.shift(); // Remove the oldest call
+            calls.shift(); 
           }
-          calls.push(newCall); // Add the new call
+          calls.push(newCall); 
           return calls;
         });
       }
-    }, 7000); // Interval for new calls
+    }, 7000); 
 
     return () => clearInterval(intervalId);
-  }, [isLoadingInitial, generateNewCall, liveCalls.length]); // liveCalls.length added to re-evaluate if it becomes 0
+  }, [isLoadingInitial, generateNewCall, liveCalls.length]); 
 
   return { liveCalls, isLoadingInitial };
 }
-
-    
