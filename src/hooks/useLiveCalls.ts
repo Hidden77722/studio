@@ -4,97 +4,103 @@
 import type { MemeCoinCall } from "@/lib/types";
 import React, { useState, useEffect, useCallback } from 'react';
 
+// REAL_COIN_POOL agora usa contractAddress como identificador principal para Birdeye
+// e placehold.co para image URLs.
 const REAL_COIN_POOL = [
-  { coingeckoId: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE', imageUrl: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png', logoAiHint: 'dogecoin logo' },
-  { coingeckoId: 'shiba-inu', name: 'Shiba Inu', symbol: 'SHIB', imageUrl: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png', logoAiHint: 'shiba inu' },
-  { coingeckoId: 'pepe', name: 'Pepe', symbol: 'PEPE', imageUrl: 'https://assets.coingecko.com/coins/images/29850/large/pepe.jpeg', logoAiHint: 'pepe frog' },
-  { coingeckoId: 'bonk', name: 'Bonk', symbol: 'BONK', imageUrl: 'https://assets.coingecko.com/coins/images/28600/large/bonk.jpg', logoAiHint: 'bonk dog' },
-  { coingeckoId: 'dogwifhat', name: 'dogwifhat', symbol: 'WIF', imageUrl: 'https://assets.coingecko.com/coins/images/33566/large/dogwifhat.jpg', logoAiHint: 'dog wif hat' },
-  { coingeckoId: 'floki', name: 'FLOKI', symbol: 'FLOKI', imageUrl: 'https://assets.coingecko.com/coins/images/16746/large/floki-inu.png', logoAiHint: 'floki inu' }
+  { contractAddress: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp', name: 'Dogecoin (Simulado)', symbol: 'DOGE', imageUrl: 'https://placehold.co/40x40.png?text=DG', logoAiHint: 'dogecoin logo' },
+  { contractAddress: 'shib_contract_placeholder', name: 'Shiba Inu (Simulado)', symbol: 'SHIB', imageUrl: 'https://placehold.co/40x40.png?text=SH', logoAiHint: 'shiba inu' },
+  { contractAddress: 'pepe_contract_placeholder', name: 'Pepe (Simulado)', symbol: 'PEPE', imageUrl: 'https://placehold.co/40x40.png?text=PP', logoAiHint: 'pepe frog' },
+  { contractAddress: 'bonk_contract_placeholder', name: 'Bonk (Simulado)', symbol: 'BONK', imageUrl: 'https://placehold.co/40x40.png?text=BK', logoAiHint: 'bonk dog' },
+  { contractAddress: 'wif_contract_placeholder', name: 'Dogwifhat (Simulado)', symbol: 'WIF', imageUrl: 'https://placehold.co/40x40.png?text=WF', logoAiHint: 'dog wif hat' },
+  { contractAddress: 'floki_contract_placeholder', name: 'FLOKI (Simulado)', symbol: 'FLOKI', imageUrl: 'https://placehold.co/40x40.png?text=FL', logoAiHint: 'floki inu' }
 ];
 
 const ALERT_TEMPLATES = [
   {
     idBase: "template1",
-    reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento. Volume na Axiom Trade subindo.",
+    reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento. Volume na (Exchange X) subindo.",
     targetsConfig: [{ multiplier: 1.5, percentageFormat: "+50%" }, { multiplier: 2.0, percentageFormat: "+100%" }],
-    stopLossConfig: { multiplier: 0.85 }, 
-    technicalAnalysisSummary: "Acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70. Próxima resistência significativa distante.",
-    marketSentimentSummary: "Campanha #ToTheMoon viralizando no Twitter. Posts em r/MemeCoinMoonshots explodindo. Sentimento de FOMO. Grande volume na Axiom Trade.",
+    stopLossConfig: { multiplier: 0.85 },
+    technicalAnalysisSummary: "Acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70.",
+    marketSentimentSummary: "Campanha #ToTheMoon viralizando no Twitter. Posts em r/MemeCoinMoonshots explodindo. Sentimento de FOMO.",
   },
   {
     idBase: "template2",
-    reason: "Anúncio de parceria com grande influenciador e listagem iminente em corretora. Gráfico mostra acumulação. Comentários positivos sobre Axiom Trade.",
+    reason: "Anúncio de parceria com grande influenciador e listagem iminente em corretora. Gráfico mostra acumulação.",
     targetsConfig: [{ multiplier: 1.8, percentageFormat: "+80%" }, { multiplier: 2.5, percentageFormat: "+150%" }],
-    stopLossConfig: { multiplier: 0.9 }, 
-    technicalAnalysisSummary: "Formou um padrão 'copo e alça' no gráfico de 4H. Volume de acumulação tem aumentado. Suporte forte na média móvel de 50 períodos.",
-    marketSentimentSummary: "Influenciador 'CryptoGuru' (10M seguidores) postou sobre a moeda. Rumores de listagem na 'MemeXchange'. Comunidade no Discord e Telegram engajada.",
+    stopLossConfig: { multiplier: 0.9 },
+    technicalAnalysisSummary: "Formou um padrão 'copo e alça' no gráfico de 4H. Volume de acumulação tem aumentado.",
+    marketSentimentSummary: "Influenciador 'CryptoGuru' (10M seguidores) postou sobre a moeda. Rumores de listagem na 'MemeXchange'.",
   },
   {
     idBase: "template3",
-    reason: "Nova narrativa 'Killer 2.0' ganhando tração no Reddit. Análise de contrato indica baixo risco. Volume na Axiom Trade começando a subir.",
+    reason: "Nova narrativa 'Killer 2.0' ganhando tração no Reddit. Análise de contrato indica baixo risco.",
     targetsConfig: [{ multiplier: 2.0, percentageFormat: "+100%" }, { multiplier: 3.0, percentageFormat: "+200%" }],
-    stopLossConfig: { multiplier: 0.8 }, 
-    technicalAnalysisSummary: "Formando um fundo arredondado no gráfico de 15min, com divergência bullish no MACD. Rompimento da neckline pode levar a uma rápida valorização.",
-    marketSentimentSummary: "Thread viral em r/SatoshiStreetBets. Diversos tweets de contas de 'crypto gems' mencionando. Sentimento extremamente positivo. Axiom Trade com volume crescente.",
+    stopLossConfig: { multiplier: 0.8 },
+    technicalAnalysisSummary: "Formando um fundo arredondado no gráfico de 15min, com divergência bullish no MACD.",
+    marketSentimentSummary: "Thread viral em r/SatoshiStreetBets. Diversos tweets de contas de 'crypto gems' mencionando.",
   }
 ];
 
 const NUMBER_OF_CALLS_MANAGED_BY_HOOK = 3;
-const MAX_FETCH_RETRIES = 5; // Aumentado de 3 para 5
-const RETRY_DELAY_MS = 2000; // Aumentado de 1000 para 2000 (delay base para backoff)
+const MAX_FETCH_RETRIES = 5;
+const RETRY_DELAY_MS = 2000; // Base delay for Birdeye (placeholder) attempts
 
-async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
+// Placeholder para a função de busca da API Birdeye
+// Em uma implementação real, esta função chamaria seu backend que, por sua vez, chamaria a Birdeye com uma chave de API.
+async function fetchPriceFromBirdeyeAPI(contractAddress: string | null): Promise<number | null> {
+  if (!contractAddress) {
+    console.warn(`Tentando buscar preço da Birdeye, mas o endereço do contrato não foi fornecido.`);
+    return null;
+  }
+
+  console.log(`[Birdeye Placeholder] Simulating fetch for contract: ${contractAddress}`);
+  // Simula uma chamada de API. Substitua pela sua lógica de backend.
+  // Para fins de teste, retorna um preço mockado ou null para simular falhas.
+  await new Promise(resolve => setTimeout(resolve, 500)); // Simula latência da rede
+
+  // Chance de simular falha
+  // if (Math.random() < 0.3) {
+  //   console.warn(`[Birdeye Placeholder] Simulated API fetch failure for ${contractAddress}`);
+  //   return null;
+  // }
+
+  // Retorna um preço mockado
+  const mockPrice = Math.random() * 0.001 + 0.00001;
+  console.log(`[Birdeye Placeholder] Mock price for ${contractAddress}: ${mockPrice}`);
+  return mockPrice;
+}
+
+
+async function fetchCoinPrice(contractAddress: string | null): Promise<number | null> {
   let attempts = 0;
+  console.log(`Iniciando busca de preço para o contrato: ${contractAddress || 'N/A'} (tentativa ${attempts + 1})`);
+
   while (attempts < MAX_FETCH_RETRIES) {
     try {
-      const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
-      if (!response.ok) {
-        const statusText = response.statusText || 'Unknown error';
-        console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}): ${response.status} ${statusText}`);
-        if (response.status === 429) { 
-            attempts++;
-            if (attempts < MAX_FETCH_RETRIES) {
-                const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); 
-                console.warn(`Rate limit (429) para ${coinId}. Tentando novamente em ${delay / 1000}s...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-                 console.warn(`Rate limit (429) para ${coinId} após ${MAX_FETCH_RETRIES} tentativas. Desistindo.`);
-                 return null;
-            }
-            continue; 
-        }
-        return null; // Para outros erros não OK, não tenta novamente indefinidamente.
-      }
-      const data = await response.json();
+      const price = await fetchPriceFromBirdeyeAPI(contractAddress); // Tenta Birdeye (placeholder)
 
-      if (!data || typeof data[coinId] === 'undefined') {
-        console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Resposta:`, data);
-        return null;
+      if (price !== null) {
+        console.log(`Preço obtido da Birdeye (placeholder) para ${contractAddress || 'N/A'} na tentativa ${attempts + 1}: ${price}`);
+        return price;
       }
+      // Se Birdeye (placeholder) falhar, loga e tenta novamente se houver tentativas
+      console.warn(`Falha ao obter preço da Birdeye (placeholder) para ${contractAddress || 'N/A'} (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}).`);
 
-      const coinData = data[coinId];
-      const price = coinData.usd;
-
-      if (typeof price !== 'number') {
-        console.warn(`Preço USD para ${coinId} está ausente ou não é um número (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Dados recebidos para a moeda:`, coinData);
-        return null;
-      }
-      return price;
     } catch (error) {
-      attempts++;
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (attempts < MAX_FETCH_RETRIES) {
-        const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); 
-        console.warn(`Falha de rede ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}. Tentando novamente em ${delay / 1000}s...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      } else {
-        console.warn(`Falha de rede ao buscar preço para ${coinId} após ${MAX_FETCH_RETRIES} tentativas: ${errorMessage}. Verifique sua conexão ou o status da API CoinGecko.`);
-        return null; // Final failure
-      }
+      console.warn(`Erro na tentativa ${attempts + 1}/${MAX_FETCH_RETRIES} de buscar preço para ${contractAddress || 'N/A'} via Birdeye (placeholder): ${errorMessage}`);
+    }
+
+    attempts++;
+    if (attempts < MAX_FETCH_RETRIES) {
+      const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); // Backoff exponencial
+      console.log(`Tentando novamente em ${delay / 1000}s...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  console.warn(`[SAFGUARD] Saindo de fetchCoinCurrentPrice para ${coinId} sem retornar um valor após ${MAX_FETCH_RETRIES} tentativas.`);
+
+  console.warn(`Falha ao obter preço para ${contractAddress || 'N/A'} após ${MAX_FETCH_RETRIES} tentativas usando Birdeye (placeholder).`);
   return null;
 }
 
@@ -106,8 +112,11 @@ export function useLiveCalls() {
     const randomTemplate = ALERT_TEMPLATES[Math.floor(Math.random() * ALERT_TEMPLATES.length)];
     const randomCoinInfo = REAL_COIN_POOL[Math.floor(Math.random() * REAL_COIN_POOL.length)];
 
-    const currentPrice = await fetchCoinCurrentPrice(randomCoinInfo.coingeckoId);
-    if (currentPrice === null) return null;
+    const currentPrice = await fetchCoinPrice(randomCoinInfo.contractAddress); // Usa a nova função
+    if (currentPrice === null) {
+      console.warn(`Não foi possível gerar alerta para ${randomCoinInfo.name} porque o preço não pôde ser obtido.`);
+      return null;
+    }
 
     const entryPrice = currentPrice;
     const targets = randomTemplate.targetsConfig.map(t => ({
@@ -118,7 +127,7 @@ export function useLiveCalls() {
     const now = new Date();
 
     return {
-      id: `${randomTemplate.idBase}-${randomCoinInfo.coingeckoId}-${now.getTime()}`,
+      id: `${randomTemplate.idBase}-${randomCoinInfo.symbol}-${now.getTime()}`, // Usa symbol para id
       coinName: randomCoinInfo.name,
       coinSymbol: randomCoinInfo.symbol,
       logoUrl: randomCoinInfo.imageUrl,
@@ -134,33 +143,30 @@ export function useLiveCalls() {
   }, []);
 
   useEffect(() => {
+    console.log("Iniciando carregamento de alertas ao vivo (useLiveCalls)...");
     const loadInitialCalls = async () => {
-      console.log("Iniciando carregamento de alertas ao vivo (useLiveCalls)...");
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
       let generationAttempts = 0;
-      const maxGenerationAttempts = NUMBER_OF_CALLS_MANAGED_BY_HOOK * (MAX_FETCH_RETRIES + 2); 
+      const maxGenerationAttempts = NUMBER_OF_CALLS_MANAGED_BY_HOOK * (MAX_FETCH_RETRIES + 2);
 
       while(newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK && generationAttempts < maxGenerationAttempts) {
         const call = await generateNewCall();
         if (call) {
           if (!newLiveCalls.some(existingCall => existingCall.coinSymbol === call.coinSymbol)) {
              newLiveCalls.push(call);
-          } else {
-            generationAttempts++; 
-            continue;
-          }
-        } else {
-          if (newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2)); // Delay if generation fails
           }
         }
         generationAttempts++;
+        if (newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK && generationAttempts < maxGenerationAttempts && !call) {
+            // Adiciona um pequeno atraso se a geração da chamada falhar para não sobrecarregar
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2));
+        }
       }
       setLiveCalls(newLiveCalls);
       setIsLoadingInitial(false);
       if (newLiveCalls.length === 0 && generationAttempts >= maxGenerationAttempts) {
-        console.warn("Não foi possível carregar nenhum alerta inicial (useLiveCalls) após várias tentativas. Verifique a conexão e o status da API CoinGecko.");
+        console.warn("Não foi possível carregar nenhum alerta inicial (useLiveCalls) após várias tentativas. Verifique a implementação da API Birdeye e a conexão.");
       } else if (newLiveCalls.length < NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
         console.warn(`Carregados ${newLiveCalls.length}/${NUMBER_OF_CALLS_MANAGED_BY_HOOK} alertas iniciais (useLiveCalls).`);
       } else {
@@ -171,28 +177,28 @@ export function useLiveCalls() {
   }, [generateNewCall]);
 
   useEffect(() => {
-    if (isLoadingInitial || liveCalls.length === 0) return; 
+    if (isLoadingInitial || liveCalls.length === 0) return;
 
     const intervalId = setInterval(async () => {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
-            return prevCalls; 
+            return prevCalls;
           }
 
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-            calls.shift(); 
+            calls.shift();
           }
-          calls.push(newCall); 
+          calls.push(newCall);
           return calls;
         });
       }
-    }, 7000); 
+    }, 7000);
 
     return () => clearInterval(intervalId);
-  }, [isLoadingInitial, generateNewCall, liveCalls.length]); 
+  }, [isLoadingInitial, generateNewCall, liveCalls.length]);
 
   return { liveCalls, isLoadingInitial };
 }
