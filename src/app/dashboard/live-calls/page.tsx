@@ -65,7 +65,7 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
     }
     return price;
   } catch (error) {
-    console.error(`Erro de rede ou parse ao buscar preço para ${coinId} da CoinGecko:`, error);
+    console.error(`Erro de rede (verifique sua conexão) ou parse ao buscar preço para ${coinId} da CoinGecko (${(error as Error).message}):`, error);
     return null;
   }
 }
@@ -110,13 +110,18 @@ export default function LiveCallsPage() {
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
       let attempts = 0;
-      const maxAttempts = NUMBER_OF_VISIBLE_CARDS * 3; 
+      const maxAttempts = NUMBER_OF_VISIBLE_CARDS * 5; // Aumentado para mais resiliência
       
       while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttempts) {
         const call = await generateNewCall();
         if (call) {
           if (!newLiveCalls.some(existingCall => existingCall.id === call.id)) {
              newLiveCalls.push(call);
+          }
+        } else {
+          // Se a geração da call falhar (provavelmente erro de fetch), adiciona um pequeno delay
+          if (newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS) { // Apenas se ainda precisarmos de mais calls
+             await new Promise(resolve => setTimeout(resolve, 500)); // Delay de 0.5 segundos
           }
         }
         attempts++;
