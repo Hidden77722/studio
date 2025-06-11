@@ -68,7 +68,7 @@ export function TweetDisplayCard({ tweet }: TweetDisplayCardProps) {
             width={500}
             height={300}
             className="rounded-lg border border-border object-cover w-full max-h-[300px]"
-            data-ai-hint={tweet.dataAiHintImage || "meme coin chart"}
+            data-ai-hint={tweet.dataAiHintImage || "crypto chart"}
           />
         </CardContent>
       )}

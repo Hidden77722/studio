@@ -7,7 +7,7 @@ import { TweetDisplayCard } from '@/app/dashboard/components/TweetDisplayCard';
 import { Rss, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card';
+import { Card } from '@/components/ui/card'; // Ensure Card is imported
 
 const initialMockTweets: MockTweet[] = [
   {
@@ -52,8 +52,7 @@ const initialMockTweets: MockTweet[] = [
     retweets: 1200,
     replies: 300,
     coinTags: ['PEPE', 'AxiomTrade'],
-    // No image for this one to show variation
-    dataAiHintImage: "frog astronaut"
+    // No image for this one intentionally
   },
 ];
 
@@ -86,7 +85,7 @@ const moreMockTweets: MockTweet[] = [
     replies: 150,
     imageUrl: 'https://placehold.co/600x350.png',
     coinTags: ['WIF'],
-    dataAiHintImage: "dog hat chart"
+    dataAiHintImage: "dog hat"
   },
   {
     id: 't6',
@@ -100,8 +99,7 @@ const moreMockTweets: MockTweet[] = [
     retweets: 150,
     replies: 40,
     coinTags: ['FLOKI', 'AxiomTrade'],
-    // No image
-    dataAiHintImage: "viking dog"
+    // No image for this one intentionally
   },
    {
     id: 't7',
@@ -124,25 +122,41 @@ const moreMockTweets: MockTweet[] = [
 const MAX_TWEETS_DISPLAYED = 20;
 
 export default function TwitterFeedPage() {
-  const [tweets, setTweets] = useState<MockTweet[]>(initialMockTweets);
+  const [tweets, setTweets] = useState<MockTweet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
+  const processTweets = (tweetArray: MockTweet[]): MockTweet[] => {
+    return tweetArray.map(t => ({
+      ...t,
+      imageUrl: t.imageUrl, // Ensure imageUrl is explicitly passed
+      dataAiHintAvatar: t.dataAiHintAvatar || 'profile avatar',
+      dataAiHintImage: t.imageUrl ? (t.dataAiHintImage || (t.coinTags?.[0] ? `${t.coinTags[0].toLowerCase()} image` : 'crypto image')) : undefined,
+    }));
+  };
+
+  useEffect(() => {
+    setTweets(processTweets(initialMockTweets));
+    setIsLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
+
+
   const fetchNewTweet = useCallback(() => {
-    if (isPaused) return;
+    if (isPaused || isLoading) return;
 
     const newTweetIndex = Math.floor(Math.random() * moreMockTweets.length);
     const newTweetTemplate = moreMockTweets[newTweetIndex];
+    
+    const processedNewTweetTemplate = processTweets([newTweetTemplate])[0];
+
     const newTweet: MockTweet = {
-      ...newTweetTemplate,
-      id: `t${Date.now()}${Math.random()}`, // Unique ID
+      ...processedNewTweetTemplate,
+      id: `t${Date.now()}${Math.random()}`, 
       timestamp: new Date().toISOString(),
-      likes: Math.floor(Math.random() * 5000) + 50, // Random likes
+      likes: Math.floor(Math.random() * 5000) + 50, 
       retweets: Math.floor(Math.random() * 1000) + 10,
       replies: Math.floor(Math.random() * 200) + 5,
-      // Ensure hints are present
-      dataAiHintAvatar: newTweetTemplate.dataAiHintAvatar || 'profile avatar',
-      dataAiHintImage: newTweetTemplate.dataAiHintImage || (newTweetTemplate.imageUrl ? 'crypto meme' : undefined),
     };
 
     setTweets(prevTweets => {
@@ -152,31 +166,14 @@ export default function TwitterFeedPage() {
       }
       return updatedTweets;
     });
-  }, [isPaused]);
+  }, [isPaused, isLoading]);
 
   useEffect(() => {
-    // Adicionar data-ai-hint aos tweets iniciais que não têm
-    setTweets(prevTweets => prevTweets.map(t => ({
-      ...t,
-      dataAiHintAvatar: t.dataAiHintAvatar || 'profile avatar',
-      dataAiHintImage: t.dataAiHintImage || (t.imageUrl ? 'crypto meme' : undefined),
-    })));
-
-    // Adicionar data-ai-hint aos tweets que podem ser adicionados dinamicamente
-    moreMockTweets.forEach(tweet => {
-      if (!tweet.dataAiHintAvatar) {
-        tweet.dataAiHintAvatar = 'profile avatar'; 
-      }
-      if (tweet.imageUrl && !tweet.dataAiHintImage) {
-        tweet.dataAiHintImage = 'crypto meme';
-      }
-    });
-
-
-    setIsLoading(false); // Simulate initial load
-    const intervalId = setInterval(fetchNewTweet, 7000); // Add a new tweet every 7 seconds
-    return () => clearInterval(intervalId);
-  }, [fetchNewTweet]);
+    if (!isLoading) {
+      const intervalId = setInterval(fetchNewTweet, 7000); 
+      return () => clearInterval(intervalId);
+    }
+  }, [fetchNewTweet, isLoading]);
 
   const togglePause = () => setIsPaused(!isPaused);
 
@@ -187,7 +184,7 @@ export default function TwitterFeedPage() {
           <Rss className="mr-3 h-8 w-8 text-primary" />
           Feed de MemeCoins (Em Tempo Real)
         </h1>
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-2xl mx-auto">
           {[...Array(3)].map((_, i) => (
             <Card key={i} className="w-full p-4">
               <div className="flex items-start space-x-4">
@@ -213,7 +210,7 @@ export default function TwitterFeedPage() {
           Feed de MemeCoins (Simulado em Tempo Real)
         </h1>
         <Button onClick={togglePause} variant="outline" size="sm">
-          <RefreshCw className={`mr-2 h-4 w-4 ${!isPaused ? 'animate-spin-slow' : ''}`} />
+          <RefreshCw className={`mr-2 h-4 w-4 ${!isPaused && !isLoading ? 'animate-spin-slow' : ''}`} />
           {isPaused ? 'Retomar Atualizações' : 'Pausar Atualizações'}
         </Button>
       </div>
@@ -243,3 +240,4 @@ export default function TwitterFeedPage() {
     </div>
   );
 }
+
