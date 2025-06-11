@@ -100,15 +100,16 @@ export interface MarketSentimentOutput {
 }
 
 // Tipos para o novo fluxo de geração de call de trade
-// GenerateTradeCallInput is no longer needed as the flow fetches its own data.
-export type GenerateTradeCallInput = undefined; // Or an empty object: z.object({})
+// GenerateTradeCallInput is an empty object as the flow fetches its own data.
+export type GenerateTradeCallInput = Record<string, never>; // Equivalent to {}
 
 export interface GeneratedTradeCallOutput {
-  moeda: string; // Nome da moeda escolhida ou "Nenhuma call no momento"
-  hora_call?: string; // Hora ideal de entrada (UTC), opcional
-  entrada?: string; // Formatted price string e.g., "$0.00000421", opcional
-  alvos?: Array<{ preco: string; observacao?: string }>; // Array for two targets, opcional
-  stop?: string; // Formatted price string, opcional
-  motivo?: string; // Motivo da call, opcional
-  risco?: "Baixo" | "Médio" | "Alto" | "Nenhum"; // Classificação de risco, opcional
+  moeda: string; 
+  hora_call?: string; 
+  entrada?: string; 
+  alvos?: Array<{ preco: string; observacao?: string }>; 
+  stop?: string; 
+  motivo?: string; 
+  risco?: "Baixo" | "Médio" | "Alto" | "Nenhum"; 
 }
+
