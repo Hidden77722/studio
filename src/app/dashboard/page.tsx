@@ -1,74 +1,17 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react'; // Removed useState, useEffect as they are now in the hook
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
 import { PerformanceChart } from "./components/PerformanceChart";
-import type { MemeCoinCall, HistoricalCall, UserPerformance } from "@/lib/types";
+import type { HistoricalCall, UserPerformance } from "@/lib/types"; // MemeCoinCall removed as it comes from hook
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
+import { useLiveCalls } from '@/hooks/useLiveCalls'; // Import the new hook
 
-const allMockLiveCallsDashboard: MemeCoinCall[] = [
-  {
-    id: "dash-rdoge-1",
-    coinName: "RocketDoge",
-    coinSymbol: "RDOGE",
-    logoUrl: "https://placehold.co/40x40.png?text=RD",
-    logoAiHint: "rocket doge",
-    entryTime: new Date().toISOString(),
-    reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento de resistência chave. Observado grande volume na Axiom Trade.",
-    entryPrice: 0.0000000250,
-    targets: [{ price: 0.0000000500, percentage: "+100%" }, { price: 0.0000000750, percentage: "+200%" }],
-    stopLoss: 0.0000000180,
-    technicalAnalysisSummary: "RDOGE acaba de romper uma cunha descendente com volume 5x acima da média. RSI no gráfico de 1H está em 70, indicando forte pressão compradora. Volume crescente na Axiom Trade.",
-    marketSentimentSummary: "Campanha #RocketDogeArmy viralizando no Twitter. Posts em subreddits como r/MemeCoinMoonshots e r/CryptoMars estão explodindo com menções a RDOGE. Aumento de negociações na Axiom Trade.",
-  },
-  {
-    id: "dash-pepa-1",
-    coinName: "Pepa Inu",
-    coinSymbol: "PEPA",
-    logoUrl: "https://placehold.co/40x40.png?text=PP",
-    logoAiHint: "pepa frog",
-    entryTime: new Date().toISOString(),
-    reason: "Anúncio de parceria com grande influenciador do TikTok e listagem iminente na corretora 'MemeXchange'. Gráfico mostra acumulação. Potencial listagem na Axiom Trade sendo discutida.",
-    entryPrice: 0.00000110,
-    targets: [{ price: 0.00000200, percentage: "+81%" }, { price: 0.00000300, percentage: "+172%" }],
-    stopLoss: 0.00000090,
-    technicalAnalysisSummary: "PEPA formou um padrão 'copo e alça' (cup and handle) no gráfico de 4H, um forte sinal de continuação de alta. Volume de acumulação tem aumentado. Suporte forte na MM50.",
-    marketSentimentSummary: "O influenciador 'CryptoKingGuru' (10M seguidores no TikTok) acaba de postar um vídeo sobre PEPA. Rumores fortes de listagem na MemeXchange. Comunidade de olho na Axiom Trade.",
-  },
-  {
-    id: "dash-bonkz-1",
-    coinName: "BonkZilla",
-    coinSymbol: "BONKZ",
-    logoUrl: "https://placehold.co/40x40.png?text=BZ",
-    logoAiHint: "bonk zilla",
-    entryTime: new Date().toISOString(),
-    reason: "Narrativa 'Bonk Killer' ganhando força no Telegram. Análise de contrato sugere bom potencial. Volume de compra na Axiom Trade aumentando.",
-    entryPrice: 0.0000000075,
-    targets: [{ price: 0.0000000150, percentage: "+100%" }, { price: 0.0000000220, percentage: "+193%" }],
-    stopLoss: 0.0000000050,
-    technicalAnalysisSummary: "BONKZ formando um triângulo ascendente no gráfico de 30min. Rompimento pode levar a uma explosão de preço. RSI subindo, mas ainda não sobrecomprado.",
-    marketSentimentSummary: "Grupo no Telegram com mais de 10k membros ativos promovendo BONKZ. Muitos tweets de contas de 'alpha callers' indicando entrada. Axiom Trade com alta liquidez para o par.",
-  },
-  {
-    id: "dash-wojak-1",
-    coinName: "WojakNextGen",
-    coinSymbol: "WOJNX",
-    logoUrl: "https://placehold.co/40x40.png?text=WN",
-    logoAiHint: "wojak meme",
-    entryTime: new Date().toISOString(),
-    reason: "Meme clássico do Wojak reimaginado com utilidade de IA. Hype no 4chan e Twitter. Equipe anunciou queima de tokens e negociação na Axiom Trade.",
-    entryPrice: 0.00050,
-    targets: [{ price: 0.00100, percentage: "+100%" }, { price: 0.00150, percentage: "+200%" }],
-    stopLoss: 0.00035,
-    technicalAnalysisSummary: "WOJNX testando resistência histórica em $0.00055. Rompimento com volume abriria caminho para alvos mais altos. MACD prestes a cruzar para cima no gráfico diário.",
-    marketSentimentSummary: "Forte apoio da comunidade 'biz' do 4chan. Hashtag #WojakNextGen trending no Twitter. A equipe está fazendo marketing agressivo e a listagem na Axiom Trade é um grande catalisador.",
-  }
-];
-
+// Mock historical calls and user performance remain local to this page if not shared elsewhere
 const mockHistoricalCalls: HistoricalCall[] = [
   {
     id: "h1",
@@ -77,7 +20,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     logoUrl: "https://placehold.co/40x40.png?text=SM",
     logoAiHint: "shiba moon",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 18 * 1).toISOString(), // Saiu 18h depois
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 18 * 1).toISOString(),
     reason: "Rompimento de ATH (All-Time High) com forte apoio da comunidade no Reddit e listagem na Axiom Trade.",
     entryPrice: 0.00000080,
     exitPrice: 0.00000240,
@@ -94,12 +37,12 @@ const mockHistoricalCalls: HistoricalCall[] = [
     logoUrl: "https://placehold.co/40x40.png?text=FR",
     logoAiHint: "floki rocket",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4.8).toISOString(), // Stopado rapidamente
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4.8).toISOString(), 
     reason: "Tentativa de pegar um fundo após grande correção, mas o mercado continuou caindo. Baixo volume na Axiom Trade.",
     entryPrice: 0.000070,
     exitPrice: 0.000068,
     targets: [{ price: 0.000080 }, { price: 0.000095 }],
-    stopLoss: 0.000068, // Atingiu o stop
+    stopLoss: 0.000068,
     result: "Loss",
     profitOrLossAmount: -30,
     profitOrLossPercentage: "-2.86%",
@@ -152,62 +95,7 @@ const mockUserPerformance: UserPerformance = {
 const NUMBER_OF_VISIBLE_CARDS_DASHBOARD = 2;
 
 export default function DashboardPage() {
-  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(() =>
-    allMockLiveCallsDashboard.slice(0, NUMBER_OF_VISIBLE_CARDS_DASHBOARD).map(call => ({
-      ...call,
-      id: `${call.id}-${Date.now()}`, // Unique ID for key prop
-      entryTime: new Date().toISOString(),
-    }))
-  );
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setLiveCalls(prevCalls => {
-        const newCalls = [...prevCalls];
-
-        if (Math.random() < 0.4 && allMockLiveCallsDashboard.length > NUMBER_OF_VISIBLE_CARDS_DASHBOARD) { // 40% de chance de substituir um card
-          const callIndexToReplace = Math.floor(Math.random() * newCalls.length);
-
-          let newCallData;
-          let attempts = 0;
-          do {
-            newCallData = allMockLiveCallsDashboard[Math.floor(Math.random() * allMockLiveCallsDashboard.length)];
-            attempts++;
-          } while (newCalls.some(c => c.coinSymbol === newCallData.coinSymbol) && attempts < allMockLiveCallsDashboard.length * 2);
-
-          if (newCallData) {
-             newCalls[callIndexToReplace] = {
-              ...newCallData,
-              id: `${newCallData.id}-${Date.now()}`,
-              entryTime: new Date().toISOString(),
-              reason: `[NOVO DASH!] ${newCallData.reason.substring(0,60)}... (${new Date().toLocaleTimeString('pt-BR')})`
-            };
-          }
-        } else { // Atualiza um card existente
-          const callIndexToUpdate = Math.floor(Math.random() * newCalls.length);
-          const callToUpdate = {...newCalls[callIndexToUpdate]};
-
-          const now = new Date();
-          callToUpdate.entryTime = now.toISOString();
-
-          const reasonVariations = [
-            "Forte volume de compra na Axiom Trade agora!",
-            "Rumores de queima de token se intensificam no Reddit!",
-            "Indicador MACD acaba de cruzar para alta no gráfico de 15min!"
-          ];
-          const randomVariation = reasonVariations[Math.floor(Math.random() * reasonVariations.length)];
-          const baseReason = allMockLiveCallsDashboard.find(c => c.coinSymbol === callToUpdate.coinSymbol)?.reason.split('.')[0] || callToUpdate.reason.split('.')[0];
-          callToUpdate.reason = `ALERTA DASH (${now.toLocaleTimeString('pt-BR')}): ${randomVariation} ${baseReason}.`;
-
-          newCalls[callIndexToUpdate] = callToUpdate;
-        }
-        return newCalls;
-      });
-    }, 7000);
-
-    return () => clearInterval(intervalId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { liveCalls, isLoadingInitial } = useLiveCalls(); // Use the hook
 
   return (
     <div className="space-y-6">
@@ -222,14 +110,22 @@ export default function DashboardPage() {
 
         <TabsContent value="live-calls" className="mt-6">
           <h2 className="text-2xl font-headline mb-4">Alertas de Trade Ativos</h2>
-          {liveCalls.length > 0 ? (
+          {isLoadingInitial && liveCalls.length === 0 ? (
+             <div className="flex flex-col items-center justify-center h-48 bg-card rounded-lg p-8">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader-circle animate-spin text-primary mb-3"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <p className="text-muted-foreground">Carregando alertas...</p>
+             </div>
+          ) : liveCalls.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-              {liveCalls.map((call) => (
+              {liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS_DASHBOARD).map((call) => (
                 <CallCard key={call.id} call={call} />
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">Nenhum alerta ativo no momento. Fique ligado!</p>
+            <div className="flex flex-col items-center justify-center h-48 bg-card rounded-lg p-8">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-3"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
+                <p className="text-muted-foreground">Nenhum alerta ativo no momento. Fique ligado!</p>
+            </div>
           )}
         </TabsContent>
 
@@ -297,3 +193,5 @@ function StatCard({ title, value, icon }: StatCardProps) {
     </Card>
   );
 }
+
+    
