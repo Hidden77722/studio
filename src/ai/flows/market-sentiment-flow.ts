@@ -10,9 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { MarketSentimentInput as InputType, MarketSentimentOutput as OutputType, HypePotential} from '@/lib/types';
 
-export const MarketSentimentInputSchema = z.object({
+const MarketSentimentInputSchema = z.object({
   coinName: z.string().describe('The name of the meme coin.'),
   description: z.string().describe('A brief description or context of the meme coin.'),
   volume24h: z.number().describe('The trading volume in the last 24 hours (USD).'),
@@ -20,7 +19,7 @@ export const MarketSentimentInputSchema = z.object({
 });
 export type MarketSentimentInput = z.infer<typeof MarketSentimentInputSchema>;
 
-export const MarketSentimentOutputSchema = z.object({
+const MarketSentimentOutputSchema = z.object({
   hypePotential: z.enum(["Alta", "Moderada", "Baixa"]).describe('The classified hype potential of the coin.'),
   justification: z.string().describe('The justification for the classified hype potential.'),
 });
@@ -57,19 +56,14 @@ const marketSentimentFlow = ai.defineFlow(
     inputSchema: MarketSentimentInputSchema,
     outputSchema: MarketSentimentOutputSchema,
   },
-  async (input: InputType): Promise<OutputType> => {
+  async (input: MarketSentimentInput): Promise<MarketSentimentOutput> => {
     const {output} = await prompt(input);
     if (!output) {
       throw new Error("A IA não retornou uma saída para a análise de sentimento.");
     }
-    // Assegurar que o tipo HypePotential está correto vindo do LLM,
-    // embora o Zod enum já faça essa validação.
-    const validHypePotentials: HypePotential[] = ["Alta", "Moderada", "Baixa"];
-    if (!validHypePotentials.includes(output.hypePotential as HypePotential)) {
-        // Default to "Moderada" or handle error if LLM output is not one of the enum values
-        console.warn(`Potencial de hype inválido recebido: ${output.hypePotential}. Usando "Moderada" como padrão.`);
-        return { ...output, hypePotential: "Moderada" as HypePotential };
-    }
-    return output as OutputType;
+    // Zod enum validation in MarketSentimentOutputSchema handles hypePotential correctness.
+    // The explicit check previously here was redundant.
+    return output;
   }
 );
+
