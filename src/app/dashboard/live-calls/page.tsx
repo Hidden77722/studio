@@ -51,21 +51,19 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
       const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
       if (!response.ok) {
         console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}): ${response.status} ${response.statusText}`);
-        // Não retry para erros de status HTTP (4xx, 5xx) que não sejam 'Failed to fetch' diretamente, pois podem não ser transientes.
-        // A menos que seja um erro conhecido de rate limiting, que pode valer a pena tentar novamente.
-        if (response.status === 429) { // Too Many Requests
+        if (response.status === 429) { 
             attempts++;
-            if (attempts < MAX_FETCH_RETRIES) await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (attempts +1) )); // Exponential backoff for rate limit
-            else return null; // All retries failed for rate limit
+            if (attempts < MAX_FETCH_RETRIES) await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (attempts +1) * 2 )); 
+            else return null; 
             continue;
         }
-        return null; // For other non-ok responses, fail immediately
+        return null; 
       }
       const data = await response.json();
 
       if (!data || typeof data[coinId] === 'undefined') {
         console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Resposta:`, data);
-        return null; // Dados ausentes, não há o que tentar novamente com a mesma requisição
+        return null; 
       }
 
       const coinData = data[coinId];
@@ -73,20 +71,20 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
 
       if (typeof price !== 'number') {
         console.warn(`Preço USD para ${coinId} está ausente ou não é um número (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Dados recebidos para a moeda:`, coinData);
-        return null; // Formato de preço inesperado
+        return null; 
       }
-      return price; // Sucesso
+      return price; 
     } catch (error) {
       attempts++;
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`Erro de rede (verifique sua conexão) ou parse ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}`, error);
+      console.error(`Falha de rede ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}. Verifique sua conexão ou o status da API CoinGecko.`, error);
       if (attempts >= MAX_FETCH_RETRIES) {
-        return null; // Todas as tentativas falharam
+        return null; 
       }
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS)); // Espera antes de tentar novamente
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * attempts)); 
     }
   }
-  return null; // Se sair do loop sem sucesso
+  return null; 
 }
 
 export default function LiveCallsPage() {
@@ -129,18 +127,17 @@ export default function LiveCallsPage() {
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
       let attempts = 0;
-      // Aumentar um pouco o maxAttempts para dar mais chance de popular os cards iniciais
       const maxAttemptsForInitialLoad = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2); 
       
       while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttemptsForInitialLoad) {
         const call = await generateNewCall();
         if (call) {
-          if (!newLiveCalls.some(existingCall => existingCall.coinSymbol === call.coinSymbol)) { // Evitar duplicatas da mesma moeda no load inicial
+          if (!newLiveCalls.some(existingCall => existingCall.coinSymbol === call.coinSymbol)) {
              newLiveCalls.push(call);
           }
         } else {
           if (newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS) {
-             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2)); // Pequeno delay se uma chamada falhar
+             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2)); 
           }
         }
         attempts++;
@@ -158,7 +155,6 @@ export default function LiveCallsPage() {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
-          // Evitar adicionar uma call para uma moeda que já está sendo exibida
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
             return prevCalls; 
           }
