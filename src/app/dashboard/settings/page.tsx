@@ -20,7 +20,7 @@ export default function SettingsPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("dark"); // 'dark', 'light', 'system'
   // Define um som de notificação padrão.
-  const [notificationSound, setNotificationSound] = React.useState("https://cdn.freesound.org/previews/253/253177_4406105-lq.mp3");
+  const [notificationSound, setNotificationSound] = React.useState("https://www.soundjay.com/button/sounds/button-16.mp3");
 
 
   const handleTestSoundNotification = () => {
