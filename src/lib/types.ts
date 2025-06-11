@@ -68,3 +68,18 @@ export interface CoinMarketData {
   price_change_percentage_24h: number;
   total_volume: number;
 }
+
+export interface HotPair {
+  id: string;
+  name: string;
+  symbol: string;
+  pairAddress: string; 
+  exchange: string; 
+  reason: string; 
+  mockVolume24h: number;
+  mockLiquidity: number;
+  priceChange24h?: number; 
+  logoUrl?: string;
+  logoAiHint?: string;
+  dexScreenerUrl?: string;
+}

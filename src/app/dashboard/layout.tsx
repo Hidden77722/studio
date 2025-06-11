@@ -1,3 +1,4 @@
+
 "use client";
 
 import { AppLogo } from "@/components/shared/AppLogo";
@@ -15,7 +16,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Home, BarChart3, History, Settings, Info, HelpCircle, Newspaper, Users, Briefcase } from "lucide-react";
+import { Home, BarChart3, History, Settings, Info, HelpCircle, Newspaper, Users, Briefcase, Flame } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -23,6 +24,7 @@ import React from "react";
 const navItems = [
   { href: "/dashboard", label: "Início do Painel", icon: Home },
   { href: "/dashboard/live-calls", label: "Alertas ao Vivo", icon: Newspaper },
+  { href: "/dashboard/hot-pairs", label: "Pares em Alta (DEX)", icon: Flame },
   { href: "/dashboard/influencers", label: "Influenciadores", icon: Users },
   { href: "/dashboard/history", label: "Histórico de Trades", icon: History },
   { href: "/dashboard/performance", label: "Desempenho", icon: BarChart3 },
