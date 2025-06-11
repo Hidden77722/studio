@@ -51,19 +51,25 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
       const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
       if (!response.ok) {
         console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}): ${response.status} ${response.statusText}`);
-        if (response.status === 429) { 
+        if (response.status === 429) {
             attempts++;
-            if (attempts < MAX_FETCH_RETRIES) await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (attempts +1) * 2 )); 
-            else return null; 
+            if (attempts < MAX_FETCH_RETRIES) {
+                const delay = RETRY_DELAY_MS * Math.pow(2, attempts); // Exponential backoff
+                console.warn(`Rate limit (429) para ${coinId}. Tentando novamente em ${delay / 1000}s...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                 console.error(`Rate limit (429) para ${coinId} após ${MAX_FETCH_RETRIES} tentativas. Desistindo.`);
+                 return null;
+            }
             continue;
         }
-        return null; 
+        return null;
       }
       const data = await response.json();
 
       if (!data || typeof data[coinId] === 'undefined') {
         console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Resposta:`, data);
-        return null; 
+        return null;
       }
 
       const coinData = data[coinId];
@@ -71,20 +77,24 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
 
       if (typeof price !== 'number') {
         console.warn(`Preço USD para ${coinId} está ausente ou não é um número (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Dados recebidos para a moeda:`, coinData);
-        return null; 
+        return null;
       }
-      return price; 
+      return price;
     } catch (error) {
       attempts++;
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`Falha de rede ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}. Verifique sua conexão ou o status da API CoinGecko.`, error);
-      if (attempts >= MAX_FETCH_RETRIES) {
-        return null; 
+      if (attempts < MAX_FETCH_RETRIES) {
+        const delay = RETRY_DELAY_MS * attempts;
+        console.warn(`Falha de rede ao buscar preço para ${coinId} (tentativa ${attempts}/${MAX_FETCH_RETRIES}): ${errorMessage}. Tentando novamente em ${delay / 1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        console.error(`Falha de rede ao buscar preço para ${coinId} após ${MAX_FETCH_RETRIES} tentativas: ${errorMessage}. Verifique sua conexão ou o status da API CoinGecko.`);
+        return null;
       }
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * attempts)); 
     }
   }
-  return null; 
+  console.error(`[SAFGUARD] Saindo de fetchCoinCurrentPrice para ${coinId} sem retornar um valor após o loop de tentativas.`);
+  return null;
 }
 
 export default function LiveCallsPage() {
@@ -126,10 +136,10 @@ export default function LiveCallsPage() {
     const loadInitialCalls = async () => {
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
-      let attempts = 0;
-      const maxAttemptsForInitialLoad = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2); 
-      
-      while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && attempts < maxAttemptsForInitialLoad) {
+      let generationAttempts = 0;
+      const maxGenerationAttempts = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2);
+
+      while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && generationAttempts < maxGenerationAttempts) {
         const call = await generateNewCall();
         if (call) {
           if (!newLiveCalls.some(existingCall => existingCall.coinSymbol === call.coinSymbol)) {
@@ -137,10 +147,10 @@ export default function LiveCallsPage() {
           }
         } else {
           if (newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS) {
-             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2)); 
+             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS / 2));
           }
         }
-        attempts++;
+        generationAttempts++;
       }
       setLiveCalls(newLiveCalls);
       setIsLoadingInitial(false);
@@ -156,23 +166,23 @@ export default function LiveCallsPage() {
       if (newCall) {
         setLiveCalls(prevCalls => {
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
-            return prevCalls; 
+            return prevCalls;
           }
 
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_VISIBLE_CARDS) {
-            calls.shift(); 
+            calls.shift();
           }
-          calls.push(newCall); 
+          calls.push(newCall);
           return calls;
         });
       }
-    }, 7000); 
+    }, 7000);
 
     return () => clearInterval(intervalId);
   }, [isLoadingInitial, generateNewCall]);
 
-  if (isLoadingInitial && liveCalls.length === 0) { 
+  if (isLoadingInitial && liveCalls.length === 0) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-headline font-semibold">Alertas de Trade Ativos</h1>
@@ -199,7 +209,7 @@ export default function LiveCallsPage() {
           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-4"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
           <h2 className="text-xl font-headline text-foreground mb-2">Nenhum Alerta Ativo</h2>
           <p className="text-muted-foreground text-center">Nossos analistas estão monitorando os mercados. Novos alertas aparecerão aqui em breve!</p>
-          <p className="text-xs text-muted-foreground mt-2">(Pode haver um problema temporário ao buscar dados de preços. Verifique sua conexão ou tente recarregar.)</p>
+          <p className="text-xs text-muted-foreground mt-2">(Se este problema persistir, pode haver uma dificuldade em buscar dados de preços. Verifique sua conexão com a internet ou o status da API CoinGecko.)</p>
         </div>
       )}
     </div>
