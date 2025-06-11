@@ -1,3 +1,4 @@
+
 "use client";
 import { CallCard } from "@/app/dashboard/components/CallCard";
 import type { MemeCoinCall } from "@/lib/types";
@@ -9,9 +10,9 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinSymbol: "DOBO",
     logoUrl: "https://placehold.co/40x40.png?text=DB",
     entryTime: new Date().toISOString(),
-    reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze.",
+    reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze com alvo ambicioso.",
     entryPrice: 0.0000000123,
-    targets: [{ price: 0.0000000150, percentage: "+22%" }, { price: 0.0000000180, percentage: "+46%" }],
+    targets: [{ price: 0.0000000160, percentage: "+30%" }, { price: 0.0000000200, percentage: "+62%" }],
     stopLoss: 0.0000000090,
     technicalAnalysisSummary: "DOBO mostra uma divergência de alta no RSI de 4H, com volume aumentando significativamente. MACD está prestes a cruzar para alta. A resistência chave em 0.0000000100 foi quebrada e retestada como suporte.",
     marketSentimentSummary: "Alto engajamento no Twitter e Reddit, com vários influenciadores mencionando DOBO. O Índice de Medo e Ganância para meme coins está neutro, sugerindo espaço para crescimento.",
@@ -22,9 +23,9 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinSymbol: "SHIBFLO",
     logoUrl: "https://placehold.co/40x40.png?text=SF",
     entryTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-    reason: "Anúncio de listagem em CEX esperado nas próximas 24 horas. Gráfico mostra consolidação.",
+    reason: "Anúncio de listagem em CEX de grande porte esperado nas próximas 24 horas. Gráfico mostra consolidação pré-alta.",
     entryPrice: 0.00000056,
-    targets: [{ price: 0.00000070, percentage: "+25%" }, { price: 0.00000090, percentage: "+60%" }],
+    targets: [{ price: 0.000000075, percentage: "+34%" }, { price: 0.000000095, percentage: "+70%" }],
     stopLoss: 0.00000048,
     technicalAnalysisSummary: "SHIBFLO está consolidando dentro de um padrão de triângulo simétrico, tipicamente um padrão de continuação. Um rompimento acima da linha de tendência superior pode levar a uma alta significativa. O volume está atualmente baixo, indicando acumulação.",
     marketSentimentSummary: "Rumores de listagem em uma grande CEX estão circulando. A comunidade está muito ativa e otimista. O rastreador de carteiras mostra um aumento nas participações de baleias.",

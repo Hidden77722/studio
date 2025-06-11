@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
@@ -6,7 +7,7 @@ import type { MemeCoinCall, HistoricalCall, UserPerformance } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
 
-// Mock Data
+// Mock Data Ajustado para Lucro Alto e Perdas Mínimas
 const mockLiveCalls: MemeCoinCall[] = [
   {
     id: "1",
@@ -14,9 +15,9 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinSymbol: "DOBO",
     logoUrl: "https://placehold.co/40x40.png?text=DB",
     entryTime: new Date().toISOString(),
-    reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze.",
+    reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze com alvo ambicioso.",
     entryPrice: 0.0000000123,
-    targets: [{ price: 0.0000000150, percentage: "+22%" }, { price: 0.0000000180, percentage: "+46%" }],
+    targets: [{ price: 0.0000000160, percentage: "+30%" }, { price: 0.0000000200, percentage: "+62%" }],
     stopLoss: 0.0000000090,
     technicalAnalysisSummary: "DOBO mostra uma divergência de alta no RSI de 4H, com volume aumentando significativamente. MACD está prestes a cruzar para alta. A resistência chave em 0.0000000100 foi quebrada e retestada como suporte.",
     marketSentimentSummary: "Alto engajamento no Twitter e Reddit, com vários influenciadores mencionando DOBO. O Índice de Medo e Ganância para meme coins está neutro, sugerindo espaço para crescimento.",
@@ -27,9 +28,9 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinSymbol: "SHIBFLO",
     logoUrl: "https://placehold.co/40x40.png?text=SF",
     entryTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-    reason: "Anúncio de listagem em CEX esperado nas próximas 24 horas. Gráfico mostra consolidação.",
+    reason: "Anúncio de listagem em CEX de grande porte esperado nas próximas 24 horas. Gráfico mostra consolidação pré-alta.",
     entryPrice: 0.00000056,
-    targets: [{ price: 0.00000070, percentage: "+25%" }, { price: 0.00000090, percentage: "+60%" }],
+    targets: [{ price: 0.000000075, percentage: "+34%" }, { price: 0.000000095, percentage: "+70%" }],
     stopLoss: 0.00000048,
     technicalAnalysisSummary: "SHIBFLO está consolidando dentro de um padrão de triângulo simétrico, tipicamente um padrão de continuação. Um rompimento acima da linha de tendência superior pode levar a uma alta significativa. O volume está atualmente baixo, indicando acumulação.",
     marketSentimentSummary: "Rumores de listagem em uma grande CEX estão circulando. A comunidade está muito ativa e otimista. O rastreador de carteiras mostra um aumento nas participações de baleias.",
@@ -42,31 +43,31 @@ const mockHistoricalCalls: HistoricalCall[] = [
     coinName: "PepeCoin",
     coinSymbol: "PEPE",
     logoUrl: "https://placehold.co/40x40.png?text=PP",
-    entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), // 1 day ago
-    reason: "Rompimento de canal descendente.",
+    entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
+    reason: "Rompimento de canal descendente com forte volume.",
     entryPrice: 0.00000120,
-    exitPrice: 0.00000150,
+    exitPrice: 0.00000180, // Ajustado para maior lucro
     targets: [{ price: 0.00000140 }, { price: 0.00000160 }],
     stopLoss: 0.00000100,
     result: "Win",
-    profitOrLossAmount: 300, // Example amount
-    profitOrLossPercentage: "+25.00%",
+    profitOrLossAmount: 500, // Aumentado
+    profitOrLossPercentage: "+50.00%", // Ajustado
   },
   {
     id: "h2",
     coinName: "TurboToad",
     coinSymbol: "TURBO",
-    entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5 days ago
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), // 4 days ago
-    reason: "Anúncio de parceria antecipado.",
+    entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
+    reason: "Anúncio de parceria antecipado, stop atingido por volatilidade.",
     entryPrice: 0.000050,
-    exitPrice: 0.000045,
+    exitPrice: 0.000049, // Ajustado para perda mínima
     targets: [{ price: 0.000060 }, { price: 0.000075 }],
     stopLoss: 0.000048,
     result: "Loss",
-    profitOrLossAmount: -50, // Example amount
-    profitOrLossPercentage: "-10.00%",
+    profitOrLossAmount: -10, // Perda mínima
+    profitOrLossPercentage: "-2.00%", // Ajustado
   },
    {
     id: "h3",
@@ -74,40 +75,40 @@ const mockHistoricalCalls: HistoricalCall[] = [
     coinSymbol: "MOG",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 20 * 1).toISOString(),
-    reason: "Tendência de meme e apoio de influenciadores.",
+    reason: "Tendência de meme viral e apoio massivo de influenciadores.",
     entryPrice: 0.00000040,
-    exitPrice: 0.00000062,
+    exitPrice: 0.00000070, // Ajustado
     targets: [{ price: 0.00000055 }, { price: 0.00000070 }],
     stopLoss: 0.00000035,
     result: "Win",
-    profitOrLossAmount: 550,
-    profitOrLossPercentage: "+55.00%",
+    profitOrLossAmount: 750, // Aumentado
+    profitOrLossPercentage: "+75.00%", // Ajustado
   },
 ];
 
 const mockUserPerformance: UserPerformance = {
-  accuracy: 75.0,
-  averageProfit: 150.25, // currency
-  totalTrades: 20,
-  winningTrades: 15,
-  losingTrades: 5,
+  accuracy: 90.0, // Aumentado
+  averageProfit: 450.00, // Aumentado
+  totalTrades: 25, // Ajustado
+  winningTrades: 22, // Aumentado
+  losingTrades: 3, // Diminuído
   accuracyOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 60 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 65 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 70 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 68 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 72 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 75 },
-    { date: new Date().toISOString(), value: 78 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 70 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 75 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 80 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 82 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 85 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 88 },
+    { date: new Date().toISOString(), value: 90 },
   ],
-  profitOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 500 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 650 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 450 }, // a loss
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 800 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 950 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 1200 },
-    { date: new Date().toISOString(), value: 1350 },
+  profitOverTime: [ // Valores cumulativos maiores
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 600 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 1000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 1300 }, 
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 1800 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 2300 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 2900 },
+    { date: new Date().toISOString(), value: 3500 },
   ],
 };
 

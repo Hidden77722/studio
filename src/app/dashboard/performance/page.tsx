@@ -1,3 +1,4 @@
+
 "use client";
 import { PerformanceChart } from "@/app/dashboard/components/PerformanceChart";
 import type { UserPerformance } from "@/lib/types";
@@ -5,43 +6,50 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon, BarChartHorizontalBig, Activity } from "lucide-react";
 
 const mockUserPerformance: UserPerformance = {
-  accuracy: 78.3, // More precise
-  averageProfit: 165.72, 
-  totalTrades: 23,
-  winningTrades: 18,
-  losingTrades: 5,
+  accuracy: 90.0, 
+  averageProfit: 450.00, 
+  totalTrades: 25,
+  winningTrades: 22,
+  losingTrades: 3,
   accuracyOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 60 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 65 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 70 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 68 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 72 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 75 },
-    { date: new Date().toISOString(), value: 78.3 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 70 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 75 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 80 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 82 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 85 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 88 },
+    { date: new Date().toISOString(), value: 90 },
   ],
   profitOverTime: [
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 500 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 650 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 450 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 800 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 950 },
-    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 1200 },
-    { date: new Date().toISOString(), value: 1350 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 600 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 1000 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 1300 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 1800 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 2300 },
+    { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 2900 },
+    { date: new Date().toISOString(), value: 3500 },
   ],
 };
 
 export default function PerformancePage() {
-  const profitFactor = mockUserPerformance.losingTrades > 0 ? 
-    (mockUserPerformance.winningTrades * (mockUserPerformance.averageProfit / (mockUserPerformance.accuracy/100) ) ) / (mockUserPerformance.losingTrades * (mockUserPerformance.averageProfit / (1-mockUserPerformance.accuracy/100)))
-    : Infinity;
+  // Simplified profit factor calculation based on updated mockUserPerformance
+  const totalGrossProfit = mockUserPerformance.winningTrades * mockUserPerformance.averageProfit; // Approximate
+  // Estimate average loss: (TotalProfit - (Accuracy * TotalTrades * AvgProfit)) / LosingTrades
+  // This is a rough estimation for mock data. A more precise model would track individual profits/losses.
+  const estimatedTotalLoss = mockUserPerformance.losingTrades > 0 ? (totalGrossProfit / (mockUserPerformance.accuracy / 100) - totalGrossProfit) / (1 - (mockUserPerformance.accuracy / 100)) : 0;
+  const absoluteEstimatedTotalLoss = Math.abs(estimatedTotalLoss); // Ensure positive for division
   
-  // Mock data for win/loss streak chart
+  const profitFactor = absoluteEstimatedTotalLoss > 0 && mockUserPerformance.losingTrades > 0
+    ? totalGrossProfit / absoluteEstimatedTotalLoss
+    : Infinity; // Avoid division by zero if no losses or no losing trades
+
+  // Mock data for win/loss streak chart - Adjusted for more wins
   const winLossData = [
-    { name: 'Jan', wins: 4, losses: 2 },
-    { name: 'Fev', wins: 5, losses: 1 },
-    { name: 'Mar', wins: 3, losses: 3 },
-    { name: 'Abr', wins: 6, losses: 1 },
-    { name: 'Mai', wins: 4, losses: 2 },
+    { name: 'Jan', wins: 7, losses: 1 },
+    { name: 'Fev', wins: 8, losses: 0 },
+    { name: 'Mar', wins: 6, losses: 1 },
+    { name: 'Abr', wins: 9, losses: 1 },
+    { name: 'Mai', wins: 7, losses: 0 },
   ];
 
 
@@ -55,7 +63,7 @@ export default function PerformancePage() {
         <StatCard title="Total de Trades" value={mockUserPerformance.totalTrades.toString()} icon={<ListChecks className="h-8 w-8 text-primary" />} description="Número total de trades realizados." />
         <StatCard title="Trades Vencedores" value={mockUserPerformance.winningTrades.toString()} icon={<TrendingUpIcon className="h-8 w-8 text-green-500" />} description="Número de trades lucrativos." />
         <StatCard title="Trades Perdedores" value={mockUserPerformance.losingTrades.toString()} icon={<TrendingDownIcon className="h-8 w-8 text-red-500" />} description="Número de trades com perda." />
-        <StatCard title="Fator de Lucro" value={isFinite(profitFactor) ? profitFactor.toFixed(2) : "N/D"} icon={<BarChartHorizontalBig className="h-8 w-8 text-primary" />} description="Lucro bruto / Perda bruta." />
+        <StatCard title="Fator de Lucro" value={isFinite(profitFactor) ? profitFactor.toFixed(2) : "N/D"} icon={<BarChartHorizontalBig className="h-8 w-8 text-primary" />} description="Lucro bruto / Perda bruta (estimado)." />
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
@@ -83,14 +91,13 @@ export default function PerformancePage() {
         </CardHeader>
         <CardContent className="h-[300px]">
            <PerformanceChart 
-              data={winLossData.map(d => ({ date: d.name, value: d.wins - d.losses }))} // Simple representation for single line
+              data={winLossData.map(d => ({ date: d.name, value: d.wins - d.losses }))} 
               title="" 
               description=""
-              dataKey="winLossDiff" // Use a different dataKey for the chartConfig
+              dataKey="winLossDiff" 
               chartType="line"
               color="hsl(var(--chart-3))"
             />
-            {/* More complex chart would require custom Recharts setup for multiple bars/lines */}
         </CardContent>
       </Card>
 
