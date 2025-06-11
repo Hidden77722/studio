@@ -15,7 +15,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Elon Musk (Parody)',
     handle: 'elonmusk_crypto',
     description: 'Comentários frequentes sobre Dogecoin e outras criptomoedas. Suas postagens podem impactar significativamente o mercado.',
-    twitterUrl: 'https://twitter.com/elonmusk', 
+    twitterUrl: 'https://twitter.com/elonmusk',
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'man face'
   },
@@ -24,7 +24,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'CryptoBirb',
     handle: 'crypto_birb',
     description: 'Analista técnico conhecido por seus gráficos e previsões de mercado. Focado em altcoins e tendências emergentes.',
-    twitterUrl: 'https://twitter.com/crypto_birb', 
+    twitterUrl: 'https://twitter.com/crypto_birb',
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'bird logo'
   },
@@ -33,7 +33,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Altcoin Sherpa',
     handle: 'AltcoinSherpa',
     description: 'Fornece análises detalhadas de altcoins, incluindo muitas memecoins. Conhecido por sua abordagem educacional.',
-    twitterUrl: 'https://twitter.com/AltcoinSherpa', 
+    twitterUrl: 'https://twitter.com/AltcoinSherpa',
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'mountain logo'
   },
@@ -42,7 +42,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Hsaka',
     handle: 'HsakaTrades',
     description: 'Trader influente com foco em price action e narrativas de mercado. Frequentemente comenta sobre o sentimento em torno de memecoins.',
-    twitterUrl: 'https://twitter.com/HsakaTrades', 
+    twitterUrl: 'https://twitter.com/HsakaTrades',
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'abstract avatar'
   },
@@ -51,7 +51,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Pentoshi',
     handle: 'Pentosh1',
     description: 'Analista e trader respeitado, conhecido por suas perspectivas macro e calls de longo prazo, mas que também observa memecoins.',
-    twitterUrl: 'https://twitter.com/Pentosh1', 
+    twitterUrl: 'https://twitter.com/Pentosh1',
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'letter P'
   },
@@ -60,7 +60,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Lady of Crypto',
     handle: 'LadyofCrypto1',
     description: 'Focada em encontrar gemas de memecoin de baixa capitalização e engajamento comunitário. Análises e insights sobre novas tendências.',
-    twitterUrl: 'https://twitter.com/LadyofCrypto1', 
+    twitterUrl: 'https://twitter.com/LadyofCrypto1',
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'woman avatar'
   },
@@ -69,7 +69,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'DogeWhale',
     handle: 'DogeWhaleAlert',
     description: 'Rastreia grandes transações de Dogecoin e movimentos de mercado. Frequentemente tuíta sobre tendências de memecoins e alertas de "baleias".',
-    twitterUrl: 'https://twitter.com/DogeWhaleAlert', 
+    twitterUrl: 'https://twitter.com/DogeWhaleAlert',
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'whale logo'
   },
@@ -78,9 +78,9 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Memecoin Max',
     handle: 'MemecoinMax',
     description: 'Entusiasta de todas as coisas sobre memecoin, desde as últimas modas até análises profundas de tokenomics. Sempre de olho no próximo grande hype.',
-    twitterUrl: 'https://twitter.com/MemecoinMax', 
+    twitterUrl: 'https://twitter.com/MemecoinMax',
     avatarUrl: 'https://placehold.co/48x48.png',
-    dataAiHintAvatar: 'rocket ship'
+    dataAiHintAvatar: 'rocket emoji'
   },
    {
     id: 'shibetoshi',
@@ -109,7 +109,7 @@ export default function InfluencersPage() {
         Influenciadores de MemeCoin (Twitter)
       </h1>
       <p className="text-muted-foreground">
-        Acompanhe o que os principais influenciadores estão falando sobre o universo das meme coins. As opiniões aqui são deles e não constituem aconselhamento financeiro. Para ver imagens de perfil reais, você precisará substituir as URLs de placeholder no código pelas URLs das imagens desejadas.
+        Acompanhe o que os principais influenciadores estão falando sobre o universo das meme coins. As opiniões aqui são deles e não constituem aconselhamento financeiro.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
