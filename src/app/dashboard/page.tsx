@@ -10,13 +10,13 @@ import type { MemeCoinCall, HistoricalCall, UserPerformance } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
 
-const initialMockLiveCalls: MemeCoinCall[] = [
+const allMockLiveCallsDashboard: MemeCoinCall[] = [
   {
-    id: "dash-1",
+    id: "dash-rdoge-1",
     coinName: "RocketDoge",
     coinSymbol: "RDOGE",
     logoUrl: "https://placehold.co/40x40.png?text=RD",
-    entryTime: new Date(Date.now() - 1000 * 60 * 3).toISOString(), // Entrou 3 minutos atrás
+    entryTime: new Date().toISOString(),
     reason: "Pump massivo coordenado no Twitter e Reddit, indicadores técnicos confirmando rompimento de resistência chave. Observado grande volume na Axiom Trade.",
     entryPrice: 0.0000000250,
     targets: [{ price: 0.0000000500, percentage: "+100%" }, { price: 0.0000000750, percentage: "+200%" }],
@@ -25,11 +25,11 @@ const initialMockLiveCalls: MemeCoinCall[] = [
     marketSentimentSummary: "Campanha #RocketDogeArmy viralizando no Twitter. Posts em subreddits como r/MemeCoinMoonshots e r/CryptoMars estão explodindo com menções a RDOGE. Aumento de negociações na Axiom Trade.",
   },
   {
-    id: "dash-2",
+    id: "dash-pepa-1",
     coinName: "Pepa Inu",
     coinSymbol: "PEPA",
     logoUrl: "https://placehold.co/40x40.png?text=PP",
-    entryTime: new Date(Date.now() - 1000 * 60 * 7).toISOString(), // Entrou 7 minutos atrás
+    entryTime: new Date().toISOString(),
     reason: "Anúncio de parceria com grande influenciador do TikTok e listagem iminente na corretora 'MemeXchange'. Gráfico mostra acumulação. Potencial listagem na Axiom Trade sendo discutida.",
     entryPrice: 0.00000110,
     targets: [{ price: 0.00000200, percentage: "+81%" }, { price: 0.00000300, percentage: "+172%" }],
@@ -37,6 +37,31 @@ const initialMockLiveCalls: MemeCoinCall[] = [
     technicalAnalysisSummary: "PEPA formou um padrão 'copo e alça' (cup and handle) no gráfico de 4H, um forte sinal de continuação de alta. Volume de acumulação tem aumentado. Suporte forte na MM50.",
     marketSentimentSummary: "O influenciador 'CryptoKingGuru' (10M seguidores no TikTok) acaba de postar um vídeo sobre PEPA. Rumores fortes de listagem na MemeXchange. Comunidade de olho na Axiom Trade.",
   },
+  {
+    id: "dash-bonkz-1",
+    coinName: "BonkZilla",
+    coinSymbol: "BONKZ",
+    logoUrl: "https://placehold.co/40x40.png?text=BZ",
+    entryTime: new Date().toISOString(),
+    reason: "Narrativa 'Bonk Killer' ganhando força no Telegram. Análise de contrato sugere bom potencial. Volume de compra na Axiom Trade aumentando.",
+    entryPrice: 0.0000000075,
+    targets: [{ price: 0.0000000150, percentage: "+100%" }, { price: 0.0000000220, percentage: "+193%" }],
+    stopLoss: 0.0000000050,
+    technicalAnalysisSummary: "BONKZ formando um triângulo ascendente no gráfico de 30min. Rompimento pode levar a uma explosão de preço. RSI subindo, mas ainda não sobrecomprado.",
+    marketSentimentSummary: "Grupo no Telegram com mais de 10k membros ativos promovendo BONKZ. Muitos tweets de contas de 'alpha callers' indicando entrada. Axiom Trade com alta liquidez para o par.",
+  },
+  {
+    id: "dash-wojak-1",
+    coinName: "WojakNextGen",
+    coinSymbol: "WOJNX",
+    entryTime: new Date().toISOString(),
+    reason: "Meme clássico do Wojak reimaginado com utilidade de IA. Hype no 4chan e Twitter. Equipe anunciou queima de tokens e negociação na Axiom Trade.",
+    entryPrice: 0.00050,
+    targets: [{ price: 0.00100, percentage: "+100%" }, { price: 0.00150, percentage: "+200%" }],
+    stopLoss: 0.00035,
+    technicalAnalysisSummary: "WOJNX testando resistência histórica em $0.00055. Rompimento com volume abriria caminho para alvos mais altos. MACD prestes a cruzar para cima no gráfico diário.",
+    marketSentimentSummary: "Forte apoio da comunidade 'biz' do 4chan. Hashtag #WojakNextGen trending no Twitter. A equipe está fazendo marketing agressivo e a listagem na Axiom Trade é um grande catalisador.",
+  }
 ];
 
 const mockHistoricalCalls: HistoricalCall[] = [ 
@@ -90,11 +115,11 @@ const mockHistoricalCalls: HistoricalCall[] = [
 ];
 
 const mockUserPerformance: UserPerformance = { 
-  accuracy: 97.0, // Aumentando a precisão
-  averageProfit: 1750.00, // Aumentando o lucro médio
+  accuracy: 97.0, 
+  averageProfit: 1750.00,
   totalTrades: 35, 
-  winningTrades: 34, // Mais trades vencedores
-  losingTrades: 1, // Menos trades perdedores
+  winningTrades: 34, 
+  losingTrades: 1,
   accuracyOverTime: [
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 85 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 88 },
@@ -111,38 +136,63 @@ const mockUserPerformance: UserPerformance = {
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 28000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 38000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 50000 },
-    { date: new Date().toISOString(), value: 59500 }, // Lucro total aumentado
+    { date: new Date().toISOString(), value: 59500 },
   ],
 };
 
+const NUMBER_OF_VISIBLE_CARDS_DASHBOARD = 2;
+
 export default function DashboardPage() {
-  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(initialMockLiveCalls);
+  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(() => 
+    allMockLiveCallsDashboard.slice(0, NUMBER_OF_VISIBLE_CARDS_DASHBOARD).map(call => ({
+      ...call,
+      id: `${call.id}-${Date.now()}`, // Unique ID for key prop
+      entryTime: new Date().toISOString(),
+    }))
+  );
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setLiveCalls(prevCalls => {
-        if (prevCalls.length === 0) return prevCalls;
+        const newCalls = [...prevCalls];
         
-        const updatedCalls = [...prevCalls];
-        const callIndexToUpdate = Math.floor(Math.random() * updatedCalls.length);
-        const callToUpdate = {...updatedCalls[callIndexToUpdate]}; 
-        
-        const now = new Date();
-        callToUpdate.entryTime = now.toISOString();
-        
-        const originalCallData = initialMockLiveCalls.find(c => c.id === callToUpdate.id) || callToUpdate;
-        
-        const reasonVariations = [
-          "Forte volume de compra na Axiom Trade agora!", 
-          "Rumores de queima de token se intensificam no Reddit!", 
-          "Indicador MACD acaba de cruzar para alta no gráfico de 15min!"
-        ];
-        const randomVariation = reasonVariations[Math.floor(Math.random() * reasonVariations.length)];
-        const baseReason = originalCallData.reason.split('.')[0];
-        callToUpdate.reason = `ALERTA DASH (${now.toLocaleTimeString('pt-BR')}): ${randomVariation} ${baseReason}.`;
-        
-        updatedCalls[callIndexToUpdate] = callToUpdate;
-        return updatedCalls;
+        if (Math.random() < 0.4 && allMockLiveCallsDashboard.length > NUMBER_OF_VISIBLE_CARDS_DASHBOARD) { // 40% de chance de substituir um card
+          const callIndexToReplace = Math.floor(Math.random() * newCalls.length);
+          
+          let newCallData;
+          let attempts = 0;
+          do {
+            newCallData = allMockLiveCallsDashboard[Math.floor(Math.random() * allMockLiveCallsDashboard.length)];
+            attempts++;
+          } while (newCalls.some(c => c.coinSymbol === newCallData.coinSymbol) && attempts < allMockLiveCallsDashboard.length * 2);
+
+          if (newCallData) {
+             newCalls[callIndexToReplace] = {
+              ...newCallData,
+              id: `${newCallData.id}-${Date.now()}`,
+              entryTime: new Date().toISOString(),
+              reason: `[NOVO DASH!] ${newCallData.reason.substring(0,60)}... (${new Date().toLocaleTimeString('pt-BR')})`
+            };
+          }
+        } else { // Atualiza um card existente
+          const callIndexToUpdate = Math.floor(Math.random() * newCalls.length);
+          const callToUpdate = {...newCalls[callIndexToUpdate]}; 
+          
+          const now = new Date();
+          callToUpdate.entryTime = now.toISOString();
+          
+          const reasonVariations = [
+            "Forte volume de compra na Axiom Trade agora!", 
+            "Rumores de queima de token se intensificam no Reddit!", 
+            "Indicador MACD acaba de cruzar para alta no gráfico de 15min!"
+          ];
+          const randomVariation = reasonVariations[Math.floor(Math.random() * reasonVariations.length)];
+          const baseReason = allMockLiveCallsDashboard.find(c => c.coinSymbol === callToUpdate.coinSymbol)?.reason.split('.')[0] || callToUpdate.reason.split('.')[0];
+          callToUpdate.reason = `ALERTA DASH (${now.toLocaleTimeString('pt-BR')}): ${randomVariation} ${baseReason}.`;
+          
+          newCalls[callIndexToUpdate] = callToUpdate;
+        }
+        return newCalls;
       });
     }, 7000); 
 
