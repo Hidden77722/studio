@@ -15,7 +15,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Elon Musk (Parody)',
     handle: 'elonmusk_crypto',
     description: 'Comentários frequentes sobre Dogecoin e outras criptomoedas. Suas postagens podem impactar significativamente o mercado.',
-    twitterUrl: 'https://twitter.com/elonmusk', // Link real para fins de exemplo
+    twitterUrl: 'https://twitter.com/elonmusk', 
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'man face'
   },
@@ -24,7 +24,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'CryptoBirb',
     handle: 'crypto_birb',
     description: 'Analista técnico conhecido por seus gráficos e previsões de mercado. Focado em altcoins e tendências emergentes.',
-    twitterUrl: 'https://twitter.com/crypto_birb', // Exemplo
+    twitterUrl: 'https://twitter.com/crypto_birb', 
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'bird logo'
   },
@@ -33,7 +33,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Altcoin Sherpa',
     handle: 'AltcoinSherpa',
     description: 'Fornece análises detalhadas de altcoins, incluindo muitas memecoins. Conhecido por sua abordagem educacional.',
-    twitterUrl: 'https://twitter.com/AltcoinSherpa', // Exemplo
+    twitterUrl: 'https://twitter.com/AltcoinSherpa', 
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'mountain logo'
   },
@@ -42,7 +42,7 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Hsaka',
     handle: 'HsakaTrades',
     description: 'Trader influente com foco em price action e narrativas de mercado. Frequentemente comenta sobre o sentimento em torno de memecoins.',
-    twitterUrl: 'https://twitter.com/HsakaTrades', // Exemplo
+    twitterUrl: 'https://twitter.com/HsakaTrades', 
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'abstract avatar'
   },
@@ -51,10 +51,46 @@ const mockInfluencers: TwitterInfluencer[] = [
     name: 'Pentoshi',
     handle: 'Pentosh1',
     description: 'Analista e trader respeitado, conhecido por suas perspectivas macro e calls de longo prazo, mas que também observa memecoins.',
-    twitterUrl: 'https://twitter.com/Pentosh1', // Exemplo
+    twitterUrl: 'https://twitter.com/Pentosh1', 
     avatarUrl: 'https://placehold.co/48x48.png',
     dataAiHintAvatar: 'letter P'
   },
+  {
+    id: 'ladyofcrypto',
+    name: 'Lady of Crypto',
+    handle: 'LadyofCrypto1',
+    description: 'Focada em encontrar gemas de memecoin de baixa capitalização e engajamento comunitário. Análises e insights sobre novas tendências.',
+    twitterUrl: 'https://twitter.com/LadyofCrypto1', // Exemplo
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: 'woman avatar'
+  },
+  {
+    id: 'dogewhale',
+    name: 'DogeWhale',
+    handle: 'DogeWhaleAlert',
+    description: 'Rastreia grandes transações de Dogecoin e movimentos de mercado. Frequentemente tuíta sobre tendências de memecoins e alertas de "baleias".',
+    twitterUrl: 'https://twitter.com/DogeWhaleAlert', // Exemplo
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: 'whale logo'
+  },
+  {
+    id: 'memecoinmax',
+    name: 'Memecoin Max',
+    handle: 'MemecoinMax',
+    description: 'Entusiasta de todas as coisas sobre memecoin, desde as últimas modas até análises profundas de tokenomics. Sempre de olho no próximo grande hype.',
+    twitterUrl: 'https://twitter.com/MemecoinMax', // Exemplo
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: 'rocket emoji'
+  },
+   {
+    id: 'shibetoshi',
+    name: 'Shibetoshi Nakamoto',
+    handle: 'BillyM2k',
+    description: 'Criador do Dogecoin. Embora não seja um trader, seus comentários sobre o espaço cripto e memecoins são altamente acompanhados.',
+    twitterUrl: 'https://twitter.com/BillyM2k',
+    avatarUrl: 'https://placehold.co/48x48.png',
+    dataAiHintAvatar: 'doge avatar'
+  }
 ];
 
 export default function InfluencersPage() {
@@ -109,3 +145,4 @@ export default function InfluencersPage() {
     </div>
   );
 }
+
