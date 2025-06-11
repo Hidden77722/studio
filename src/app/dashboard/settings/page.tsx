@@ -19,7 +19,7 @@ export default function SettingsPage() {
   const [enablePushNotifications, setEnablePushNotifications] = React.useState(true);
   const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("dark"); // 'dark', 'light', 'system'
-  const [notificationSound, setNotificationSound] = React.useState("default_sound.mp3");
+  const [notificationSound, setNotificationSound] = React.useState(""); // Changed default to empty string
 
 
   const handleTestSoundNotification = () => {
@@ -28,13 +28,13 @@ export default function SettingsPage() {
       description: "Este é um alerta de teste com som!",
     });
     try {
-      if (notificationSound) {
+      if (notificationSound && notificationSound.trim() !== "") {
         const audio = new Audio(notificationSound);
         audio.play().catch(error => {
           console.error("Erro ao tentar reproduzir o som:", error);
           toast({
             title: "🔇 Erro no Áudio",
-            description: "Não foi possível reproduzir o som. Verifique a URL ou as permissões do navegador.",
+            description: "Não foi possível reproduzir o som. Verifique a URL (deve ser um link direto para um arquivo de áudio) ou as permissões do navegador.",
             variant: "destructive",
           });
         });
@@ -42,8 +42,8 @@ export default function SettingsPage() {
       } else {
          toast({
             title: "🔇 Som não configurado",
-            description: "Nenhum som de notificação foi configurado.",
-            variant: "destructive",
+            description: "Nenhum som de notificação foi configurado. Insira uma URL válida para um arquivo de som.",
+            variant: "default", // Changed to default as it's not an error, but info
           });
       }
     } catch (error) {
@@ -119,8 +119,8 @@ export default function SettingsPage() {
           <div className="space-y-1">
             <Label htmlFor="notification-sound" className="flex items-center"><Volume2 className="mr-2 h-4 w-4" /> Som de Notificação</Label>
             {/* In a real app, this would be a select dropdown with sound options */}
-            <Input id="notification-sound" value={notificationSound} onChange={e => setNotificationSound(e.target.value)} placeholder="URL do arquivo de som ou nome do arquivo" />
-            <p className="text-xs text-muted-foreground">Personalize o som para alertas de novos trades. Insira uma URL válida para um arquivo de som.</p>
+            <Input id="notification-sound" value={notificationSound} onChange={e => setNotificationSound(e.target.value)} placeholder="URL do arquivo de som (ex: https://example.com/sound.mp3)" />
+            <p className="text-xs text-muted-foreground">Personalize o som para alertas de novos trades. Insira uma URL válida para um arquivo de som (ex: .mp3, .wav, .ogg).</p>
           </div>
           <div className="flex gap-2">
             <Button>Salvar Configurações de Notificação</Button>
