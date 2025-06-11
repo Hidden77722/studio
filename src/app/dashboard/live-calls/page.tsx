@@ -2,14 +2,16 @@
 "use client";
 import { CallCard } from "@/app/dashboard/components/CallCard";
 import type { MemeCoinCall } from "@/lib/types";
+import React, { useState, useEffect } from 'react';
 
-const mockLiveCalls: MemeCoinCall[] = [
+// Dados iniciais movidos para fora do componente para não serem recriados
+const initialMockLiveCalls: MemeCoinCall[] = [
   {
     id: "1",
     coinName: "DogeBonk",
     coinSymbol: "DOBO",
     logoUrl: "https://placehold.co/40x40.png?text=DB",
-    entryTime: new Date().toISOString(), // Atualizado para tempo real
+    entryTime: new Date().toISOString(),
     reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze com alvo ambicioso.",
     entryPrice: 0.0000000123,
     targets: [{ price: 0.0000000160, percentage: "+30%" }, { price: 0.0000000200, percentage: "+62%" }],
@@ -22,7 +24,7 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinName: "ShibaFloki",
     coinSymbol: "SHIBFLO",
     logoUrl: "https://placehold.co/40x40.png?text=SF",
-    entryTime: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // Atualizado para 15 minutos atrás
+    entryTime: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
     reason: "Anúncio de listagem em CEX de grande porte esperado nas próximas 24 horas. Gráfico mostra consolidação pré-alta.",
     entryPrice: 0.00000056,
     targets: [{ price: 0.000000075, percentage: "+34%" }, { price: 0.000000095, percentage: "+70%" }],
@@ -33,12 +35,45 @@ const mockLiveCalls: MemeCoinCall[] = [
 ];
 
 export default function LiveCallsPage() {
+  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(initialMockLiveCalls);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setLiveCalls(prevCalls => {
+        if (prevCalls.length === 0) return prevCalls;
+
+        // Clona o array para evitar mutação direta do estado
+        const updatedCalls = [...prevCalls];
+        
+        // Atualiza o primeiro alerta para demonstração
+        const callToUpdate = { ...updatedCalls[0] };
+        const now = new Date();
+        callToUpdate.entryTime = now.toISOString();
+        // Adiciona um timestamp à razão para tornar a atualização mais visível
+        const originalReason = initialMockLiveCalls.find(c => c.id === callToUpdate.id)?.reason || callToUpdate.reason;
+        callToUpdate.reason = `Atualizado ${now.toLocaleTimeString('pt-BR')}: ${originalReason.substring(0, 80)}${originalReason.length > 80 ? '...' : ''}`;
+        
+        updatedCalls[0] = callToUpdate;
+        
+        // Para dar um efeito de "novos" alertas, podemos ciclar os alertas
+        // ou embaralhar a ordem, mas vamos manter simples por enquanto.
+        // Exemplo: rotacionar o array de alertas
+        // const firstCall = updatedCalls.shift();
+        // if (firstCall) updatedCalls.push(firstCall);
+
+        return updatedCalls;
+      });
+    }, 5000); // Atualiza a cada 5 segundos
+
+    return () => clearInterval(intervalId); // Limpa o intervalo quando o componente é desmontado
+  }, []); // O array de dependências vazio garante que o efeito execute apenas uma vez (montagem/desmontagem)
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-headline font-semibold">Alertas de Trade Ativos</h1>
-      {mockLiveCalls.length > 0 ? (
+      {liveCalls.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-          {mockLiveCalls.map((call) => (
+          {liveCalls.map((call) => (
             <CallCard key={call.id} call={call} />
           ))}
         </div>

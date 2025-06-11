@@ -1,4 +1,7 @@
 
+"use client"; 
+
+import React, { useState, useEffect } from 'react'; // Adicionado useState e useEffect
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
@@ -7,14 +10,14 @@ import type { MemeCoinCall, HistoricalCall, UserPerformance } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
 
-// Mock Data Ajustado para Lucro Alto e Perdas Mínimas
-const mockLiveCalls: MemeCoinCall[] = [
+// Dados iniciais movidos para fora e renomeados
+const initialMockLiveCalls: MemeCoinCall[] = [
   {
     id: "1",
     coinName: "DogeBonk",
     coinSymbol: "DOBO",
     logoUrl: "https://placehold.co/40x40.png?text=DB",
-    entryTime: new Date().toISOString(), // Atualizado para tempo real
+    entryTime: new Date().toISOString(),
     reason: "Forte aumento de volume e sentimento positivo nas redes sociais. Potencial short squeeze com alvo ambicioso.",
     entryPrice: 0.0000000123,
     targets: [{ price: 0.0000000160, percentage: "+30%" }, { price: 0.0000000200, percentage: "+62%" }],
@@ -27,7 +30,7 @@ const mockLiveCalls: MemeCoinCall[] = [
     coinName: "ShibaFloki",
     coinSymbol: "SHIBFLO",
     logoUrl: "https://placehold.co/40x40.png?text=SF",
-    entryTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // Atualizado para 30 mins atrás
+    entryTime: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
     reason: "Anúncio de listagem em CEX de grande porte esperado nas próximas 24 horas. Gráfico mostra consolidação pré-alta.",
     entryPrice: 0.00000056,
     targets: [{ price: 0.000000075, percentage: "+34%" }, { price: 0.000000095, percentage: "+70%" }],
@@ -37,7 +40,7 @@ const mockLiveCalls: MemeCoinCall[] = [
   },
 ];
 
-const mockHistoricalCalls: HistoricalCall[] = [
+const mockHistoricalCalls: HistoricalCall[] = [ // Mantido como constante, pois não precisa de atualização dinâmica aqui
   {
     id: "h1",
     coinName: "PepeCoin",
@@ -47,12 +50,12 @@ const mockHistoricalCalls: HistoricalCall[] = [
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
     reason: "Rompimento de canal descendente com forte volume.",
     entryPrice: 0.00000120,
-    exitPrice: 0.00000180, // Ajustado para maior lucro
+    exitPrice: 0.00000180, 
     targets: [{ price: 0.00000140 }, { price: 0.00000160 }],
     stopLoss: 0.00000100,
     result: "Win",
-    profitOrLossAmount: 500, // Aumentado
-    profitOrLossPercentage: "+50.00%", // Ajustado
+    profitOrLossAmount: 500, 
+    profitOrLossPercentage: "+50.00%", 
   },
   {
     id: "h2",
@@ -62,12 +65,12 @@ const mockHistoricalCalls: HistoricalCall[] = [
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
     reason: "Anúncio de parceria antecipado, stop atingido por volatilidade.",
     entryPrice: 0.000050,
-    exitPrice: 0.000049, // Ajustado para perda mínima
+    exitPrice: 0.000049, 
     targets: [{ price: 0.000060 }, { price: 0.000075 }],
     stopLoss: 0.000048,
     result: "Loss",
-    profitOrLossAmount: -10, // Perda mínima
-    profitOrLossPercentage: "-2.00%", // Ajustado
+    profitOrLossAmount: -10, 
+    profitOrLossPercentage: "-2.00%", 
   },
    {
     id: "h3",
@@ -77,21 +80,21 @@ const mockHistoricalCalls: HistoricalCall[] = [
     exitTime: new Date(Date.now() - 1000 * 60 * 60 * 20 * 1).toISOString(),
     reason: "Tendência de meme viral e apoio massivo de influenciadores.",
     entryPrice: 0.00000040,
-    exitPrice: 0.00000070, // Ajustado
+    exitPrice: 0.00000070, 
     targets: [{ price: 0.00000055 }, { price: 0.00000070 }],
     stopLoss: 0.00000035,
     result: "Win",
-    profitOrLossAmount: 750, // Aumentado
-    profitOrLossPercentage: "+75.00%", // Ajustado
+    profitOrLossAmount: 750, 
+    profitOrLossPercentage: "+75.00%", 
   },
 ];
 
-const mockUserPerformance: UserPerformance = {
-  accuracy: 90.0, // Aumentado
-  averageProfit: 450.00, // Aumentado
-  totalTrades: 25, // Ajustado
-  winningTrades: 22, // Aumentado
-  losingTrades: 3, // Diminuído
+const mockUserPerformance: UserPerformance = { // Mantido como constante
+  accuracy: 90.0, 
+  averageProfit: 450.00, 
+  totalTrades: 25, 
+  winningTrades: 22, 
+  losingTrades: 3, 
   accuracyOverTime: [
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 70 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 75 },
@@ -101,7 +104,7 @@ const mockUserPerformance: UserPerformance = {
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 88 },
     { date: new Date().toISOString(), value: 90 },
   ],
-  profitOverTime: [ // Valores cumulativos maiores
+  profitOverTime: [ 
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 600 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 1000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 1300 }, 
@@ -113,6 +116,29 @@ const mockUserPerformance: UserPerformance = {
 };
 
 export default function DashboardPage() {
+  const [liveCalls, setLiveCalls] = useState<MemeCoinCall[]>(initialMockLiveCalls);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setLiveCalls(prevCalls => {
+        if (prevCalls.length === 0) return prevCalls;
+        
+        const updatedCalls = [...prevCalls];
+        const callToUpdate = {...updatedCalls[0]}; // Atualiza o primeiro card
+        
+        const now = new Date();
+        callToUpdate.entryTime = now.toISOString();
+        const originalReason = initialMockLiveCalls.find(c => c.id === callToUpdate.id)?.reason || callToUpdate.reason;
+        callToUpdate.reason = `Dashboard ${now.toLocaleTimeString('pt-BR')}: ${originalReason.substring(0, 60)}${originalReason.length > 60 ? '...' : ''}`;
+        
+        updatedCalls[0] = callToUpdate;
+        return updatedCalls;
+      });
+    }, 7000); // Atualiza a cada 7 segundos (diferente de LiveCallsPage)
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-headline font-semibold">Painel MemeTrade Pro</h1>
@@ -126,9 +152,9 @@ export default function DashboardPage() {
 
         <TabsContent value="live-calls" className="mt-6">
           <h2 className="text-2xl font-headline mb-4">Alertas de Trade Ativos</h2>
-          {mockLiveCalls.length > 0 ? (
+          {liveCalls.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-              {mockLiveCalls.map((call) => (
+              {liveCalls.map((call) => (
                 <CallCard key={call.id} call={call} />
               ))}
             </div>
@@ -139,7 +165,7 @@ export default function DashboardPage() {
 
         <TabsContent value="history" className="mt-6">
           <h2 className="text-2xl font-headline mb-4">Desempenho Histórico de Trades</h2>
-           {mockHistoricalCalls.length > 0 ? (
+           {mockHistoricalCalls.length > 0 ? ( // Usando mockHistoricalCalls diretamente
             <div className="space-y-4">
               {mockHistoricalCalls.map((call) => (
                 <HistoricalCallCard key={call.id} call={call} />
