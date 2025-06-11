@@ -21,8 +21,8 @@ export type GenerateTradeCallInput = z.infer<typeof GenerateTradeCallInputSchema
 // Schema de saída: a call de trade gerada ou indicação de nenhuma call
 const GeneratedTradeCallOutputSchema = z.object({
   moeda: z.string().describe('O nome da moeda escolhida para a call, ou "Nenhuma call no momento" se nenhuma for considerada promissora.'),
-  hora_call: z.string().optional().describe('A hora ideal de entrada sugerida em formato UTC (ex: "14:30 UTC"). Opcional se nenhuma call for recomendada.'),
-  entrada: z.string().optional().describe('O preço de entrada sugerido para a moeda escolhida, formatado como string com "$" (ex: "$0.00000421"). Opcional se nenhuma call for recomendada.'),
+  hora_call: z.string().optional().describe('A hora ideal de entrada sugerida em formato HH:MM UTC (ex: "14:30 UTC"). Opcional se nenhuma call for recomendada, mas esperado se uma call for gerada.'),
+  entrada: z.string().optional().describe('O preço de entrada ideal (Entry) sugerido para a moeda escolhida, formatado como string com "$" (ex: "$0.00000421"). Opcional se nenhuma call for recomendada.'),
   alvos: z.array(
     z.object({
       preco: z.string().describe("Preço alvo para take profit, formatado como string com '$'."),
@@ -30,7 +30,7 @@ const GeneratedTradeCallOutputSchema = z.object({
     })
   ).length(2).optional().describe("Uma lista contendo exatamente dois alvos de lucro (take profit) para a moeda escolhida. Opcional se nenhuma call for recomendada."),
   stop: z.string().optional().describe('O preço de stop loss sugerido para a moeda escolhida, formatado como string com "$" (ex: "$0.00000390"). Opcional se nenhuma call for recomendada.'),
-  motivo: z.string().optional().describe('Um motivo conciso e técnico para a call de trade da moeda escolhida, ou uma explicação se nenhuma call for gerada. Baseado nos dados de mercado fornecidos.'),
+  motivo: z.string().optional().describe('Um motivo técnico conciso para a call de trade da moeda escolhida, ou uma explicação se nenhuma call for gerada. Baseado nos dados de mercado fornecidos.'),
   risco: z.enum(["Baixo", "Médio", "Alto", "Nenhum"]).optional().describe("A classificação de risco da call de trade para a moeda escolhida (Baixo, Médio, ou Alto). 'Nenhum' se nenhuma call for recomendada.")
 });
 export type GeneratedTradeCallOutput = z.infer<typeof GeneratedTradeCallOutputSchema>;
@@ -68,25 +68,25 @@ const generateTradeCallPrompt = ai.definePrompt({
   input: {schema: z.object({ marketAnalysisData: z.string() })},
   output: {schema: GeneratedTradeCallOutputSchema},
   prompt: `
-Você é um especialista em análise técnica e trading de criptomoedas, com foco em meme coins. Seu trabalho é tomar decisões com base em dados do mercado, mesmo que estejam incompletos ou apresentem riscos.
+Você é um analista profissional de criptomoedas. Sua função é gerar uma call de trade com base na melhor oportunidade disponível, mesmo em momentos de mercado instável ou com dados de alto risco.
 
-Seu objetivo: Analisar os dados de moedas fornecidos abaixo.
+Analise os dados da(s) moeda(s) listada(s) abaixo.
+Se houver dados de moedas válidos:
+1. Escolha **apenas uma** moeda, a que apresentar a melhor oportunidade.
+2. Gere uma **call de trade completa** para essa moeda, incluindo TODOS os seguintes campos:
+   - Nome da moeda (ex: "DOGEMOON")
+   - Preço de entrada ideal (Entry) (ex: "$0.00000421")
+   - Alvo 1 (Take Profit) (ex: "$0.00000550")
+   - Alvo 2 (Take Profit) (ex: "$0.00000620")
+   - Stop Loss (ex: "$0.00000390")
+   - Hora recomendada da entrada (em formato HH:MM UTC, ex: "14:30 UTC")
+   - Motivo técnico da entrada (uma breve análise técnica e fundamentalista concisa)
+   - Risco (escolha entre: Baixo, Médio, ou Alto)
 
-Se houver dados de moedas válidos na lista abaixo:
-1. Escolha a **melhor moeda possível** da lista para indicar uma call.
-2. Gere uma call de trade completa para essa moeda, incluindo:
-   - Nome da moeda
-   - Preço de entrada
-   - Alvo 1 e Alvo 2 (Take Profit)
-   - Stop Loss
-   - Horário ideal da entrada (UTC)
-   - Motivo técnico (breve análise)
-   - Risco: Baixo, Médio ou Alto
+📌 **VOCÊ DEVE SEMPRE GERAR UMA CALL COMPLETA SE HOUVER DADOS DE MOEDAS VÁLIDOS ABAIXO.**
+Mesmo que todas as opções pareçam de alto risco, escolha a moeda que você considera a menos arriscada ou com o maior potencial de curto prazo e gere a call. Não responda que "não há oportunidade" ou que "nenhuma call será feita" se houver moedas listadas com dados.
 
-📌 **Se houver dados de moedas válidos, você DEVE escolher uma e gerar a call completa, mesmo que o cenário pareça de alto risco. Nesse caso, escolha a opção menos arriscada entre as disponíveis e justifique o risco.**
-Não responda que "não há oportunidade" se houver moedas listadas com dados. Faça a melhor escolha possível com os dados apresentados.
-
-Se os dados fornecidos em 'Lista de moedas' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas erros, então sua resposta deve ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" apropriado.
+Se os dados fornecidos em 'Lista de moedas' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas erros, então sua resposta DEVE ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" explicando a ausência de dados ou o problema.
 
 📊 Lista de moedas:
 {{{marketAnalysisData}}}
@@ -140,7 +140,8 @@ const generateTradeCallFlow = ai.defineFlow(
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
     
-    // Se a IA gerou uma call válida (não "Nenhuma call...") mas não forneceu hora_call, defina-a.
+    // Se a IA gerou uma call válida (não "Nenhuma call...") mas não forneceu hora_call, defina-a como fallback.
+    // O prompt agora pede explicitamente para a IA gerar a hora_call.
     if (output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
         const now = new Date();
         output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
