@@ -51,25 +51,25 @@ async function fetchCoinCurrentPrice(coinId: string): Promise<number | null> {
       const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
       if (!response.ok) {
         console.warn(`Falha na requisição de preço para ${coinId} da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}): ${response.status} ${response.statusText}`);
-        if (response.status === 429) { 
-            attempts++; // Increment attempt for 429 as it's a failed attempt
+        if (response.status === 429) {
+            attempts++;
             if (attempts < MAX_FETCH_RETRIES) {
-                const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1); // Exponential backoff for rate limit
+                const delay = RETRY_DELAY_MS * Math.pow(2, attempts -1);
                 console.warn(`Rate limit (429) para ${coinId}. Tentando novamente em ${delay / 1000}s...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             } else {
                  console.warn(`Rate limit (429) para ${coinId} após ${MAX_FETCH_RETRIES} tentativas. Desistindo.`);
                  return null;
             }
-            continue; // Retry the loop
+            continue;
         }
-        return null; // For other non-ok responses that are not 429, don't retry, just fail.
+        return null;
       }
       const data = await response.json();
 
       if (!data || typeof data[coinId] === 'undefined') {
         console.warn(`Dados para ${coinId} não encontrados na resposta da CoinGecko (tentativa ${attempts + 1}/${MAX_FETCH_RETRIES}). Resposta:`, data);
-        return null; // Could retry here too if it's a transient API issue, but for now, fail.
+        return null;
       }
 
       const coinData = data[coinId];
@@ -138,7 +138,7 @@ export default function LiveCallsPage() {
       setIsLoadingInitial(true);
       const newLiveCalls: MemeCoinCall[] = [];
       let generationAttempts = 0;
-      const maxGenerationAttempts = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2); 
+      const maxGenerationAttempts = NUMBER_OF_VISIBLE_CARDS * (MAX_FETCH_RETRIES + 2);
 
       while(newLiveCalls.length < NUMBER_OF_VISIBLE_CARDS && generationAttempts < maxGenerationAttempts) {
         const call = await generateNewCall();
@@ -167,35 +167,31 @@ export default function LiveCallsPage() {
   }, [generateNewCall]);
 
   useEffect(() => {
-    if (isLoadingInitial || liveCalls.length === 0) return; 
+    if (isLoadingInitial || liveCalls.length === 0) return;
 
     const intervalId = setInterval(async () => {
       const newCall = await generateNewCall();
       if (newCall) {
         setLiveCalls(prevCalls => {
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol)) {
-            // Option 1: Update existing call for the same coin (more complex state update)
-            // For simplicity, we'll just return prevCalls and let the next interval potentially get a different coin
-            // This prevents rapid, identical updates if the randomizer picks the same coin quickly.
-            // Or, one could update the specific existing call with new time/reason if desired.
-            // return prevCalls.map(c => c.coinSymbol === newCall.coinSymbol ? newCall : c);
-
-            // Option 2: Just don't add if coin already exists. Less churn.
+            // If coin exists, and we want to avoid duplicates, return previous state.
+            // Or, implement logic to update the existing call for the same coin.
+            // For now, we just avoid adding if the same coin is already present.
             return prevCalls;
           }
 
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_VISIBLE_CARDS) {
-            calls.shift(); 
+            calls.shift();
           }
-          calls.push(newCall); 
+          calls.push(newCall);
           return calls;
         });
       }
-    }, 7000); 
+    }, 7000);
 
     return () => clearInterval(intervalId);
-  }, [isLoadingInitial, generateNewCall, liveCalls.length]); // Added liveCalls.length
+  }, [isLoadingInitial, generateNewCall, liveCalls.length]);
 
   if (isLoadingInitial && liveCalls.length === 0) {
     return (
@@ -230,4 +226,3 @@ export default function LiveCallsPage() {
     </div>
   );
 }
-
