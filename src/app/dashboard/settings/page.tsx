@@ -20,7 +20,9 @@ export default function SettingsPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("dark"); // 'dark', 'light', 'system'
   // Define um som de notificação padrão.
-  const [notificationSound, setNotificationSound] = React.useState("https://www.soundjay.com/button/sounds/button-16.mp3");
+  const [notificationSound, setNotificationSound] = React.useState(
+    "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/G-major.wav" // Using an MDN example WAV file
+  );
 
 
   const handleTestSoundNotification = () => {
@@ -35,7 +37,7 @@ export default function SettingsPage() {
           console.error("Erro ao tentar reproduzir o som:", error);
           toast({
             title: "🔇 Erro no Áudio",
-            description: "Não foi possível reproduzir o som. Verifique a URL (deve ser um link direto para um arquivo de áudio) ou as permissões do navegador.",
+            description: "Não foi possível reproduzir o som. Verifique a URL (deve ser um link direto para um arquivo de áudio como .mp3 ou .wav), problemas de CORS, ou bloqueios de autoplay do navegador.",
             variant: "destructive",
           });
         });
