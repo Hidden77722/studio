@@ -83,3 +83,18 @@ export interface HotPair {
   logoAiHint?: string;
   dexScreenerUrl?: string;
 }
+
+// Tipos para o novo fluxo de análise de sentimento
+export interface MarketSentimentInput {
+  coinName: string;
+  description: string;
+  volume24h: number;
+  priceChange24h: number; // em porcentagem, ex: 10.5 para 10.5%
+}
+
+export type HypePotential = "Alta" | "Moderada" | "Baixa";
+
+export interface MarketSentimentOutput {
+  hypePotential: HypePotential;
+  justification: string;
+}

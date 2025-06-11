@@ -16,7 +16,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Home, BarChart3, History, Settings, Info, HelpCircle, Newspaper, Users, Flame, Eye } from "lucide-react";
+import { Home, BarChart3, History, Settings, HelpCircle, Newspaper, Users, Flame, Eye, BotMessageSquare } from "lucide-react"; // Added BotMessageSquare
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -29,7 +29,7 @@ const navItems = [
   { href: "/dashboard/influencers", label: "Influenciadores", icon: Users },
   { href: "/dashboard/history", label: "Histórico de Trades", icon: History },
   { href: "/dashboard/performance", label: "Desempenho", icon: BarChart3 },
-  { href: "/dashboard/why-this-coin-examples", label: "Insights de IA", icon: Info },
+  { href: "/dashboard/market-sentiment-example", label: "Análise de Sentimento IA", icon: BotMessageSquare }, // Updated label and icon
 ];
 
 const bottomNavItems = [
