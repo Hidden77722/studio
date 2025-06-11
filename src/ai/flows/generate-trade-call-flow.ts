@@ -70,19 +70,23 @@ const generateTradeCallPrompt = ai.definePrompt({
   prompt: `
 Você é um especialista em análise técnica e trading de criptomoedas, com foco em meme coins. Seu trabalho é tomar decisões com base em dados do mercado, mesmo que estejam incompletos ou apresentem riscos.
 
-Seu objetivo: analisar os dados abaixo e escolher a **melhor moeda possível** para indicar uma call.
+Seu objetivo: Analisar os dados de moedas fornecidos abaixo.
 
-Você deve fornecer:
+Se houver dados de moedas válidos na lista abaixo:
+1. Escolha a **melhor moeda possível** da lista para indicar uma call.
+2. Gere uma call de trade completa para essa moeda, incluindo:
+   - Nome da moeda
+   - Preço de entrada
+   - Alvo 1 e Alvo 2 (Take Profit)
+   - Stop Loss
+   - Horário ideal da entrada (UTC)
+   - Motivo técnico (breve análise)
+   - Risco: Baixo, Médio ou Alto
 
-- Nome da moeda
-- Preço de entrada
-- Alvo 1 e Alvo 2 (Take Profit)
-- Stop Loss
-- Horário ideal da entrada (UTC)
-- Motivo técnico (breve análise)
-- Risco: Baixo, Médio ou Alto
+📌 **Se houver dados de moedas válidos, você DEVE escolher uma e gerar a call completa, mesmo que o cenário pareça de alto risco. Nesse caso, escolha a opção menos arriscada entre as disponíveis e justifique o risco.**
+Não responda que "não há oportunidade" se houver moedas listadas com dados. Faça a melhor escolha possível com os dados apresentados.
 
-📌 **Você deve sempre dar uma resposta, mesmo que o cenário tenha risco alto. Não pode responder que não há oportunidade. Faça a melhor escolha possível com o que tem.**
+Se os dados fornecidos em 'Lista de moedas' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas erros, então sua resposta deve ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" apropriado.
 
 📊 Lista de moedas:
 {{{marketAnalysisData}}}
@@ -108,22 +112,25 @@ const generateTradeCallFlow = ai.defineFlow(
         const liq = parseFloat(pair.liquidity?.usd || '0');
         const priceChange1h = parseFloat(pair.priceChange?.h1 || '0');
         const priceChange24h = parseFloat(pair.priceChange?.h24 || '0');
+        // Filtro mais leve: volume ≥ 20k, liquidez ≥ 5k, crescimento 5% em 1h OU 10% em 24h
         return vol >= 20000 && liq >= 5000 && (priceChange1h > 5 || priceChange24h > 10);
       });
 
       if (filtered.length > 0) {
         const topCoins = filtered
           .sort((a, b) => parseFloat(b.volume?.h24 || '0') - parseFloat(a.volume?.h24 || '0'))
-          .slice(0, 3); 
+          .slice(0, 3); // Limita para as 3 melhores
 
         marketAnalysisData = topCoins.map((coin) => {
           return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
         }).join("\n");
+      } else {
+         marketAnalysisData = "Nenhuma moeda atendeu aos critérios de filtragem para gerar call neste momento.";
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error("Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
-      // marketAnalysisData remains the default message. The AI is instructed to provide a "Nenhuma call..." if no valid data.
+      marketAnalysisData = `Erro ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
     }
     
     console.log("Dados enviados para a IA:", marketAnalysisData);
@@ -133,6 +140,7 @@ const generateTradeCallFlow = ai.defineFlow(
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
     
+    // Se a IA gerou uma call válida (não "Nenhuma call...") mas não forneceu hora_call, defina-a.
     if (output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
         const now = new Date();
         output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
@@ -145,3 +153,4 @@ const generateTradeCallFlow = ai.defineFlow(
 export async function generateTradeCall(): Promise<GeneratedTradeCallOutput> {
   return generateTradeCallFlow({}); 
 }
+
