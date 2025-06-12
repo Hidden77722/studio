@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-// format e parseISO não são mais necessários aqui, pois a IA gerará o timestamp e o formato.
 
 const OnchainActivityInputSchema = z.object({}).describe("Nenhum input detalhado é necessário. A IA simulará a atividade on-chain.");
 export type OnchainActivityInput = z.infer<typeof OnchainActivityInputSchema>;
@@ -21,13 +20,12 @@ const OnchainTradeCallOutputSchema = z.object({
 export type OnchainTradeCallOutput = z.infer<typeof OnchainTradeCallOutputSchema>;
 
 export async function generateOnchainTradeCall(input: OnchainActivityInput): Promise<OnchainTradeCallOutput> {
-  // O input agora é um objeto vazio, mas o mantemos para consistência da assinatura da função.
   return generateOnchainTradeCallFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateOnchainTradeCallPromptNew', // Mantendo o nome do prompt para evitar recriação desnecessária no sistema Genkit
-  input: {schema: OnchainActivityInputSchema}, // Schema de input é vazio
+  name: 'generateOnchainTradeCallPromptNew',
+  input: {schema: OnchainActivityInputSchema}, 
   output: {schema: OnchainTradeCallOutputSchema},
   prompt: `Você é um analista on-chain experiente e um "alpha caller" de memecoins no Telegram, conhecido por detectar movimentações cruciais antes de todos e comunicá-las de forma direta, confiante e urgente.
 
@@ -61,20 +59,52 @@ O output DEVE ser um único bloco de texto (uma única string).
 
 const generateOnchainTradeCallFlow = ai.defineFlow(
   {
-    name: 'generateOnchainTradeCallFlowNew', // Mantendo o nome do flow
+    name: 'generateOnchainTradeCallFlowNew',
     inputSchema: OnchainActivityInputSchema,
     outputSchema: OnchainTradeCallOutputSchema,
   },
   async (input: OnchainActivityInput): Promise<OnchainTradeCallOutput> => {
-    // Input agora é um objeto vazio, a IA simulará os detalhes.
-    const {output} = await prompt(input); // Passa o input vazio
-    if (!output || !output.tradeCall) {
-      throw new Error("A IA não retornou uma saída válida para a call de trade on-chain simulada.");
-    }
-    
-    // Pequena limpeza para garantir que não haja espaços extras no início/fim.
-    output.tradeCall = output.tradeCall.trim();
+    let retries = 0;
+    const maxRetries = 3;
+    let lastError: any = null;
 
-    return output;
+    while (retries < maxRetries) {
+      try {
+        console.log(`[generateOnchainTradeCallFlow] Attempt ${retries + 1} to call AI prompt.`);
+        const {output} = await prompt(input); 
+        if (!output || !output.tradeCall) {
+          throw new Error("A IA não retornou uma saída válida para a call de trade on-chain simulada.");
+        }
+        
+        output.tradeCall = output.tradeCall.trim();
+        console.log(`[generateOnchainTradeCallFlow] AI prompt successful on attempt ${retries + 1}.`);
+        return output;
+      } catch (e: any) {
+        lastError = e;
+        console.error(`[generateOnchainTradeCallFlow] Error on attempt ${retries + 1}:`, e.message);
+        
+        const errorMessage = e.message ? e.message.toLowerCase() : "";
+        if (errorMessage.includes('503') || errorMessage.includes('overloaded') || errorMessage.includes('service unavailable')) {
+          retries++;
+          if (retries < maxRetries) {
+            const delay = Math.pow(2, retries) * 1000; // Exponential backoff: 2s, 4s, 8s
+            console.log(`[generateOnchainTradeCallFlow] Service unavailable/overloaded. Retrying in ${delay / 1000}s...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            console.error(`[generateOnchainTradeCallFlow] Max retries reached for service unavailable/overloaded error.`);
+            throw new Error(`O serviço de IA está temporariamente sobrecarregado ou indisponível. Por favor, tente novamente mais tarde. (Details: ${e.message})`);
+          }
+        } else {
+          console.error(`[generateOnchainTradeCallFlow] Non-retryable error encountered: ${e.message}`);
+          throw e; 
+        }
+      }
+    }
+    // This part should ideally not be reached if the loop logic is correct,
+    // but it's a fallback.
+    if (lastError) throw lastError;
+    throw new Error("Falha ao gerar a call de trade on-chain após várias tentativas.");
   }
 );
+
+    
