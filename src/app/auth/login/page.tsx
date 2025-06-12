@@ -161,7 +161,7 @@ export default function LoginPage() {
                 <UserPlus className="mr-1 h-4 w-4" /> Registre-se aqui
             </Link>
           </p>
-          <Link href="#" className="text-xs text-primary hover:underline">Esqueceu sua senha?</Link>
+          <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">Esqueceu sua senha?</Link>
         </CardFooter>
       </Card>
     </div>
