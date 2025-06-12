@@ -65,45 +65,58 @@ const generateOnchainTradeCallFlow = ai.defineFlow(
   },
   async (input: OnchainActivityInput): Promise<OnchainTradeCallOutput> => {
     let retries = 0;
-    const maxRetries = 3;
+    const maxRetries = 3; // Total 3 attempts: 1 initial + 2 retries
     let lastError: any = null;
 
     while (retries < maxRetries) {
       try {
-        console.log(`[generateOnchainTradeCallFlow] Attempt ${retries + 1} to call AI prompt.`);
+        console.log(`[generateOnchainTradeCallFlowNew] Attempt ${retries + 1}/${maxRetries} to call AI prompt.`);
         const {output} = await prompt(input); 
         if (!output || !output.tradeCall) {
-          throw new Error("A IA não retornou uma saída válida para a call de trade on-chain simulada.");
+          // This is a content validation error, not a service availability error.
+          lastError = new Error("A IA não retornou uma saída válida para a call de trade on-chain simulada (output or tradeCall missing).");
+          console.error(`[generateOnchainTradeCallFlowNew] Error on attempt ${retries + 1}/${maxRetries}: Output validation failed. Content: ${JSON.stringify(output)}`);
+          throw lastError; // This will be caught by the outer catch's 'else' block and will not be retried for service availability.
         }
         
         output.tradeCall = output.tradeCall.trim();
-        console.log(`[generateOnchainTradeCallFlow] AI prompt successful on attempt ${retries + 1}.`);
+        console.log(`[generateOnchainTradeCallFlowNew] AI prompt successful on attempt ${retries + 1}/${maxRetries}.`);
         return output;
       } catch (e: any) {
-        lastError = e;
-        console.error(`[generateOnchainTradeCallFlow] Error on attempt ${retries + 1}:`, e.message);
+        lastError = e; // Capture the most recent error for potential re-throw
+        console.error(`[generateOnchainTradeCallFlowNew] Error on attempt ${retries + 1}/${maxRetries}:`, e.message);
         
         const errorMessage = e.message ? e.message.toLowerCase() : "";
-        if (errorMessage.includes('503') || errorMessage.includes('overloaded') || errorMessage.includes('service unavailable')) {
-          retries++;
-          if (retries < maxRetries) {
-            const delay = Math.pow(2, retries) * 1000; // Exponential backoff: 2s, 4s, 8s
-            console.log(`[generateOnchainTradeCallFlow] Service unavailable/overloaded. Retrying in ${delay / 1000}s...`);
+        // Check if it's a retryable error (service unavailable type)
+        if (errorMessage.includes('503') || errorMessage.includes('overloaded') || errorMessage.includes('service unavailable') || errorMessage.includes('model is overloaded')) {
+          retries++; // Increment retries for service availability issues
+          if (retries < maxRetries) { // Check if more retries are allowed
+            const delay = Math.pow(2, retries) * 1000; // Exponential backoff: 2s, 4s
+            console.log(`[generateOnchainTradeCallFlowNew] Service unavailable/overloaded. Retrying in ${delay / 1000}s... (Next attempt will be ${retries + 1}/${maxRetries})`);
             await new Promise(resolve => setTimeout(resolve, delay));
           } else {
-            console.error(`[generateOnchainTradeCallFlow] Max retries reached for service unavailable/overloaded error.`);
-            throw new Error(`O serviço de IA está temporariamente sobrecarregado ou indisponível. Por favor, tente novamente mais tarde. (Details: ${e.message})`);
+            // Max retries reached for a service availability error
+            const finalErrorMessage = `O serviço de IA está temporariamente sobrecarregado ou indisponível. Por favor, tente novamente mais tarde. (Original Details: ${e.message})`;
+            console.error(`[generateOnchainTradeCallFlowNew] Max retries (${maxRetries}) reached for service unavailable/overloaded error. Throwing: ${finalErrorMessage}`);
+            throw new Error(finalErrorMessage);
           }
         } else {
-          console.error(`[generateOnchainTradeCallFlow] Non-retryable error encountered: ${e.message}`);
-          throw e; 
+          // Non-retryable error (e.g., validation error thrown from try block, or other API errors like 400, 401, etc.)
+          console.error(`[generateOnchainTradeCallFlowNew] Non-retryable error encountered: ${e.message}. No further retries for this issue.`);
+          throw e; // Re-throw the caught error (could be the validation error or other)
         }
       }
     }
-    // This part should ideally not be reached if the loop logic is correct,
-    // but it's a fallback.
-    if (lastError) throw lastError;
-    throw new Error("Falha ao gerar a call de trade on-chain após várias tentativas.");
+    // This part should ideally not be reached if the loop logic is correct and always either returns or throws.
+    // If it's reached, it means the loop exited without returning or throwing explicitly inside.
+    const fallbackErrorMsg = "[generateOnchainTradeCallFlowNew] Exited retry loop unexpectedly. This indicates a logic flaw.";
+    console.error(fallbackErrorMsg);
+    if (lastError) {
+        console.error("[generateOnchainTradeCallFlowNew] Throwing last known error:", lastError.message);
+        throw lastError; 
+    }
+    // This generic error should be a last resort if lastError is somehow null and loop exited.
+    throw new Error("Falha crítica e inesperada ao gerar a call de trade on-chain após o loop de tentativas.");
   }
 );
 
