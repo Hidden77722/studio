@@ -3,6 +3,7 @@
 
 import type { MemeCoinCall } from "@/lib/types";
 import React, { useState, useEffect, useCallback } from 'react';
+import { toast } from "@/hooks/use-toast"; // Import useToast
 
 // REAL_COIN_POOL agora usa contractAddress como identificador principal para Birdeye
 // e placehold.co para image URLs.
@@ -193,6 +194,13 @@ export function useLiveCalls() {
     const intervalId = setInterval(async () => {
       const newCall = await generateNewCall();
       if (newCall) {
+        // Disparar toast para notificar o usuário
+        toast({
+          title: "🚀 Nova Call de Trade!",
+          description: `${newCall.coinName} (${newCall.coinSymbol}) - Entrada: $${newCall.entryPrice.toPrecision(4)}`,
+          duration: 5000, // 5 segundos
+        });
+
         setLiveCalls(prevCalls => {
           // Evitar duplicatas pelo símbolo da moeda
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol && Math.abs(new Date(existingCall.entryTime).getTime() - new Date(newCall.entryTime).getTime()) < 5000)) {
@@ -213,3 +221,5 @@ export function useLiveCalls() {
 
   return { liveCalls, isLoadingInitial };
 }
+
+    
