@@ -89,7 +89,7 @@ Analise a(s) moeda(s) listada(s) abaixo em 'Moeda(s) Analisada(s)'. Escolha **ap
 Moeda(s) Analisada(s):
 {{{marketAnalysisData}}}
 
-Se os dados em 'Moeda(s) Analisada(s)' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas erros, então sua resposta DEVE ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" explicando a ausência de dados ou o problema.
+Se os dados em 'Moeda(s) Analisada(s)' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', 'Nenhuma moeda atendeu aos critérios de filtragem para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas mensagens de erro da API (como 'Erro ao buscar dados da DexScreener' ou 'Timeout ao buscar dados da DexScreener'), então sua resposta DEVE ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" explicando a ausência de dados válidos ou o problema.
 Caso contrário, VOCÊ DEVE ESCOLHER UMA MOEDA E GERAR UMA CALL COMPLETA.
     `.trim(),
 });
