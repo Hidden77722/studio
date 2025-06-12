@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/shared/AppLogo";
 import Link from "next/link";
@@ -49,8 +50,15 @@ export default function HomePage() {
       </main>
 
       <footer className="py-8 border-t border-border text-center">
-        <AppLogo />
-        <p className="text-sm text-muted-foreground mt-2">
+        <div className="mb-4">
+         <AppLogo />
+        </div>
+        <nav className="mb-4 text-sm text-muted-foreground space-x-4">
+          <Link href="/legal/terms-of-service" className="hover:text-primary hover:underline">Termos de Serviço</Link>
+          <span>|</span>
+          <Link href="/legal/privacy-policy" className="hover:text-primary hover:underline">Política de Privacidade</Link>
+        </nav>
+        <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} MemeTrade Pro. Todos os direitos reservados.
         </p>
         <p className="text-xs text-muted-foreground mt-1">

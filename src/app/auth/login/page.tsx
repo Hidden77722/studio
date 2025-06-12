@@ -152,7 +152,7 @@ export default function LoginPage() {
           </form>
 
            <p className="text-xs text-muted-foreground text-center px-4">
-            Ao continuar, você concorda com nossos <Link href="#" className="underline hover:text-primary">Termos de Serviço</Link> e <Link href="#" className="underline hover:text-primary">Política de Privacidade</Link>.
+            Ao continuar, você concorda com nossos <Link href="/legal/terms-of-service" className="underline hover:text-primary">Termos de Serviço</Link> e <Link href="/legal/privacy-policy" className="underline hover:text-primary">Política de Privacidade</Link>.
           </p>
         </CardContent>
         <CardFooter className="text-center text-sm flex-col items-center space-y-2">
