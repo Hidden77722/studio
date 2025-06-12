@@ -7,7 +7,7 @@ import { Eye, TrendingUp, TrendingDown, BarChartHorizontalBig } from "lucide-rea
 import type { CoinMarketData } from "@/lib/types"; 
 import Image from "next/image";
 
-// Mock data simulating "Most Viewed" coins, as if from CoinMarketCap
+// Mock data simulating "Most Viewed" coins, as if from CoinMarketCap or CoinGecko
 const mockMostViewedCoins: CoinMarketData[] = [
   {
     id: "bitcoin-mv",
@@ -72,7 +72,7 @@ export default function MostViewedPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <Eye className="mr-3 h-8 w-8 text-primary" />
-          Moedas Mais Vistas (Simulação)
+          Moedas Mais Vistas (Simulação API)
         </h1>
         <p className="text-sm text-muted-foreground mt-2 sm:mt-0 max-w-md">
           Lista simulada de moedas com alta visualização, servindo como um proxy para tendências e hype do mercado.
@@ -91,7 +91,7 @@ export default function MostViewedPage() {
                     width={32}
                     height={32}
                     className="rounded-full"
-                    data-ai-hint={`${coin.symbol.toLowerCase()} logo`} // Use symbol for AI hint
+                    data-ai-hint={`${coin.symbol.toLowerCase()} logo`}
                   />
                   <div>
                     <CardTitle className="text-lg font-headline leading-tight">{coin.name}</CardTitle>
@@ -123,12 +123,11 @@ export default function MostViewedPage() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>
-                Os dados exibidos nesta página são <strong>simulados</strong> para fins de demonstração.
+                Os dados exibidos nesta página são <strong>simulados</strong> para fins de demonstração e representam como informações de uma API de mercado (ex: CoinGecko) poderiam ser apresentadas.
             </p>
             <p>
-                Em uma aplicação real, esta seção seria alimentada por uma API como a da CoinMarketCap (para "Most Viewed"),
-                DexScreener, ou outra fonte de dados de tendências de mercado. A integração com tais APIs geralmente
-                requer gerenciamento de chaves de API e chamadas de backend para segurança e eficiência.
+                Em uma aplicação real, esta seção seria alimentada por chamadas de API reais. A integração com tais APIs geralmente
+                requer gerenciamento de chaves de API, tratamento de limites de taxa e chamadas de backend para segurança e eficiência.
             </p>
         </CardContent>
       </Card>

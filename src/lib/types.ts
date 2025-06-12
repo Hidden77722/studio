@@ -56,12 +56,12 @@ export interface TwitterInfluencer {
   dataAiHintAvatar?: string;
 }
 
-// Novo tipo para dados do CoinGecko
+// Tipo para dados de mercado, simulando CoinGecko
 export interface CoinMarketData {
   id: string;
   symbol: string;
   name: string;
-  image: string;
+  image: string; // URL para a imagem do logo
   current_price: number;
   market_cap: number;
   market_cap_rank: number;
