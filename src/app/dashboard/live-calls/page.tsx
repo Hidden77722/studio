@@ -8,8 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ShieldAlert, AlertTriangle } from "lucide-react";
+import type { MemeCoinCall } from "@/lib/types"; // Importado para uso explícito
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
 
-const NUMBER_OF_VISIBLE_CARDS_PRO = 3; // Pro users see up to 3 on this specific page
+const NUMBER_OF_VISIBLE_CARDS_PRO = 3; 
 const DAILY_LIMIT_FREE_USER = 2;
 
 interface DailyLimitInfo {
@@ -20,23 +24,33 @@ interface DailyLimitInfo {
 export default function LiveCallsPage() {
   const { liveCalls, isLoadingInitial } = useLiveCalls();
   const { isProUser } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
+
   const [viewableCalls, setViewableCalls] = useState<MemeCoinCall[]>([]);
   const [dailyLimitReached, setDailyLimitReached] = useState(false);
   const [localStorageLoaded, setLocalStorageLoaded] = useState(false);
+  const [notifiedCallIds, setNotifiedCallIds] = useState<Set<string>>(new Set());
+  const [upgradeToastShownForCurrentBatch, setUpgradeToastShownForCurrentBatch] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || isProUser || isLoadingInitial) {
-      if (isProUser && !isLoadingInitial) {
-        setViewableCalls(liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS_PRO));
-        setDailyLimitReached(false);
-      }
-      setLocalStorageLoaded(true); // Mark as loaded even if not free user
-      return;
+    if (typeof window === 'undefined') {
+        setLocalStorageLoaded(true); // For SSR or non-browser environments
+        return;
+    }
+    if (isLoadingInitial && !localStorageLoaded) { // Apenas setar true se não estiver no browser
+      // Evita setar localStorageLoaded para true prematuramente se estiver carregando dados iniciais no cliente
+    } else {
+      setLocalStorageLoaded(true);
     }
 
+    if (isLoadingInitial || !localStorageLoaded) return;
+
+
+    // --- Lógica de Notificação e Visualização ---
     const todayStr = new Date().toISOString().split('T')[0];
     let dailyInfo: DailyLimitInfo = { date: todayStr, count: 0 };
-
+    
     try {
       const storedInfo = localStorage.getItem('memetrade_free_user_daily_counter');
       if (storedInfo) {
@@ -44,38 +58,94 @@ export default function LiveCallsPage() {
         if (parsedInfo.date === todayStr) {
           dailyInfo = parsedInfo;
         } else {
-          // Date changed, reset count
+          // Data mudou, reseta o contador para o novo dia
           localStorage.setItem('memetrade_free_user_daily_counter', JSON.stringify({ date: todayStr, count: 0 }));
+          dailyInfo = { date: todayStr, count: 0 }; // usa o resetado
         }
       } else {
-         localStorage.setItem('memetrade_free_user_daily_counter', JSON.stringify(dailyInfo));
+        // Nenhuma informação armazenada, inicializa para hoje
+        localStorage.setItem('memetrade_free_user_daily_counter', JSON.stringify(dailyInfo));
       }
     } catch (error) {
-      console.error("Error accessing localStorage for daily limit:", error);
-      // Proceed gracefully, perhaps by not enforcing the limit or showing a warning
+      console.error("Error accessing localStorage:", error);
+      // Considerar um fallback ou estado de erro se o localStorage não estiver acessível
+    }
+
+    let currentDailyCount = dailyInfo.count;
+    let localUpgradeToastShownThisCycle = upgradeToastShownForCurrentBatch; // Usa o estado para persistir entre renders do effect
+
+    // Resetar upgradeToastShownForCurrentBatch se houver novas calls não notificadas
+    const hasNewUnnotifiedCalls = liveCalls.some(call => !notifiedCallIds.has(call.id));
+    if (hasNewUnnotifiedCalls && upgradeToastShownForCurrentBatch) {
+        setUpgradeToastShownForCurrentBatch(false); // Permite que o toast de upgrade apareça para uma nova "leva"
+        localUpgradeToastShownThisCycle = false; // Reseta a variável local também
     }
     
+    const newNotifiedIdsThisCycle = new Set<string>();
 
-    if (dailyInfo.count >= DAILY_LIMIT_FREE_USER) {
-      setDailyLimitReached(true);
-      setViewableCalls([]);
-    } else {
+    liveCalls.forEach(call => {
+      if (!notifiedCallIds.has(call.id)) { // Processa apenas calls não notificadas ainda neste ciclo de vida do componente
+        newNotifiedIdsThisCycle.add(call.id); // Marca para adicionar ao estado depois do loop
+        if (isProUser) {
+          toast({
+            title: "🚀 Nova Call de Trade!",
+            description: `${call.coinName} (${call.coinSymbol}) - Entrada: $${call.entryPrice.toPrecision(4)}`,
+          });
+        } else { // Usuário Free
+          if (currentDailyCount < DAILY_LIMIT_FREE_USER) {
+            toast({
+              title: "🔥 Nova Call Gratuita!",
+              description: `${call.coinName} (${call.coinSymbol}) - ${currentDailyCount + 1}/${DAILY_LIMIT_FREE_USER} de hoje.`,
+            });
+            currentDailyCount++; // Incrementa o contador local para esta call
+            try {
+              // Atualiza o localStorage IMEDIATAMENTE para refletir a call "consumida"
+              localStorage.setItem('memetrade_free_user_daily_counter', JSON.stringify({ date: todayStr, count: currentDailyCount }));
+              dailyInfo.count = currentDailyCount; // Atualiza a variável dailyInfo também
+            } catch (error) {
+              console.error("Error updating localStorage for daily limit (notification):", error);
+            }
+          } else { // Limite diário gratuito atingido
+            if (!localUpgradeToastShownThisCycle) {
+              toast({
+                title: "💡 Novas Calls Disponíveis!",
+                description: "Você atingiu seu limite de calls gratuitas. Faça upgrade para Pro para acesso ilimitado!",
+                action: (
+                  <ToastAction altText="Upgrade" onClick={() => router.push('/dashboard/billing')}>
+                    Upgrade
+                  </ToastAction>
+                ),
+              });
+              setUpgradeToastShownForCurrentBatch(true); // Marcar que o toast de upgrade foi mostrado nesta "leva"
+              localUpgradeToastShownThisCycle = true;
+            }
+          }
+        }
+      }
+    });
+
+    if (newNotifiedIdsThisCycle.size > 0) {
+        setNotifiedCallIds(prev => new Set([...prev, ...newNotifiedIdsThisCycle]));
+    }
+
+    // --- Lógica de Visualização de Cards (usa dailyInfo.count atualizado) ---
+    if (isProUser) {
+      setViewableCalls(liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS_PRO));
       setDailyLimitReached(false);
-      const remainingSlots = DAILY_LIMIT_FREE_USER - dailyInfo.count;
-      const callsToShow = liveCalls.slice(0, remainingSlots);
-      setViewableCalls(callsToShow);
-
-      if (callsToShow.length > 0) {
-         try {
-            localStorage.setItem('memetrade_free_user_daily_counter', JSON.stringify({ date: todayStr, count: dailyInfo.count + callsToShow.length }));
-         } catch (error) {
-            console.error("Error updating localStorage for daily limit:", error);
-         }
+    } else {
+      if (dailyInfo.count >= DAILY_LIMIT_FREE_USER) {
+        setDailyLimitReached(true);
+        setViewableCalls([]);
+      } else {
+        setDailyLimitReached(false);
+        const remainingSlots = DAILY_LIMIT_FREE_USER - dailyInfo.count;
+        const callsToShow = liveCalls.slice(0, remainingSlots);
+        setViewableCalls(callsToShow);
       }
     }
-    setLocalStorageLoaded(true);
 
-  }, [isProUser, liveCalls, isLoadingInitial]);
+  }, [isProUser, liveCalls, isLoadingInitial, toast, router, notifiedCallIds, localStorageLoaded, upgradeToastShownForCurrentBatch]);
+
 
   if (!localStorageLoaded || (isLoadingInitial && liveCalls.length === 0 && viewableCalls.length === 0)) {
     return (
@@ -120,7 +190,7 @@ export default function LiveCallsPage() {
             <CallCard key={call.id} call={call} />
           ))}
         </div>
-      ) : !dailyLimitReached && !isLoadingInitial && ( // Only show "No active alerts" if not loading and limit not reached
+      ) : !dailyLimitReached && !isLoadingInitial && ( 
          <div className="flex flex-col items-center justify-center h-64 bg-card rounded-lg p-8">
           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-4"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
           <h2 className="text-xl font-headline text-foreground mb-2">Nenhum Alerta Ativo no Momento</h2>

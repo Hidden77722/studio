@@ -3,7 +3,7 @@
 
 import type { MemeCoinCall } from "@/lib/types";
 import React, { useState, useEffect, useCallback } from 'react';
-import { toast } from "@/hooks/use-toast"; // Import useToast
+// Removido: import { toast } from "@/hooks/use-toast"; 
 
 // REAL_COIN_POOL agora usa contractAddress como identificador principal para Birdeye
 // e placehold.co para image URLs.
@@ -194,32 +194,24 @@ export function useLiveCalls() {
     const intervalId = setInterval(async () => {
       const newCall = await generateNewCall();
       if (newCall) {
-        // Disparar toast para notificar o usuário
-        toast({
-          title: "🚀 Nova Call de Trade!",
-          description: `${newCall.coinName} (${newCall.coinSymbol}) - Entrada: $${newCall.entryPrice.toPrecision(4)}`,
-          duration: 5000, // 5 segundos
-        });
-
+        // Removido: toast(...) daqui
         setLiveCalls(prevCalls => {
-          // Evitar duplicatas pelo símbolo da moeda
           if (prevCalls.some(existingCall => existingCall.coinSymbol === newCall.coinSymbol && Math.abs(new Date(existingCall.entryTime).getTime() - new Date(newCall.entryTime).getTime()) < 5000)) {
-            return prevCalls; // Se já existe uma call muito recente para a mesma moeda, não adiciona
+            return prevCalls; 
           }
           const calls = [...prevCalls];
           if (calls.length >= NUMBER_OF_CALLS_MANAGED_BY_HOOK) {
-            calls.shift(); // Remove a mais antiga se o limite for atingido
+            calls.shift(); 
           }
           calls.push(newCall);
           return calls;
         });
       }
-    }, 7000); // Intervalo para tentar gerar novas calls
+    }, 7000); 
 
     return () => clearInterval(intervalId);
-  }, [isLoadingInitial, generateNewCall, liveCalls.length]); // Adicionado liveCalls.length para reavaliar o intervalo se o número de calls mudar externamente (improvável aqui)
+  }, [isLoadingInitial, generateNewCall, liveCalls.length]);
 
   return { liveCalls, isLoadingInitial };
 }
-
     
