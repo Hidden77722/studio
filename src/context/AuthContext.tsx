@@ -21,15 +21,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("[AuthContext] Auth state changed. Current user email:", currentUser?.email);
       setUser(currentUser);
       setLoading(false);
-      // Placeholder: In a real app, you'd check if the user has an active "Pro" subscription
       if (currentUser) {
-        // Example: Check custom claims or Firestore to set isProUser
-        // For now, let's assume all logged-in users are Pro for demonstration
-        setIsProUser(true); 
+        let newIsProUser = false;
+        if (currentUser.email === "pro@memetrade.com") {
+            newIsProUser = true;
+        } else {
+            newIsProUser = false;
+        }
+        setIsProUser(newIsProUser);
+        console.log("[AuthContext] User identified. Email:", currentUser.email, "isProUser set to:", newIsProUser);
       } else {
         setIsProUser(false);
+        console.log("[AuthContext] No user. isProUser set to false.");
       }
     });
 
