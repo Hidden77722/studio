@@ -1,27 +1,18 @@
 
 'use server';
 /**
- * @fileOverview Gera uma call de trade on-chain baseada em dados de atividade de carteira.
+ * @fileOverview Gera uma call de trade on-chain simulada pela IA, como se tivesse detectado uma atividade.
  *
- * - generateOnchainTradeCall - A função que processa a atividade e gera a call.
- * - OnchainActivityInput - O tipo de entrada para a função.
+ * - generateOnchainTradeCall - A função que dispara a IA para simular e gerar a call.
+ * - OnchainActivityInput - O tipo de entrada para a função (agora um objeto vazio).
  * - OnchainTradeCallOutput - O tipo de retorno para a função (uma string contendo a call completa).
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { format, parseISO } from 'date-fns'; // Para formatar o timestamp
+// format e parseISO não são mais necessários aqui, pois a IA gerará o timestamp e o formato.
 
-const OnchainActivityInputSchema = z.object({
-  wallet: z.string().describe('O endereço da carteira que realizou a ação (pode ser completo ou já abreviado).'),
-  action: z.string().describe('O tipo de ação (ex: "buy", "sell", "add_liquidity", "remove_liquidity", "create_pool").'),
-  token: z.string().describe('O símbolo do token (ex: "$PEPE", "$WIF").'),
-  amount_tokens: z.number().describe('A quantidade de tokens envolvida na transação.'),
-  amount_usd: z.number().describe('O valor aproximado em USD da transação.'),
-  timestamp: z.string().datetime({ message: "Timestamp deve ser uma string ISO 8601 válida (UTC)" }).describe('O timestamp da transação no formato ISO UTC (ex: "2025-06-11T17:41:00Z").'),
-  contract: z.string().optional().describe('O endereço do contrato do token, se aplicável.'),
-  note: z.string().optional().describe('Uma nota ou contexto adicional sobre a carteira ou transação (ex: histórico lucrativo, é deployer, etc.).'),
-});
+const OnchainActivityInputSchema = z.object({}).describe("Nenhum input detalhado é necessário. A IA simulará a atividade on-chain.");
 export type OnchainActivityInput = z.infer<typeof OnchainActivityInputSchema>;
 
 const OnchainTradeCallOutputSchema = z.object({
@@ -30,62 +21,55 @@ const OnchainTradeCallOutputSchema = z.object({
 export type OnchainTradeCallOutput = z.infer<typeof OnchainTradeCallOutputSchema>;
 
 export async function generateOnchainTradeCall(input: OnchainActivityInput): Promise<OnchainTradeCallOutput> {
+  // O input agora é um objeto vazio, mas o mantemos para consistência da assinatura da função.
   return generateOnchainTradeCallFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateOnchainTradeCallPromptNew',
-  input: {schema: OnchainActivityInputSchema},
+  name: 'generateOnchainTradeCallPromptNew', // Mantendo o nome do prompt para evitar recriação desnecessária no sistema Genkit
+  input: {schema: OnchainActivityInputSchema}, // Schema de input é vazio
   output: {schema: OnchainTradeCallOutputSchema},
-  prompt: `Você é um analista on-chain experiente, focado em memecoins e conhecido por suas calls de trade "alpha" diretas, confiantes e urgentes, como as de um canal de Telegram.
-Analise os seguintes dados de atividade on-chain:
+  prompt: `Você é um analista on-chain experiente e um "alpha caller" de memecoins no Telegram, conhecido por detectar movimentações cruciais antes de todos e comunicá-las de forma direta, confiante e urgente.
 
-Wallet: {{{wallet}}}
-Ação: {{{action}}}
-Token: {{{token}}}
-Quantidade de Tokens: {{{amount_tokens}}}
-Valor em USD: {{{amount_usd}}}
-Timestamp (UTC ISO): {{{timestamp}}}
-{{#if contract}}Contrato: {{{contract}}}{{/if}}
-{{#if note}}Nota/Contexto: {{{note}}}{{/if}}
+Sua tarefa é:
+1.  **CRIE/SIMULE OS DETALHES DE UMA MOVIMENTAÇÃO ON-CHAIN SIGNIFICATIVA RECENTE:**
+    *   Invente um endereço de carteira relevante (pode ser abreviado, ex: 0xAlpha...Beta, ou um nome como "SmartMoneyX").
+    *   Escolha uma ação (ex: "buy", "sell", "add_liquidity", "remove_liquidity", "create_pool").
+    *   Escolha um token memecoin (ex: "$DOGWIFHAT", "$PEPE", "$NEWGEM", "$TRENDING").
+    *   Defina uma quantidade de tokens e um valor em USD para a transação que pareçam realistas e impactantes.
+    *   Defina um timestamp recente e específico para a transação (formato ISO UTC, ex: "2025-07-15T10:30:00Z").
+    *   Crie uma "nota" ou contexto relevante para a carteira/transação (ex: "Esta carteira é conhecida por antecipar grandes altas em memecoins.", "Deployer do token XYZ fazendo movimentação suspeita.", "Acumulação forte detectada após listagem em nova DEX.", "Grande volume de compra em token com baixa liquidez, pode explodir.").
 
-Gere uma call de trade no seguinte formato EXATO, como uma única mensagem:
+2.  **GERE A CALL DE TRADE NO SEGUINTE FORMATO EXATO, COMO UMA ÚNICA MENSAGEM DE TELEGRAM:**
 
-[HH:mm UTC] - A carteira [Endereço da Carteira Abreviado (ex: 0xAbC...dEf)] [Ação como verbo no passado (ex: comprou, vendeu, adicionou liquidez para)] [Quantidade formatada com separador de milhar] [Símbolo do Token] (aprox. $[Valor USD formatado com separador de milhar] USD).
-Contexto: [Explique a relevância da movimentação baseada na 'Nota/Contexto'. Seja direto e incisivo. Ex: "Carteira com histórico de 6 trades lucrativos nas últimas semanas. Movimento forte!", ou "Deployer da XYZ coin movimentando. Fiquem espertos!"].
+[HH:mm UTC] - A carteira [Endereço da Carteira Criado/Simulado e Abreviado (ex: 0xAlp...Eta ou SmartMoneyX)] [Ação como verbo no passado (ex: comprou, vendeu, adicionou liquidez para)] [Quantidade de Tokens Criada, formatada com separador de milhar] [Símbolo do Token Criado] (aprox. $[Valor USD Criado, formatado com separador de milhar] USD).
+Contexto: [Explique a relevância da movimentação baseada na 'Nota/Contexto' que você criou. Seja direto, incisivo e use jargões de mercado se apropriado. Ex: "Carteira com histórico de 6 trades lucrativos nas últimas semanas. Movimento forte!", ou "Deployer da XYZ coin movimentando. Fiquem espertos!", ou "Whale entrou pesado, possível sinal de fundo!"].
 Call: [ESCOLHA UMA: ENTRAR, OBSERVAR, EVITAR, SAIR]
 
-DETALHES IMPORTANTES PARA A FORMATAÇÃO:
-- Horário: Use APENAS o formato HH:mm UTC a partir do timestamp ISO fornecido. Exemplo: se timestamp for "2025-06-11T17:41:00Z", o horário na call deve ser "17:41 UTC".
-- Endereço da Carteira: Se o campo 'wallet' for um endereço completo, abrevie-o (ex: os primeiros 5 caracteres, reticências, e os últimos 4 caracteres como "0xAbC...dEf"). Se já estiver abreviado, use-o como está.
+DETALHES IMPORTANTES PARA A FORMATAÇÃO DA SUA SAÍDA:
+- Horário: Use APENAS o formato HH:mm UTC a partir do timestamp ISO que você criou. Exemplo: se timestamp for "2025-06-11T17:41:00Z", o horário na call deve ser "17:41 UTC".
+- Endereço da Carteira: Se você criar um endereço completo, abrevie-o (ex: os primeiros 5 caracteres, reticências, e os últimos 4 caracteres como "0xAbC...dEf"). Se já usar um nome ou apelido, mantenha-o.
 - Ação como verbo: "buy" -> "comprou", "sell" -> "vendeu", "add_liquidity" -> "adicionou liquidez para", "remove_liquidity" -> "removeu liquidez de", "create_pool" -> "criou pool para". Adapte para outras ações.
 - Quantidade de Tokens e Valor USD: Formate os números com separador de milhar (ponto para milhar, vírgula para decimal se houver, mas para tokens grandes e USD geralmente não tem decimal). Ex: 3.400.000.000 $PEPE (aprox. $12.400 USD).
 - Call: Deve ser EXATAMENTE uma das quatro opções: ENTRAR, OBSERVAR, EVITAR, SAIR. Use letras maiúsculas.
 
-Seja direto, use jargões de mercado se apropriado (ex: "whale entrou pesado", "sinal claro"), e transmita confiança e, se aplicável, urgência.
+Seja direto, transmita confiança e, se aplicável, urgência.
 NÃO adicione nenhum texto ou explicação fora da estrutura de mensagem única solicitada.
-O output DEVE ser um único bloco de texto.
+O output DEVE ser um único bloco de texto (uma única string).
 `,
 });
 
 const generateOnchainTradeCallFlow = ai.defineFlow(
   {
-    name: 'generateOnchainTradeCallFlowNew',
+    name: 'generateOnchainTradeCallFlowNew', // Mantendo o nome do flow
     inputSchema: OnchainActivityInputSchema,
     outputSchema: OnchainTradeCallOutputSchema,
   },
   async (input: OnchainActivityInput): Promise<OnchainTradeCallOutput> => {
-    // Validação e possível formatação do timestamp de entrada, se necessário,
-    // embora o prompt instrua a IA a lidar com isso.
-    try {
-      parseISO(input.timestamp); // Verifica se é um ISO válido
-    } catch (e) {
-      throw new Error("Timestamp inválido fornecido. Deve ser uma string ISO 8601 UTC.");
-    }
-
-    const {output} = await prompt(input);
+    // Input agora é um objeto vazio, a IA simulará os detalhes.
+    const {output} = await prompt(input); // Passa o input vazio
     if (!output || !output.tradeCall) {
-      throw new Error("A IA não retornou uma saída válida para a call de trade on-chain.");
+      throw new Error("A IA não retornou uma saída válida para a call de trade on-chain simulada.");
     }
     
     // Pequena limpeza para garantir que não haja espaços extras no início/fim.
@@ -94,5 +78,3 @@ const generateOnchainTradeCallFlow = ai.defineFlow(
     return output;
   }
 );
-
-    
