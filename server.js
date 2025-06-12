@@ -2,56 +2,51 @@
 require('dotenv').config();
 const express = require('express');
 const cors =require('cors');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Stripe = require('stripe'); // Corrected to uppercase Stripe
 
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
+const PORT = process.env.PORT || 4242;
 
-// Middleware
-app.use(cors({
-  origin: 'http://localhost:9002' // Adjust if your Next.js dev port is different
-}));
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(express.json());
-// app.use(express.static('public')); // Uncomment if you have a public folder for static assets
 
 app.get('/', (req, res) => {
   res.send('MemeTrade Pro Backend Server is running!');
 });
 
-// Example: Create a Payment Intent (basic setup)
-app.post('/create-payment-intent', async (req, res) => {
-  const { amount, currency, paymentMethodType } = req.body; // paymentMethodType could be 'card'
+// Cria sessão de checkout para ASSINATURAS
+app.post('/create-checkout-session', async (req, res) => {
+  const { priceId } = req.body; // priceId do plano do Stripe
 
-  if (!amount || !currency) {
-    return res.status(400).send({ error: 'Amount and currency are required.' });
+  if (!priceId) {
+    return res.status(400).send({ error: 'Price ID é obrigatório.' });
   }
 
   try {
-    const params = {
-      amount: amount, // Amount in cents
-      currency: currency,
-      // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    };
-    // If a specific payment method type is provided (e.g., 'card'), you can add it.
-    // Otherwise, automatic_payment_methods will handle it.
-    if (paymentMethodType) {
-        // params.payment_method_types = [paymentMethodType]; // This is not needed if automatic_payment_methods is enabled
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create(params);
-    res.send({
-      clientSecret: paymentIntent.client_secret,
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'], // Você pode adicionar outros métodos aqui
+      mode: 'subscription', // MODO ASSINATURA
+      line_items: [
+        {
+          price: priceId, // ID do Preço do Stripe
+          quantity: 1,
+        },
+      ],
+      // As URLs devem apontar para o seu frontend
+      success_url: `${process.env.FRONTEND_URL}/dashboard/billing/success?session_id={CHECKOUT_SESSION_ID}&new_sub=true`,
+      cancel_url: `${process.env.FRONTEND_URL}/dashboard/billing/cancel`,
     });
-  } catch (error) {
-    console.error('Error creating payment intent:', error.message);
-    res.status(500).send({ error: error.message });
+
+    res.status(200).json({ url: session.url });
+  } catch (err) {
+    console.error('Erro ao criar sessão de checkout do Stripe:', err.message);
+    res.status(500).json({ error: 'Erro ao criar checkout', details: err.message });
   }
 });
 
 
-// TODO: Add more Stripe routes like /webhook for handling events after payment
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+});
 
-const PORT = process.env.PORT || 4242;
-app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));

@@ -10,6 +10,7 @@ interface AuthContextType {
   user: FirebaseUser | null;
   loading: boolean;
   isProUser: boolean; 
+  refreshProStatus: () => void; // Adicionado para forçar reavaliação
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,28 +20,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isProUser, setIsProUser] = useState(false); 
 
+  const checkProStatus = (currentUser: FirebaseUser | null) => {
+    if (currentUser) {
+      let newIsProUser = false;
+      // Condição 1: Email específico (admin/dev)
+      if (currentUser.email === "pro@memetrade.com") {
+          newIsProUser = true;
+      } else {
+        // Condição 2: Verificação do localStorage para simulação de upgrade
+        try {
+          if (localStorage.getItem('memetrade_user_is_pro_simulated') === 'true') {
+            newIsProUser = true;
+          }
+        } catch (error) {
+            console.warn("Não foi possível acessar o localStorage para verificar o status Pro simulado:", error);
+            // Mantém newIsProUser como false se o localStorage falhar
+        }
+      }
+      setIsProUser(newIsProUser);
+      console.log("[AuthContext] User identified. Email:", currentUser.email, "isProUser set to:", newIsProUser);
+    } else {
+      setIsProUser(false);
+      console.log("[AuthContext] No user. isProUser set to false.");
+    }
+  };
+
+  // Função para ser chamada para re-checar o status Pro
+  const refreshProStatus = () => {
+    if (user) { // Re-checa baseado no usuário atual
+        checkProStatus(user);
+    }
+  };
+
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       console.log("[AuthContext] Auth state changed. Current user email:", currentUser?.email);
       setUser(currentUser);
       setLoading(false);
-      if (currentUser) {
-        let newIsProUser = false;
-        if (currentUser.email === "pro@memetrade.com") {
-            newIsProUser = true;
-        } else {
-            newIsProUser = false;
-        }
-        setIsProUser(newIsProUser);
-        console.log("[AuthContext] User identified. Email:", currentUser.email, "isProUser set to:", newIsProUser);
-      } else {
-        setIsProUser(false);
-        console.log("[AuthContext] No user. isProUser set to false.");
-      }
+      checkProStatus(currentUser); // Chama a função de verificação
     });
 
-    return () => unsubscribe();
-  }, []);
+    // Listener para mudanças no localStorage (opcional, mas bom para consistência entre abas)
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'memetrade_user_is_pro_simulated' && user) {
+        console.log("[AuthContext] localStorage 'memetrade_user_is_pro_simulated' changed. Re-checking Pro status.");
+        checkProStatus(user); // Re-avalia o status Pro se o item do localStorage mudar
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]); // Adicionar user como dependência para re-executar quando user mudar externamente
 
   if (loading) {
     return (
@@ -58,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, isProUser }}>
+    <AuthContext.Provider value={{ user, loading, isProUser, refreshProStatus }}>
       {children}
     </AuthContext.Provider>
   );
