@@ -11,7 +11,7 @@ import { signInWithEmailAndPassword, AuthError } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, LogIn, Mail, KeyRound } from "lucide-react";
+import { AlertTriangle, LogIn, Mail, KeyRound, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -157,7 +157,9 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="text-center text-sm flex-col items-center space-y-2">
            <p className="text-muted-foreground">
-            Não tem uma conta? <Link href="#" className="underline hover:text-primary">Registre-se aqui</Link> (funcionalidade a ser implementada).
+            Não tem uma conta? <Link href="/auth/register" className="underline hover:text-primary font-semibold flex items-center justify-center">
+                <UserPlus className="mr-1 h-4 w-4" /> Registre-se aqui
+            </Link>
           </p>
           <Link href="#" className="text-xs text-primary hover:underline">Esqueceu sua senha?</Link>
         </CardFooter>
