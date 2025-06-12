@@ -1,15 +1,16 @@
 
 "use client";
 
-import React from 'react'; 
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
 import { PerformanceChart } from "./components/PerformanceChart";
-import type { HistoricalCall, UserPerformance } from "@/lib/types"; 
+import type { HistoricalCall, UserPerformance, MemeCoinCall } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
-import { useLiveCalls } from '@/hooks/useLiveCalls'; 
+import { useLiveCalls } from '@/hooks/useLiveCalls';
+import { useAuth } from '@/context/AuthContext'; // Added
 
 const mockHistoricalCalls: HistoricalCall[] = [
   {
@@ -36,7 +37,7 @@ const mockHistoricalCalls: HistoricalCall[] = [
     logoUrl: "https://placehold.co/40x40.png",
     logoAiHint: "floki rocket",
     entryTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4.8).toISOString(), 
+    exitTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4.8).toISOString(),
     reason: "Tentativa de pegar um fundo após grande correção, mas o mercado continuou caindo. Baixo volume na Axiom Trade.",
     entryPrice: 0.000070,
     exitPrice: 0.000068,
@@ -66,12 +67,12 @@ const mockHistoricalCalls: HistoricalCall[] = [
 ];
 
 const mockUserPerformance: UserPerformance = {
-  accuracy: 96.5, // High accuracy
-  averageProfit: 1850.00, // Good average profit
-  totalTrades: 50, // More trades
-  winningTrades: 48, // Reflects high accuracy
+  accuracy: 96.5,
+  averageProfit: 1850.00,
+  totalTrades: 50,
+  winningTrades: 48,
   losingTrades: 2,
-  accuracyOverTime: [ // Showing consistent high accuracy
+  accuracyOverTime: [
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 92 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 93 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 94 },
@@ -80,21 +81,88 @@ const mockUserPerformance: UserPerformance = {
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 96 },
     { date: new Date().toISOString(), value: 96.5 },
   ],
-  profitOverTime: [ // Showing strong profit growth
+  profitOverTime: [
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(), value: 8000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), value: 15000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), value: 25000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), value: 38000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), value: 55000 },
     { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), value: 75000 },
-    { date: new Date().toISOString(), value: 88800 }, // 48 trades * $1850 profit/trade = $88,800
+    { date: new Date().toISOString(), value: 88800 },
   ],
 };
 
 const NUMBER_OF_VISIBLE_CARDS_DASHBOARD = 2;
+const DAILY_LIMIT_FREE_USER_DASHBOARD = 2; // Consistent with live-calls page
+
+interface DailyFixedCallsInfo {
+  date: string;
+  calls: MemeCoinCall[];
+}
+
+// Helper function
+const getTodayString = () => {
+  return new Date().toISOString().split('T')[0];
+};
 
 export default function DashboardPage() {
-  const { liveCalls, isLoadingInitial } = useLiveCalls(); 
+  const { liveCalls, isLoadingInitial } = useLiveCalls();
+  const { isProUser } = useAuth();
+
+  const [fixedDailyCallsForDashboard, setFixedDailyCallsForDashboard] = useState<MemeCoinCall[]>([]);
+  const [localStorageCallsLoaded, setLocalStorageCallsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (!localStorageCallsLoaded) {
+      setLocalStorageCallsLoaded(true);
+      // Allow the effect to continue to the next checks in the same run
+    }
+
+    if (isProUser || isLoadingInitial || !localStorageCallsLoaded) {
+      return; // Pro users see live data, or still loading, or localStorage not yet checked for this page
+    }
+
+    // Free user logic for fixed daily calls
+    const todayStr = getTodayString();
+    let storedDailyInfo: DailyFixedCallsInfo | null = null;
+    try {
+      const item = localStorage.getItem('memetrade_free_user_fixed_calls');
+      if (item) {
+        storedDailyInfo = JSON.parse(item) as DailyFixedCallsInfo;
+      }
+    } catch (error) {
+      console.error("[DashboardPage] Error parsing fixed calls from localStorage:", error);
+      localStorage.removeItem('memetrade_free_user_fixed_calls'); // Clear corrupted item
+    }
+
+    if (storedDailyInfo && storedDailyInfo.date === todayStr) {
+      setFixedDailyCallsForDashboard(storedDailyInfo.calls);
+    } else if (liveCalls.length > 0) {
+      // New day or no stored calls for today, fix new ones from system if available
+      const callsToFix = liveCalls.slice(0, DAILY_LIMIT_FREE_USER_DASHBOARD);
+      const newDailyInfo: DailyFixedCallsInfo = { date: todayStr, calls: callsToFix };
+      try {
+        // This write operation ensures consistency if live-calls page hasn't run yet today for this user
+        localStorage.setItem('memetrade_free_user_fixed_calls', JSON.stringify(newDailyInfo));
+      } catch (error) {
+        console.error("[DashboardPage] Error saving fixed calls to localStorage:", error);
+      }
+      setFixedDailyCallsForDashboard(callsToFix);
+    } else if (!storedDailyInfo) {
+        // No stored info and no live calls yet to fix, set to empty
+        setFixedDailyCallsForDashboard([]);
+    }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isProUser, isLoadingInitial, liveCalls, localStorageCallsLoaded]);
+
+
+  const callsForDashboardTab = isProUser ? liveCalls : fixedDailyCallsForDashboard;
+  const showLoadingForDashboardTab = isLoadingInitial && callsForDashboardTab.length === 0 && !(!isProUser && localStorageCallsLoaded && fixedDailyCallsForDashboard.length > 0);
+
 
   return (
     <div className="space-y-6">
@@ -109,22 +177,29 @@ export default function DashboardPage() {
 
         <TabsContent value="live-calls" className="mt-6">
           <h2 className="text-2xl font-headline mb-4">Alertas de Trade Ativos</h2>
-          {isLoadingInitial && liveCalls.length === 0 ? (
+          {showLoadingForDashboardTab ? (
              <div className="flex flex-col items-center justify-center h-48 bg-card rounded-lg p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader-circle animate-spin text-primary mb-3"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 <p className="text-muted-foreground">Carregando alertas...</p>
              </div>
-          ) : liveCalls.length > 0 ? (
+          ) : callsForDashboardTab.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-              {liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS_DASHBOARD).map((call) => (
+              {callsForDashboardTab.slice(0, NUMBER_OF_VISIBLE_CARDS_DASHBOARD).map((call) => (
                 <CallCard key={call.id} call={call} />
               ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-48 bg-card rounded-lg p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope text-primary mb-3"><path d="m12 21-1.2-3.6a1 1 0 0 1 1-1.2L18 15l3-3-6-1.8a1 1 0 0 1-1.2-1L9 3 6 6l1.8 6a1 1 0 0 1-1 1.2L3 15"/><circle cx="12" cy="12" r="2"/></svg>
-                <p className="text-muted-foreground text-center">Nenhum alerta ativo no momento. Fique ligado!</p>
-                {!isLoadingInitial && <p className="text-xs text-muted-foreground mt-2 text-center">(Se este problema persistir, pode haver uma dificuldade em buscar dados da API. Verifique sua conexão ou o status da API.)</p>}
+                <p className="text-muted-foreground text-center">
+                  {isProUser ? "Nenhum alerta ativo no momento. Fique ligado!" : "Suas calls gratuitas de hoje ainda não foram geradas pelo sistema ou não há calls disponíveis."}
+                </p>
+                {!isLoadingInitial && !isProUser && callsForDashboardTab.length === 0 &&
+                  <p className="text-xs text-muted-foreground mt-2 text-center">(As 2 calls gratuitas são fixadas no início do dia quando disponíveis no sistema.)</p>
+                }
+                {!isLoadingInitial && isProUser && callsForDashboardTab.length === 0 &&
+                  <p className="text-xs text-muted-foreground mt-2 text-center">(Se este problema persistir, pode haver uma dificuldade em buscar dados da API. Verifique sua conexão ou o status da API.)</p>
+                }
             </div>
           )}
         </TabsContent>
@@ -156,14 +231,14 @@ export default function DashboardPage() {
               data={mockUserPerformance.accuracyOverTime}
               title="Precisão ao Longo do Tempo"
               description="Sua tendência de precisão nos trades."
-              dataKey="value" // Changed from accuracy to value to match data structure
+              dataKey="value" 
               color="hsl(var(--accent))"
             />
             <PerformanceChart
               data={mockUserPerformance.profitOverTime}
               title="Lucro Acumulado ao Longo do Tempo"
               description="Sua tendência de acumulação de lucro."
-              dataKey="value" // Changed from profit to value to match data structure
+              dataKey="value" 
               chartType="bar"
               color="hsl(var(--primary))"
             />
@@ -193,3 +268,5 @@ function StatCard({ title, value, icon }: StatCardProps) {
     </Card>
   );
 }
+
+    
