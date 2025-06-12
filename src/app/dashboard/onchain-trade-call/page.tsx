@@ -25,6 +25,7 @@ export default function OnchainTradeCallPage() {
   const { isProUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // onchainCallResult will now store the full OnchainTradeCallOutput object
   const [onchainCallResult, setOnchainCallResult] = useState<OnchainTradeCallOutput | null>(null);
   const [onchainAiCallLimitReached, setOnchainAiCallLimitReached] = useState(false);
   const [localStorageChecked, setLocalStorageChecked] = useState(false);
@@ -73,12 +74,19 @@ export default function OnchainTradeCallPage() {
     setError(null);
     setOnchainCallResult(null);
 
-    try {
-      const input: OnchainActivityInput = {};
-      const result = await generateOnchainTradeCall(input);
-      setOnchainCallResult(result);
+    const input: OnchainActivityInput = {};
+    const result = await generateOnchainTradeCall(input);
+    setIsLoading(false);
 
-      if (!isProUser && result.tradeCall) {
+    if (result.errorMessage) {
+      console.error("Error generating onchain trade call from flow:", result.errorMessage);
+      setError(`Falha ao gerar a call: ${result.errorMessage}`);
+      setOnchainCallResult(null);
+    } else if (result.tradeCall) {
+      setOnchainCallResult(result); // Store the full result object
+      setError(null);
+
+      if (!isProUser) { // Only update limit if successful and free user
         const today = getTodayString();
         let currentLimits: AiCallLimits = { date: today, dexCallsMadeToday: 0, onchainCallsMadeToday: 0 };
         try {
@@ -89,24 +97,23 @@ export default function OnchainTradeCallPage() {
               currentLimits = parsed;
             }
           }
-        } catch (e) {
-          console.error("Error reading localStorage for AI call limits update:", e);
+        } catch (errStorageRead) {
+          console.error("Error reading localStorage for AI call limits update:", errStorageRead);
         }
         currentLimits.onchainCallsMadeToday = (currentLimits.onchainCallsMadeToday || 0) + 1;
-        currentLimits.date = today; // Ensure date is current
+        currentLimits.date = today; 
         try {
           localStorage.setItem(AI_CALL_LIMIT_KEY, JSON.stringify(currentLimits));
-        } catch(e) {
-          console.error("Error writing localStorage for AI call limits update:", e);
+        } catch(errStorageWrite) {
+          console.error("Error writing localStorage for AI call limits update:", errStorageWrite);
         }
         setOnchainAiCallLimitReached(currentLimits.onchainCallsMadeToday >= DAILY_LIMIT_COUNT);
       }
-    } catch (e) {
-      console.error("Error generating onchain trade call:", e);
-      const errorMessage = e instanceof Error ? e.message : "Ocorreu um erro desconhecido ao gerar a call.";
-      setError(`Falha ao gerar a call: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
+    } else {
+      // Should not happen if the flow always returns either tradeCall or errorMessage
+      console.error("Unexpected response from generateOnchainTradeCall:", result);
+      setError("Resposta inesperada da IA ao gerar a call.");
+      setOnchainCallResult(null);
     }
   };
 
@@ -183,7 +190,7 @@ export default function OnchainTradeCallPage() {
         </Alert>
       )}
 
-      {onchainCallResult && !isLoading && (
+      {onchainCallResult && onchainCallResult.tradeCall && !isLoading && (
           <Card className="max-w-2xl mx-auto shadow-xl mt-6 bg-card border-primary/50">
             <CardHeader className="pb-2">
               <CardTitle className="font-headline text-lg flex items-center justify-between text-primary">
@@ -206,5 +213,3 @@ export default function OnchainTradeCallPage() {
     </div>
   );
 }
-
-    
