@@ -49,15 +49,7 @@ export default function LiveCallsPage() {
       // Allow the effect to continue to the next checks in the same run
     }
     
-    // This check needs to happen after attempting to set localStorageLoaded
-    // Otherwise, on the very first run, it might return early if !localStorageLoaded was true
-    // and then isProUser or isLoadingLiveCalls was also true.
     if (isProUser || isLoadingLiveCalls || !localStorageLoaded) { 
-      // If still not loaded (e.g. first run didn't make it past here)
-      // or if pro/loading, then exit.
-      // The !localStorageLoaded here ensures that if this is the first run,
-      // and it was set to true above, this condition won't make it return prematurely
-      // unless isProUser or isLoadingLiveCalls is true.
       return;
     }
 
@@ -92,12 +84,14 @@ export default function LiveCallsPage() {
       callsToFix.forEach((call, index) => {
         setNotifiedCallIds(prevNotified => {
           if (!prevNotified.has(call.id)) {
-            // Calculate callNumber based on the actual number of calls being fixed now.
-            const callNumber = index + 1; 
-            toast({
-              title: "🔥 Nova Call Gratuita Diária!",
-              description: `${call.coinName} (${call.coinSymbol}) - Sua ${callNumber}ª call gratuita de hoje (${callsToFix.length}/${DAILY_LIMIT_FREE_USER} fixadas).`,
-            });
+            // Use a different basis for callNumber if fixedDailyCallsForFreeUser might not be updated yet
+            const callNumberForToast = index + 1; 
+            setTimeout(() => {
+              toast({
+                title: "🔥 Nova Call Gratuita Diária!",
+                description: `${call.coinName} (${call.coinSymbol}) - Sua ${callNumberForToast}ª call gratuita de hoje (${callsToFix.length}/${DAILY_LIMIT_FREE_USER} disponíveis no sistema para fixar).`,
+              });
+            }, 0);
             const updatedNotified = new Set(prevNotified);
             updatedNotified.add(call.id);
             return updatedNotified;
@@ -107,7 +101,7 @@ export default function LiveCallsPage() {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps 
-  }, [isProUser, isLoadingLiveCalls, liveCalls, localStorageLoaded, getTodayString, toast]); // toast is used, getTodayString is a callback
+  }, [isProUser, isLoadingLiveCalls, liveCalls, localStorageLoaded, getTodayString, toast, fixedDailyCallsForFreeUser.length]);
 
 
   useEffect(() => {
@@ -120,13 +114,15 @@ export default function LiveCallsPage() {
       setDailyLimitReached(false); // Pro users never reach a limit
 
       liveCalls.forEach(call => {
-        setNotifiedCallIds(prev => { // Use prev for consistency
+        setNotifiedCallIds(prev => { 
           if (!prev.has(call.id)) {
-            toast({
-              title: "🚀 Nova Call de Trade!",
-              description: `${call.coinName} (${call.coinSymbol}) - Entrada: $${call.entryPrice.toPrecision(4)}`,
-            });
-            const newSet = new Set(prev); // Create new set from previous
+            setTimeout(() => {
+              toast({
+                title: "🚀 Nova Call de Trade!",
+                description: `${call.coinName} (${call.coinSymbol}) - Entrada: $${call.entryPrice.toPrecision(4)}`,
+              });
+            }, 0);
+            const newSet = new Set(prev); 
             newSet.add(call.id);
             return newSet;
           }
@@ -146,20 +142,22 @@ export default function LiveCallsPage() {
       );
 
       if (newSystemCallsUnseenByFreeUser.length > 0 && dailyLimitReached && !upgradeToastShownForCurrentBatch) {
-        toast({
-          title: "💡 Novas Calls Disponíveis no Sistema!",
-          description: "Você já viu suas calls gratuitas de hoje. Faça upgrade para Pro para acesso ilimitado!",
-          action: (
-            <ToastAction altText="Upgrade" onClick={() => router.push('/dashboard/billing')}>
-              Upgrade
-            </ToastAction>
-          ),
-        });
+        setTimeout(() => {
+          toast({
+            title: "💡 Novas Calls Disponíveis no Sistema!",
+            description: "Você já viu suas calls gratuitas de hoje. Faça upgrade para Pro para acesso ilimitado!",
+            action: (
+              <ToastAction altText="Upgrade" onClick={() => router.push('/dashboard/billing')}>
+                Upgrade
+              </ToastAction>
+            ),
+          });
+        }, 0);
         setUpgradeToastShownForCurrentBatch(true);
 
         newSystemCallsUnseenByFreeUser.forEach(call => {
-            setNotifiedCallIds(prev => { // Use prev for consistency
-                const newSet = new Set(prev); // Create new set from previous
+            setNotifiedCallIds(prev => { 
+                const newSet = new Set(prev); 
                 newSet.add(`upgrade-toast-for-${call.id}`);
                 return newSet;
             });
@@ -172,15 +170,14 @@ export default function LiveCallsPage() {
   }, [
     isProUser,
     liveCalls,
-    fixedDailyCallsForFreeUser,
+    fixedDailyCallsForFreeUser, // Removed .length, using the object itself
     dailyLimitReached,
-    toast, // toast is used
-    router, // router is used
+    toast, 
+    router, 
     localStorageLoaded,
     notifiedCallIds, 
     upgradeToastShownForCurrentBatch,
-    // State setters like setViewableCalls, setDailyLimitReached, setNotifiedCallIds, setUpgradeToastShownForCurrentBatch
-    // are stable and don't strictly need to be listed, but values read do.
+    // State setters are stable: setViewableCalls, setDailyLimitReached, setNotifiedCallIds, setUpgradeToastShownForCurrentBatch
   ]);
 
 
