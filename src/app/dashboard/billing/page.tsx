@@ -34,10 +34,11 @@ const availablePlans = [
         priceInCents: 2999, // Preço em centavos
         currency: "brl",
         stripePriceId: "price_PRO_MONTHLY_PLACEHOLDER", // SUBSTITUA PELO SEU PRICE ID REAL DO STRIPE
-        description: "Acesso completo a todos os recursos, cobrado mensalmente.",
+        description: "Assine o Pro Mensal e tenha acesso ilimitado a calls de trade de memecoins ao vivo, com análises em tempo real. Gere quantas calls quiser com duas inteligências artificiais diferentes, prontas para identificar oportunidades no mercado 24/7. Tenha acesso a sessões exclusivas, setups prontos e sinais precisos para operar com confiança. Tudo isso sem limite de uso.",
         features: [
             "Alertas de trade ilimitados",
             "Análise de IA para cada call",
+            "Gere calls com IA (DEX e On-chain) sem limites",
             "Histórico completo de trades",
             "Pares em Alta (DexScreener)",
             "Suporte prioritário"
