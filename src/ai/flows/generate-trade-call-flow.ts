@@ -75,7 +75,7 @@ const generateTradeCallPrompt = ai.definePrompt({
   output: {schema: GeneratedTradeCallOutputSchema},
   prompt: `
 Você é um trader profissional.
-Sua principal diretriz é: **Sempre gere uma call de trade**, mesmo que o risco seja alto. Escolha a melhor oportunidade disponível com base nos dados fornecidos. **Nunca responda que não há oportunidades.**
+Sua principal diretriz é: **Sempre gere uma call de trade**, mesmo que o risco seja alto. Escolha a melhor oportunidade disponível com base nos dados fornecidos em 'Moeda(s) Analisada(s)'. **Nunca responda que não há oportunidades, a menos que 'Moeda(s) Analisada(s)' explicitamente indique um erro ou ausência total de dados.**
 
 Analise a(s) moeda(s) listada(s) abaixo em 'Moeda(s) Analisada(s)'. Escolha **apenas uma** moeda e gere uma call completa incluindo:
 - Nome da moeda
@@ -84,13 +84,13 @@ Analise a(s) moeda(s) listada(s) abaixo em 'Moeda(s) Analisada(s)'. Escolha **ap
 - Stop Loss
 - Risco (Baixo, Médio ou Alto)
 - Motivo técnico da entrada
-- Hora recomendada da entrada (em UTC)
+- Hora recomendada da entrada (em UTC, como a hora atual da análise)
 
 Moeda(s) Analisada(s):
 {{{marketAnalysisData}}}
 
 Se os dados em 'Moeda(s) Analisada(s)' indicarem explicitamente 'Nenhuma informação válida para gerar call neste momento', 'Nenhuma moeda atendeu aos critérios de filtragem para gerar call neste momento', ou se a lista estiver efetivamente vazia ou contiver apenas mensagens de erro da API (como 'Erro ao buscar dados da DexScreener' ou 'Timeout ao buscar dados da DexScreener'), então sua resposta DEVE ser estruturada com "moeda": "Nenhuma call no momento" e um "motivo" explicando a ausência de dados válidos ou o problema.
-Caso contrário, VOCÊ DEVE ESCOLHER UMA MOEDA E GERAR UMA CALL COMPLETA.
+Caso contrário, mesmo que apenas uma moeda esteja listada ou os dados pareçam limitados, VOCÊ DEVE ESCOLHER UMA MOEDA E GERAR UMA CALL COMPLETA.
     `.trim(),
 });
 
@@ -107,29 +107,33 @@ const generateTradeCallFlow = ai.defineFlow(
     let servedFromCache = false;
 
     try {
+      console.log("[GenerateTradeCallFlow] Iniciando busca de dados da DexScreener...");
       if (dexScreenerCache.has(apiUrl)) {
         const entry = dexScreenerCache.get(apiUrl)!;
         if (Date.now() - entry.timestamp < DEXSCREENER_CACHE_TTL_MS) {
-          console.log("Usando dados da DexScreener do cache.");
+          console.log("[GenerateTradeCallFlow] Usando dados da DexScreener do cache.");
           pairs = entry.data.pairs || [];
           servedFromCache = true;
         } else {
           dexScreenerCache.delete(apiUrl);
-          console.log("Cache da DexScreener expirado.");
+          console.log("[GenerateTradeCallFlow] Cache da DexScreener expirado.");
         }
       }
 
       if (!servedFromCache) {
-        console.log(`Buscando dados da DexScreener API: ${apiUrl}`);
+        console.log(`[GenerateTradeCallFlow] Buscando dados da DexScreener API: ${apiUrl}`);
         const response = await axios.get<DexScreenerApiResponse>(apiUrl, { timeout: DEXSCREENER_API_TIMEOUT_MS });
+        console.log("[GenerateTradeCallFlow] Dados brutos da DexScreener recebidos:", JSON.stringify(response.data, null, 2));
         pairs = response.data.pairs || [];
         if (pairs.length > 0) {
           dexScreenerCache.set(apiUrl, { data: response.data, timestamp: Date.now() });
-          console.log("Dados da DexScreener cacheados.");
+          console.log("[GenerateTradeCallFlow] Dados da DexScreener cacheados.");
         } else {
-          console.log("Nenhum par retornado pela API DexScreener, não cacheando.");
+          console.log("[GenerateTradeCallFlow] Nenhum par retornado pela API DexScreener, não cacheando.");
         }
       }
+      
+      console.log("[GenerateTradeCallFlow] Pares antes da filtragem:", JSON.stringify(pairs, null, 2));
 
       const filtered = pairs.filter((pair) => {
         const vol = parseFloat(pair.volume?.h24 || '0');
@@ -137,8 +141,12 @@ const generateTradeCallFlow = ai.defineFlow(
         const priceChange1h = parseFloat(pair.priceChange?.h1 || '0');
         const priceChange24h = parseFloat(pair.priceChange?.h24 || '0');
 
+        // Filtros atuais: vol >= 20000 && liq >= 5000 && (priceChange1h > 5 || priceChange24h > 10)
+        // Se necessário, estes filtros podem ser relaxados.
         return vol >= 20000 && liq >= 5000 && (priceChange1h > 5 || priceChange24h > 10);
       });
+
+      console.log("[GenerateTradeCallFlow] Pares após a filtragem:", JSON.stringify(filtered, null, 2));
 
       if (filtered.length > 0) {
         const topCoins = filtered
@@ -148,31 +156,41 @@ const generateTradeCallFlow = ai.defineFlow(
         marketAnalysisData = topCoins.map((coin) => {
           return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
         }).join("\n");
-      } else {
-         marketAnalysisData = "Nenhuma moeda atendeu aos critérios de filtragem para gerar call neste momento.";
+      } else if (pairs.length > 0 && filtered.length === 0) {
+         marketAnalysisData = "Nenhuma moeda atendeu aos critérios de filtragem para gerar call neste momento, mas dados foram recebidos da API.";
+         console.log("[GenerateTradeCallFlow] Dados recebidos da API, mas nenhuma moeda passou nos filtros.");
+      } else if (pairs.length === 0 && !servedFromCache) {
+         marketAnalysisData = "Nenhum dado de par foi retornado pela API DexScreener.";
+         console.log("[GenerateTradeCallFlow] Nenhum dado de par retornado pela API DexScreener.");
+      } else if (pairs.length === 0 && servedFromCache) {
+        marketAnalysisData = "Nenhum dado de par encontrado no cache.";
+        console.log("[GenerateTradeCallFlow] Nenhum dado de par encontrado no cache (pode ter sido uma resposta vazia cacheada anteriormente).");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error("Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
-      if (axios.isAxiosError(err) && err.code === 'ECONNABORTED') { // Especificamente para timeout
+      console.error("[GenerateTradeCallFlow] Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
+      if (axios.isAxiosError(err) && err.code === 'ECONNABORTED') { 
         marketAnalysisData = `Erro: Timeout ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
       } else {
         marketAnalysisData = `Erro ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
       }
     }
 
-    console.log("Dados enviados para a IA:", marketAnalysisData);
+    console.log("[GenerateTradeCallFlow] Dados finais enviados para a IA (marketAnalysisData):", marketAnalysisData);
 
     const {output} = await generateTradeCallPrompt({ marketAnalysisData });
     if (!output) {
+      console.error("[GenerateTradeCallFlow] A IA não retornou uma saída para a geração da call de trade.");
       throw new Error("A IA não retornou uma saída para a geração da call de trade.");
     }
     
-    if (output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
+    if (output.moeda && output.moeda !== "Nenhuma call no momento" && output.moeda !== "Nenhuma call será feita agora" && !output.hora_call) {
         const now = new Date();
         output.hora_call = `${now.getUTCHours().toString().padStart(2, '0')}:${now.getUTCMinutes().toString().padStart(2, '0')} UTC`;
+        console.log(`[GenerateTradeCallFlow] Hora da call adicionada: ${output.hora_call}`);
     }
 
+    console.log("[GenerateTradeCallFlow] Saída da IA:", JSON.stringify(output, null, 2));
     return output;
   }
 );
@@ -180,4 +198,3 @@ const generateTradeCallFlow = ai.defineFlow(
 export async function generateTradeCall(): Promise<GeneratedTradeCallOutput> {
   return generateTradeCallFlow({});
 }
-

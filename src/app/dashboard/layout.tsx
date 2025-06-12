@@ -26,7 +26,7 @@ const navItems = [
   { href: "/dashboard", label: "Início do Painel", icon: Home },
   { href: "/dashboard/live-calls", label: "Alertas ao Vivo", icon: Newspaper },
   { href: "/dashboard/hot-pairs", label: "Pares em Alta (DEX)", icon: Flame },
-  { href: "/dashboard/most-viewed", label: "Moedas Mais Vistas", icon: Eye },
+  { href: "/dashboard/most-viewed", label: "Moedas Mais Vistas", icon: Eye }, // Updated label and href
   { href: "/dashboard/influencers", label: "Influenciadores", icon: Users },
   { href: "/dashboard/history", label: "Histórico de Trades", icon: History },
   { href: "/dashboard/performance", label: "Desempenho", icon: BarChart3 },
