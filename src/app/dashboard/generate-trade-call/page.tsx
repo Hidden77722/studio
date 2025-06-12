@@ -1,36 +1,109 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-// Textarea is no longer needed as input is fetched by the flow
 import { generateTradeCall, type GeneratedTradeCallOutput } from "@/ai/flows/generate-trade-call-flow";
-import { Loader2, Wand2, AlertTriangle, FileJson, TrendingUp, ShieldAlert, BarChart2, SearchSlash, Server } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Loader2, Wand2, AlertTriangle, FileJson, TrendingUp, ShieldAlert, BarChart2, SearchSlash, Server,Lock } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/context/AuthContext';
+import Link from "next/link";
+
+const AI_CALL_LIMIT_KEY = 'memetrade_free_user_ai_call_limits';
+const DAILY_LIMIT_COUNT = 1;
+
+interface AiCallLimits {
+  date: string;
+  dexCallsMadeToday: number;
+  onchainCallsMadeToday: number;
+}
+
+const getTodayString = () => new Date().toISOString().split('T')[0];
 
 export default function GenerateTradeCallPage() {
+  const { isProUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tradeCallResult, setTradeCallResult] = useState<GeneratedTradeCallOutput | null>(null);
+  const [dexAiCallLimitReached, setDexAiCallLimitReached] = useState(false);
+  const [localStorageChecked, setLocalStorageChecked] = useState(false);
 
-  // marketAnalysisData state is no longer needed here
-  // const [marketAnalysisData, setMarketAnalysisData] = useState(
-  //   "- PEPE: volume $150M, liquidez $20M, +5% 1h, +25% 24h, preço: $0.00001234\\n- WIF: volume $100M, liquidez $15M, +2% 1h, +15% 24h, preço: $2.50\\n- BONK: volume $80M, liquidez $10M, +8% 1h, +30% 24h, preço: $0.00002876"
-  // );
+  useEffect(() => {
+    if (isProUser === undefined) return; // Wait for auth context to load
+
+    if (isProUser) {
+      setDexAiCallLimitReached(false);
+      setLocalStorageChecked(true);
+      return;
+    }
+
+    const today = getTodayString();
+    let storedLimits: AiCallLimits = { date: today, dexCallsMadeToday: 0, onchainCallsMadeToday: 0 };
+
+    try {
+      const item = localStorage.getItem(AI_CALL_LIMIT_KEY);
+      if (item) {
+        const parsed = JSON.parse(item) as AiCallLimits;
+        if (parsed.date === today) {
+          storedLimits = parsed;
+        } else {
+          // Reset for new day
+          localStorage.setItem(AI_CALL_LIMIT_KEY, JSON.stringify(storedLimits));
+        }
+      } else {
+        localStorage.setItem(AI_CALL_LIMIT_KEY, JSON.stringify(storedLimits));
+      }
+    } catch (e) {
+      console.error("Error accessing localStorage for AI call limits:", e);
+      // Proceed as if limit not reached if localStorage fails
+    }
+    
+    setDexAiCallLimitReached(storedLimits.dexCallsMadeToday >= DAILY_LIMIT_COUNT);
+    setLocalStorageChecked(true);
+  }, [isProUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isProUser && dexAiCallLimitReached) {
+      setError("Você atingiu seu limite diário de chamadas de IA para este recurso como usuário gratuito.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setTradeCallResult(null);
 
     try {
-      // No input is passed to generateTradeCall anymore
       const result = await generateTradeCall();
       setTradeCallResult(result);
+
+      if (!isProUser && result.moeda !== "Nenhuma call no momento") {
+        const today = getTodayString();
+        let currentLimits: AiCallLimits = { date: today, dexCallsMadeToday: 0, onchainCallsMadeToday: 0 };
+        try {
+          const item = localStorage.getItem(AI_CALL_LIMIT_KEY);
+          if (item) {
+            const parsed = JSON.parse(item) as AiCallLimits;
+            if (parsed.date === today) {
+              currentLimits = parsed;
+            }
+          }
+        } catch (e) {
+          console.error("Error reading localStorage for AI call limits update:", e);
+        }
+        currentLimits.dexCallsMadeToday = (currentLimits.dexCallsMadeToday || 0) + 1;
+        currentLimits.date = today; // Ensure date is current
+        try {
+          localStorage.setItem(AI_CALL_LIMIT_KEY, JSON.stringify(currentLimits));
+        } catch (e) {
+           console.error("Error writing localStorage for AI call limits update:", e);
+        }
+        setDexAiCallLimitReached(currentLimits.dexCallsMadeToday >= DAILY_LIMIT_COUNT);
+      }
     } catch (e) {
       console.error("Error generating AI trade call:", e);
       const errorMessage = e instanceof Error ? e.message : "Ocorreu um erro desconhecido.";
@@ -67,6 +140,7 @@ export default function GenerateTradeCallPage() {
     }
   };
 
+  const showGenerateButton = localStorageChecked && (isProUser || !dexAiCallLimitReached);
 
   return (
     <div className="space-y-6">
@@ -81,24 +155,49 @@ export default function GenerateTradeCallPage() {
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Gerar Call de Trade Automatizada</CardTitle>
           <CardDescription>
-            Clique no botão abaixo. A IA buscará dados da DexScreener, analisará moedas promissoras, escolherá a melhor e gerará uma call.
+            {isProUser ? 
+              "Clique no botão abaixo. A IA buscará dados da DexScreener, analisará moedas promissoras, escolherá a melhor e gerará uma call."
+            :
+              `Como usuário gratuito, você pode gerar ${DAILY_LIMIT_COUNT} call de trade baseada em DexScreener por dia. ${dexAiCallLimitReached ? 'Você já atingiu seu limite hoje.' : ''}`
+            }
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-muted/30 rounded-md text-sm text-muted-foreground">
-              <Server className="inline-block mr-2 h-4 w-4" />
-              Este processo envolve buscar dados em tempo real da API pública da DexScreener,
-              filtrá-los e então usar a IA para análise. Pode levar alguns segundos.
-            </div>
+        {showGenerateButton && (
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-muted/30 rounded-md text-sm text-muted-foreground">
+                <Server className="inline-block mr-2 h-4 w-4" />
+                Este processo envolve buscar dados em tempo real da API pública da DexScreener,
+                filtrá-los e então usar a IA para análise. Pode levar alguns segundos.
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading || (!isProUser && dexAiCallLimitReached)}>
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
+                Gerar Nova Call com IA
+              </Button>
+            </CardFooter>
+          </form>
+        )}
+         {!showGenerateButton && localStorageChecked && !isProUser && dexAiCallLimitReached && (
+          <CardContent>
+            <Alert variant="default" className="bg-yellow-500/10 border-yellow-500/30 text-yellow-400">
+              <Lock className="h-4 w-4 text-yellow-400" />
+              <AlertTitle>Limite Diário Atingido</AlertTitle>
+              <AlertDescription>
+                Você já utilizou sua call de IA (DexScreener) gratuita de hoje.
+                Para calls ilimitadas, <Link href="/dashboard/billing" className="font-semibold underline hover:text-yellow-300">faça upgrade para o Pro</Link>.
+                Novas calls gratuitas estarão disponíveis amanhã.
+              </AlertDescription>
+            </Alert>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Wand2 className="mr-2 h-5 w-5" />}
-              Gerar Nova Call com IA
-            </Button>
-          </CardFooter>
-        </form>
+        )}
+        {!localStorageChecked && (
+           <CardContent className="flex justify-center items-center p-6">
+             <Loader2 className="h-6 w-6 animate-spin text-primary" />
+             <p className="ml-2 text-muted-foreground">Verificando permissões...</p>
+           </CardContent>
+        )}
       </Card>
 
       {isLoading && (
@@ -196,7 +295,7 @@ export default function GenerateTradeCallPage() {
 interface InfoItemProps {
     icon?: React.ReactNode;
     label: string;
-    value?: string; // Made value optional
+    value?: string; 
     valueClassName?: string;
 }
 
@@ -207,3 +306,5 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value, valueClassName 
         {value && <span className={`text-sm text-foreground ${valueClassName || ''}`}>{value}</span>}
     </div>
 );
+
+    
