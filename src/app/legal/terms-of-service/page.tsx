@@ -1,4 +1,3 @@
-
 // src/app/legal/terms-of-service/page.tsx
 import { AppLogo } from "@/components/shared/AppLogo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,7 +103,7 @@ export default function TermsOfServicePage() {
               <section>
                 <h2 className="text-xl font-semibold text-primary">11. Contato</h2>
                 <p>
-                  Se você tiver alguma dúvida sobre estes Termos, entre em contato conosco em: [Seu Email de Contato para Assuntos Legais].
+                  Se você tiver alguma dúvida sobre estes Termos, entre em contato conosco em: davicamargodeoliveira2005@gmail.com.
                 </p>
               </section>
             </div>

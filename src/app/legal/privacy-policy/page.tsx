@@ -1,4 +1,3 @@
-
 // src/app/legal/privacy-policy/page.tsx
 import { AppLogo } from "@/components/shared/AppLogo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,7 +128,7 @@ export default function PrivacyPolicyPage() {
               <section>
                 <h2 className="text-xl font-semibold text-primary">11. Contato</h2>
                 <p>
-                  Se você tiver alguma dúvida sobre esta Política de Privacidade, entre em contato conosco em: [Seu Email de Contato para Questões de Privacidade].
+                  Se você tiver alguma dúvida sobre esta Política de Privacidade, entre em contato conosco em: davicamargodeoliveira2005@gmail.com.
                 </p>
               </section>
             </div>
