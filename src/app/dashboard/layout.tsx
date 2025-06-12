@@ -16,7 +16,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Home, BarChart3, History, Settings, HelpCircle, Newspaper, Users, Flame, Eye, BotMessageSquare, Wand2, ShieldAlert } from "lucide-react"; 
+import { Home, BarChart3, History, Settings, HelpCircle, Newspaper, Users, Flame, Eye, BotMessageSquare, Wand2, ShieldAlert, BarChartHorizontalBig } from "lucide-react"; 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -26,12 +26,13 @@ const navItems = [
   { href: "/dashboard", label: "Início do Painel", icon: Home },
   { href: "/dashboard/live-calls", label: "Alertas ao Vivo", icon: Newspaper },
   { href: "/dashboard/hot-pairs", label: "Pares em Alta (DEX)", icon: Flame },
-  { href: "/dashboard/most-viewed", label: "Moedas Mais Vistas", icon: Eye }, // Updated label and href
+  { href: "/dashboard/most-viewed", label: "Moedas Mais Vistas", icon: Eye }, 
   { href: "/dashboard/influencers", label: "Influenciadores", icon: Users },
   { href: "/dashboard/history", label: "Histórico de Trades", icon: History },
   { href: "/dashboard/performance", label: "Desempenho", icon: BarChart3 },
   { href: "/dashboard/market-sentiment-example", label: "Análise de Sentimento IA", icon: BotMessageSquare },
-  { href: "/dashboard/generate-trade-call", label: "Gerador de Call IA", icon: Wand2 },
+  { href: "/dashboard/generate-trade-call", label: "Gerador de Call IA (DEX)", icon: Wand2 },
+  { href: "/dashboard/onchain-trade-call", label: "Gerador de Call IA (On-Chain)", icon: BarChartHorizontalBig }, // New navigation item
 ];
 
 const proNavItems = [
@@ -45,7 +46,7 @@ const bottomNavItems = [
 function DashboardSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
-  const { isProUser } = useAuth(); // Get pro status from context
+  const { isProUser } = useAuth(); 
   const isCollapsed = state === "collapsed";
 
   const allNavItems = isProUser ? [...navItems, ...proNavItems] : navItems;
@@ -72,7 +73,7 @@ function DashboardSidebar() {
               </Link>
             </SidebarMenuItem>
           ))}
-           {!isProUser && ( // Show "Seja Pro" if user is not pro
+           {!isProUser && ( 
              <SidebarMenuItem>
                 <Link href="/dashboard/billing">
                     <SidebarMenuButton
@@ -121,9 +122,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [user, loading, router]);
 
   if (loading || !user) {
-    // AuthProvider shows its own full-page spinner during initial load
-    // or when user is null and redirecting.
-    // So, we return null here to avoid double spinners.
     return null;
   }
 
@@ -153,3 +151,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </SidebarProvider>
   );
 }
+
+    
