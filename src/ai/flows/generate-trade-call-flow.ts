@@ -76,11 +76,14 @@ const TRACKED_WALLETS_PLACEHOLDER = [ '0xWHALE_ADDRESS_1_PLACEHOLDER', '0xINSIDE
 const MEMECOIN_PAIRS_FOR_DEXSCREENER: Record<string, string> = {
   'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp': 'WIF',  // WIF/SOL (Dogwifhat)
   '82ZJj2gXhL7p7tSAmE2z4hMv5f5sKRjS2wWqS6u6VBiM': 'BONK', // BONK/SOL (Bonk)
-  '6gnCPhXtLnUD76HjLE21o4h77LpZMBk2Cjp21g3gD72N': 'PEPE', // PEPE/SOL (Pepe)
+  '6gnCPhXtLnUD76HjLE21o4h77LpZMBk2Cjp21g3gD72N': 'PEPE', // PEPE/SOL (Pepe - example, usually ERC20 but could be on Solana)
   'KNCRHVxYSH4uLKejZFSjdz2WwXJtre4CZRPSXkahrwp': 'WEN',  // WEN/SOL (Wen)
-  // Adicionar outros pares de memecoins conhecidos da Solana ou outras redes se necessário
-  // 'pair_address_popcat_sol': 'POPCAT',
-  // 'pair_address_myro_sol': 'MYRO',
+  '39wnFt7H322N2NnXg8gsqD1XgZLkgh42z2v9YjFApggN': 'POPCAT', // POPCAT/SOL
+  '6Arz1Z1sBgyxQGzQNwJm4y9aQUNPKRj2Ggq2yqZ3gQZK': 'MYRO', // MYRO/SOL
+  'uCggtABMoRkJ2iW8j9aZAoFkY9BempDW5MVe2tE6qJt': 'BOME', // BOME/SOL (Book of Meme)
+  'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvXc5AuPp5hVjg': 'MEW',  // MEW/SOL (cat in a dogs world)
+  'SLERFc3gWpXg7e26sU8Yq22L73c2zL76Yk3c2zL76Yk3': 'SLERF', // SLERF/SOL (Example, check real pair)
+  // Adicionar mais pares da Solana conforme necessário
 };
 
 
@@ -101,6 +104,7 @@ function simulateMoralisActivity(): SimulatedMoralisTransfer[] {
     const numberOfActions = Math.floor(Math.random() * 3); 
     for (let i = 0; i < numberOfActions; i++) {
       const pairAddresses = Object.keys(MEMECOIN_PAIRS_FOR_DEXSCREENER);
+      if (pairAddresses.length === 0) continue; // Evitar erro se a lista estiver vazia
       const randomPairAddress = pairAddresses[Math.floor(Math.random() * pairAddresses.length)];
       const tokenSymbol = MEMECOIN_PAIRS_FOR_DEXSCREENER[randomPairAddress] || 'UNKNOWN_TOKEN';
       
@@ -169,74 +173,79 @@ const generateTradeCallFlow = ai.defineFlow(
   async (): Promise<GeneratedTradeCallOutput> => {
     let marketAnalysisData = "Nenhuma informação válida para gerar call neste momento (DexScreener).";
     let pairs: DexScreenerPair[] = [];
-    const apiUrl = "https://api.dexscreener.com/latest/dex/pairs/solana/" + Object.keys(MEMECOIN_PAIRS_FOR_DEXSCREENER).join(',');
-    let servedFromCache = false;
+    const pairAddressesForApi = Object.keys(MEMECOIN_PAIRS_FOR_DEXSCREENER);
+    if (pairAddressesForApi.length === 0) {
+        console.warn("[GenerateTradeCallFlow] Nenhuma moeda definida em MEMECOIN_PAIRS_FOR_DEXSCREENER. A IA não terá dados da DexScreener.");
+        marketAnalysisData = "Nenhuma moeda configurada para monitoramento na DexScreener.";
+    } else {
+      const apiUrl = "https://api.dexscreener.com/latest/dex/pairs/solana/" + pairAddressesForApi.join(',');
+      let servedFromCache = false;
 
-    try {
-      console.log("[GenerateTradeCallFlow] Iniciando busca de dados da DexScreener...");
-      if (dexScreenerCache.has(apiUrl)) {
-        const entry = dexScreenerCache.get(apiUrl)!;
-        if (Date.now() - entry.timestamp < DEXSCREENER_CACHE_TTL_MS) {
-          console.log("[GenerateTradeCallFlow] Usando dados da DexScreener do cache.");
-          pairs = entry.data.pairs || [];
-          servedFromCache = true;
-        } else {
-          dexScreenerCache.delete(apiUrl);
-          console.log("[GenerateTradeCallFlow] Cache da DexScreener expirado.");
+      try {
+        console.log("[GenerateTradeCallFlow] Iniciando busca de dados da DexScreener...");
+        if (dexScreenerCache.has(apiUrl)) {
+          const entry = dexScreenerCache.get(apiUrl)!;
+          if (Date.now() - entry.timestamp < DEXSCREENER_CACHE_TTL_MS) {
+            console.log("[GenerateTradeCallFlow] Usando dados da DexScreener do cache.");
+            pairs = entry.data.pairs || [];
+            servedFromCache = true;
+          } else {
+            dexScreenerCache.delete(apiUrl);
+            console.log("[GenerateTradeCallFlow] Cache da DexScreener expirado.");
+          }
         }
-      }
 
-      if (!servedFromCache) {
-        console.log(`[GenerateTradeCallFlow] Buscando dados da DexScreener API: ${apiUrl}`);
-        const response = await axios.get<DexScreenerApiResponse>(apiUrl, { timeout: DEXSCREENER_API_TIMEOUT_MS });
-        console.log("[GenerateTradeCallFlow] Dados brutos da DexScreener recebidos:", JSON.stringify(response.data, null, 2));
-        pairs = response.data.pairs || [];
-        if (pairs.length > 0) {
-          dexScreenerCache.set(apiUrl, { data: response.data, timestamp: Date.now() });
-          console.log("[GenerateTradeCallFlow] Dados da DexScreener cacheados.");
-        } else {
-          console.log("[GenerateTradeCallFlow] Nenhum par retornado pela API DexScreener, não cacheando.");
+        if (!servedFromCache) {
+          console.log(`[GenerateTradeCallFlow] Buscando dados da DexScreener API: ${apiUrl}`);
+          const response = await axios.get<DexScreenerApiResponse>(apiUrl, { timeout: DEXSCREENER_API_TIMEOUT_MS });
+          console.log("[GenerateTradeCallFlow] Dados brutos da DexScreener recebidos:", JSON.stringify(response.data, null, 2));
+          pairs = response.data.pairs || [];
+          if (pairs.length > 0) {
+            dexScreenerCache.set(apiUrl, { data: response.data, timestamp: Date.now() });
+            console.log("[GenerateTradeCallFlow] Dados da DexScreener cacheados.");
+          } else {
+            console.log("[GenerateTradeCallFlow] Nenhum par retornado pela API DexScreener, não cacheando.");
+          }
         }
-      }
-      
-      console.log("[GenerateTradeCallFlow] Pares antes da filtragem:", JSON.stringify(pairs, null, 2));
+        
+        console.log("[GenerateTradeCallFlow] Pares antes da filtragem:", JSON.stringify(pairs, null, 2));
 
-      const filtered = pairs.filter((pair) => {
-        const vol = parseFloat(pair.volume?.h24 || '0');
-        const liq = parseFloat(pair.liquidity?.usd || '0');
-        const priceChange1h = parseFloat(pair.priceChange?.h1 || '0');
-        const priceChange24h = parseFloat(pair.priceChange?.h24 || '0');
-        return vol >= 20000 && liq >= 5000 && (priceChange1h > 5 || priceChange24h > 10);
-      });
+        const filtered = pairs.filter((pair) => {
+          const vol = parseFloat(pair.volume?.h24 || '0');
+          const liq = parseFloat(pair.liquidity?.usd || '0');
+          const priceChange1h = parseFloat(pair.priceChange?.h1 || '0');
+          const priceChange24h = parseFloat(pair.priceChange?.h24 || '0');
+          return vol >= 20000 && liq >= 5000 && (priceChange1h > 5 || priceChange24h > 10);
+        });
 
-      console.log("[GenerateTradeCallFlow] Pares após a filtragem:", JSON.stringify(filtered, null, 2));
+        console.log("[GenerateTradeCallFlow] Pares após a filtragem:", JSON.stringify(filtered, null, 2));
 
-      if (filtered.length > 0) {
-        const topCoins = filtered
-          .sort((a, b) => parseFloat(b.volume?.h24 || '0') - parseFloat(a.volume?.h24 || '0'))
-          .slice(0, 3); 
+        if (filtered.length > 0) {
+          const topCoins = filtered
+            .sort((a, b) => parseFloat(b.volume?.h24 || '0') - parseFloat(a.volume?.h24 || '0'))
+            .slice(0, 6); // Alterado para até 6 moedas
 
-        marketAnalysisData = topCoins.map((coin) => {
-          // O nome e símbolo vêm de coin.baseToken.name e coin.baseToken.symbol
-          return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
-        }).join("\n");
-      } else if (pairs.length > 0 && filtered.length === 0) {
-         marketAnalysisData = "Nenhuma moeda atendeu aos critérios de filtragem para gerar call neste momento (DexScreener), mas dados foram recebidos da API.";
-         console.log("[GenerateTradeCallFlow] Dados recebidos da API DexScreener, mas nenhuma moeda passou nos filtros.");
-      } else if (pairs.length === 0 && !servedFromCache) {
-         marketAnalysisData = "Nenhum dado de par foi retornado pela API DexScreener.";
-         console.log("[GenerateTradeCallFlow] Nenhum dado de par retornado pela API DexScreener.");
-      } else if (pairs.length === 0 && servedFromCache) {
-        marketAnalysisData = "Nenhum dado de par encontrado no cache da DexScreener.";
-        console.log("[GenerateTradeCallFlow] Nenhum dado de par encontrado no cache da DexScreener (pode ter sido uma resposta vazia cacheada anteriormente).");
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error("[GenerateTradeCallFlow] Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
-      if (axios.isAxiosError(err) && err.code === 'ECONNABORTED') { 
-        marketAnalysisData = `Erro: Timeout ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
-      } else {
-        marketAnalysisData = `Erro ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
+          marketAnalysisData = topCoins.map((coin) => {
+            return `- ${coin.baseToken.name} (${coin.baseToken.symbol}): volume $${coin.volume?.h24 || 'N/A'}, liquidez $${coin.liquidity?.usd || 'N/A'}, +${coin.priceChange?.h1 || '0'}% em 1h, +${coin.priceChange?.h24 || '0'}% em 24h, preço: $${coin.priceUsd || 'N/A'}`;
+          }).join("\n");
+        } else if (pairs.length > 0 && filtered.length === 0) {
+           marketAnalysisData = "Nenhuma moeda atendeu aos critérios de filtragem para gerar call neste momento (DexScreener), mas dados foram recebidos da API.";
+           console.log("[GenerateTradeCallFlow] Dados recebidos da API DexScreener, mas nenhuma moeda passou nos filtros.");
+        } else if (pairs.length === 0 && !servedFromCache) {
+           marketAnalysisData = "Nenhum dado de par foi retornado pela API DexScreener.";
+           console.log("[GenerateTradeCallFlow] Nenhum dado de par retornado pela API DexScreener.");
+        } else if (pairs.length === 0 && servedFromCache) {
+          marketAnalysisData = "Nenhum dado de par encontrado no cache da DexScreener.";
+          console.log("[GenerateTradeCallFlow] Nenhum dado de par encontrado no cache da DexScreener (pode ter sido uma resposta vazia cacheada anteriormente).");
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("[GenerateTradeCallFlow] Erro ao buscar ou processar dados da API DexScreener:", errorMessage);
+        if (axios.isAxiosError(err) && err.code === 'ECONNABORTED') { 
+          marketAnalysisData = `Erro: Timeout ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
+        } else {
+          marketAnalysisData = `Erro ao buscar dados da DexScreener. Detalhes: ${errorMessage}`;
+        }
       }
     }
 
@@ -247,7 +256,6 @@ const generateTradeCallFlow = ai.defineFlow(
     let simulatedWalletActivityData = "";
     if (simulatedMoralisTransfers.length > 0) {
       simulatedWalletActivityData = simulatedMoralisTransfers.map(tx => 
-        // A simulação da Moralis já usa o tokenSymbol correto do MEMECOIN_PAIRS_FOR_DEXSCREENER
         `- Carteira ${tx.wallet} ${tx.action} ${tx.amount} ${tx.tokenSymbol} (Par: ${tx.tokenAddress.substring(0,6)}...) às ${tx.timestamp}`
       ).join("\n");
       console.log("[GenerateTradeCallFlow] Dados de atividade de carteiras simulados (Moralis) para IA:", simulatedWalletActivityData);
