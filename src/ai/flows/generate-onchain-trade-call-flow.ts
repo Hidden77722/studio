@@ -5,31 +5,27 @@
  *
  * - generateOnchainTradeCall - A função que processa a atividade e gera a call.
  * - OnchainActivityInput - O tipo de entrada para a função.
- * - OnchainTradeCallOutput - O tipo de retorno para a função.
+ * - OnchainTradeCallOutput - O tipo de retorno para a função (uma string contendo a call completa).
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { format } from 'date-fns'; // Para formatar o timestamp
+import { format, parseISO } from 'date-fns'; // Para formatar o timestamp
 
 const OnchainActivityInputSchema = z.object({
-  wallet: z.string().describe('O endereço da carteira que realizou a ação.'),
-  action: z.string().describe('O tipo de ação (ex: "buy", "sell", "add_liquidity").'),
-  token: z.string().describe('O símbolo do token (ex: "$PEPE").'),
+  wallet: z.string().describe('O endereço da carteira que realizou a ação (pode ser completo ou já abreviado).'),
+  action: z.string().describe('O tipo de ação (ex: "buy", "sell", "add_liquidity", "remove_liquidity", "create_pool").'),
+  token: z.string().describe('O símbolo do token (ex: "$PEPE", "$WIF").'),
   amount_tokens: z.number().describe('A quantidade de tokens envolvida na transação.'),
   amount_usd: z.number().describe('O valor aproximado em USD da transação.'),
-  timestamp: z.string().datetime().describe('O timestamp da transação no formato ISO (UTC).'),
+  timestamp: z.string().datetime({ message: "Timestamp deve ser uma string ISO 8601 válida (UTC)" }).describe('O timestamp da transação no formato ISO UTC (ex: "2025-06-11T17:41:00Z").'),
   contract: z.string().optional().describe('O endereço do contrato do token, se aplicável.'),
-  note: z.string().optional().describe('Uma nota ou contexto adicional sobre a carteira ou transação.'),
+  note: z.string().optional().describe('Uma nota ou contexto adicional sobre a carteira ou transação (ex: histórico lucrativo, é deployer, etc.).'),
 });
 export type OnchainActivityInput = z.infer<typeof OnchainActivityInputSchema>;
 
 const OnchainTradeCallOutputSchema = z.object({
-  horario_utc: z.string().describe('O horário exato da movimentação, formatado como DD/MM/YYYY HH:mm UTC.'),
-  tipo_acao: z.string().describe('Descrição concisa da ação (ex: COMPRA DE $PEPE).'),
-  quantidade_tokens_usd: z.string().describe('A quantidade de tokens e o valor em USD (ex: 3.400.000.000 $PEPE (aprox. $12.400 USD)).'),
-  justificativa: z.string().describe('Análise concisa e direta sobre a relevância da movimentação, citando a nota se aplicável.'),
-  sugestao_acao: z.enum(["ENTRAR", "OBSERVAR", "EVITAR", "SAIR"]).describe('A sugestão de ação (ENTRAR, OBSERVAR, EVITAR, SAIR).'),
+  tradeCall: z.string().describe("A call de trade completa, formatada como um texto único seguindo as diretrizes, como uma mensagem de Telegram."),
 });
 export type OnchainTradeCallOutput = z.infer<typeof OnchainTradeCallOutputSchema>;
 
@@ -38,10 +34,10 @@ export async function generateOnchainTradeCall(input: OnchainActivityInput): Pro
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateOnchainTradeCallPrompt',
+  name: 'generateOnchainTradeCallPromptNew',
   input: {schema: OnchainActivityInputSchema},
   output: {schema: OnchainTradeCallOutputSchema},
-  prompt: `Você é um analista on-chain experiente, especializado em memecoins e conhecido por suas calls de trade "alpha" diretas e confiantes, como as encontradas em canais de Telegram.
+  prompt: `Você é um analista on-chain experiente, focado em memecoins e conhecido por suas calls de trade "alpha" diretas, confiantes e urgentes, como as de um canal de Telegram.
 Analise os seguintes dados de atividade on-chain:
 
 Wallet: {{{wallet}}}
@@ -49,62 +45,51 @@ Ação: {{{action}}}
 Token: {{{token}}}
 Quantidade de Tokens: {{{amount_tokens}}}
 Valor em USD: {{{amount_usd}}}
-Timestamp (UTC): {{{timestamp}}}
+Timestamp (UTC ISO): {{{timestamp}}}
 {{#if contract}}Contrato: {{{contract}}}{{/if}}
-{{#if note}}Nota Adicional: {{{note}}}{{/if}}
+{{#if note}}Nota/Contexto: {{{note}}}{{/if}}
 
-Com base exclusivamente nesses dados, gere uma call de trade no seguinte formato. Seja direto, use jargões de mercado se apropriado (ex: "whale entrou pesado"), e transmita confiança.
+Gere uma call de trade no seguinte formato EXATO, como uma única mensagem:
 
-Para o campo 'horario_utc', formate o timestamp '{{{timestamp}}}' como DD/MM/YYYY HH:mm UTC.
-Para o campo 'tipo_acao', use letras maiúsculas e seja conciso, por exemplo, se a ação é "buy" e o token é "$PEPE", o tipo de ação deve ser "COMPRA DE $PEPE". Se a ação for "sell", "VENDA DE $PEPE". Se for "add_liquidity", "ADIÇÃO DE LP PARA $PEPE". Adapte para outras ações.
-Para o campo 'quantidade_tokens_usd', use o formato: "{{{amount_tokens}}} {{{token}}} (aprox. \${{{amount_usd}}} USD)".
-Para o campo 'justificativa', forneça uma análise concisa e direta sobre por que essa movimentação é relevante. Se houver uma 'Nota Adicional', incorpore-a na justificativa.
-Para o campo 'sugestao_acao', escolha UMA das seguintes opções: ENTRAR, OBSERVAR, EVITAR, SAIR. Baseie sua decisão na ação ("buy" geralmente sugere ENTRAR ou OBSERVAR, "sell" pode sugerir OBSERVAR, EVITAR ou SAIR dependendo do contexto da nota), no histórico da carteira (se fornecido na nota), e no contexto geral de memecoins. Se a nota mencionar que a carteira tem um bom histórico de trades lucrativos e a ação é de compra, "ENTRAR" é uma boa sugestão.
+[HH:mm UTC] - A carteira [Endereço da Carteira Abreviado (ex: 0xAbC...dEf)] [Ação como verbo no passado (ex: comprou, vendeu, adicionou liquidez para)] [Quantidade formatada com separador de milhar] [Símbolo do Token] (aprox. $[Valor USD formatado com separador de milhar] USD).
+Contexto: [Explique a relevância da movimentação baseada na 'Nota/Contexto'. Seja direto e incisivo. Ex: "Carteira com histórico de 6 trades lucrativos nas últimas semanas. Movimento forte!", ou "Deployer da XYZ coin movimentando. Fiquem espertos!"].
+Call: [ESCOLHA UMA: ENTRAR, OBSERVAR, EVITAR, SAIR]
 
-Não adicione nenhum texto ou explicação fora da estrutura de output solicitada.
+DETALHES IMPORTANTES PARA A FORMATAÇÃO:
+- Horário: Use APENAS o formato HH:mm UTC a partir do timestamp ISO fornecido. Exemplo: se timestamp for "2025-06-11T17:41:00Z", o horário na call deve ser "17:41 UTC".
+- Endereço da Carteira: Se o campo 'wallet' for um endereço completo, abrevie-o (ex: os primeiros 5 caracteres, reticências, e os últimos 4 caracteres como "0xAbC...dEf"). Se já estiver abreviado, use-o como está.
+- Ação como verbo: "buy" -> "comprou", "sell" -> "vendeu", "add_liquidity" -> "adicionou liquidez para", "remove_liquidity" -> "removeu liquidez de", "create_pool" -> "criou pool para". Adapte para outras ações.
+- Quantidade de Tokens e Valor USD: Formate os números com separador de milhar (ponto para milhar, vírgula para decimal se houver, mas para tokens grandes e USD geralmente não tem decimal). Ex: 3.400.000.000 $PEPE (aprox. $12.400 USD).
+- Call: Deve ser EXATAMENTE uma das quatro opções: ENTRAR, OBSERVAR, EVITAR, SAIR. Use letras maiúsculas.
+
+Seja direto, use jargões de mercado se apropriado (ex: "whale entrou pesado", "sinal claro"), e transmita confiança e, se aplicável, urgência.
+NÃO adicione nenhum texto ou explicação fora da estrutura de mensagem única solicitada.
+O output DEVE ser um único bloco de texto.
 `,
 });
 
 const generateOnchainTradeCallFlow = ai.defineFlow(
   {
-    name: 'generateOnchainTradeCallFlow',
+    name: 'generateOnchainTradeCallFlowNew',
     inputSchema: OnchainActivityInputSchema,
     outputSchema: OnchainTradeCallOutputSchema,
   },
   async (input: OnchainActivityInput): Promise<OnchainTradeCallOutput> => {
-    // Formatar o timestamp antes de enviar para a IA, para garantir consistência se a IA não o fizer.
-    // No entanto, o prompt pede para a IA formatar, vamos confiar nisso por enquanto.
-    // Se a IA falhar em formatar consistentemente, podemos fazer aqui:
-    // input.timestamp = format(new Date(input.timestamp), "dd/MM/yyyy HH:mm 'UTC'");
+    // Validação e possível formatação do timestamp de entrada, se necessário,
+    // embora o prompt instrua a IA a lidar com isso.
+    try {
+      parseISO(input.timestamp); // Verifica se é um ISO válido
+    } catch (e) {
+      throw new Error("Timestamp inválido fornecido. Deve ser uma string ISO 8601 UTC.");
+    }
 
     const {output} = await prompt(input);
-    if (!output) {
-      throw new Error("A IA não retornou uma saída para a call de trade on-chain.");
+    if (!output || !output.tradeCall) {
+      throw new Error("A IA não retornou uma saída válida para a call de trade on-chain.");
     }
-    // A IA deve cuidar da formatação do horário, mas podemos validar/reformatar aqui se necessário.
-    // Por exemplo, se a IA retornar um timestamp ISO no campo horario_utc, podemos reformatar:
-    try {
-        const parsedDate = new Date(output.horario_utc);
-        if (isNaN(parsedDate.getTime())) {
-            // Se não for uma data válida, tentamos formatar o input.timestamp
-            output.horario_utc = format(new Date(input.timestamp), "dd/MM/yyyy HH:mm 'UTC'");
-        } else {
-             // Se a IA já retornou uma data válida, vamos garantir que está no formato certo
-             output.horario_utc = format(parsedDate, "dd/MM/yyyy HH:mm 'UTC'");
-        }
-    } catch (e) {
-        // Fallback para o timestamp de entrada se a formatação falhar
-        output.horario_utc = format(new Date(input.timestamp), "dd/MM/yyyy HH:mm 'UTC'");
-    }
-
-    // Assegurar que a quantidade tenha o formato correto se a IA não o fizer
-    const expectedQuantityString = `${input.amount_tokens.toLocaleString('de-DE')} ${input.token} (aprox. $${input.amount_usd.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0})} USD)`;
-    if (output.quantidade_tokens_usd !== expectedQuantityString) {
-        // Poderíamos forçar a formatação aqui, mas vamos confiar na IA por enquanto
-        // ou ajustar o prompt para ser mais específico sobre formatação de números.
-        // Para este exemplo, vamos deixar a IA tentar.
-    }
-
+    
+    // Pequena limpeza para garantir que não haja espaços extras no início/fim.
+    output.tradeCall = output.tradeCall.trim();
 
     return output;
   }
