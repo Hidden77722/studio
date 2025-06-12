@@ -69,7 +69,7 @@ const DEXSCREENER_CACHE_TTL_MS = 30 * 1000; // Cache por 30 segundos
 const DEXSCREENER_API_TIMEOUT_MS = 8000; // Timeout da API de 8 segundos
 
 // --- Simulação de Atividade Moralis ---
-const TRACKED_WALLETS_PLACEHOLDER = [ '0xWHALE_ADDRESS_1_PLACEHOLDER', '0xINSIDER_ADDRESS_2_PLACEHOLDER' ];
+const TRACKED_WALLETS_PLACEHOLDER = [ '0xWHALE_ADDRESS_1_PLACEHOLDER', '0xINSIDER_ADDRESS_2_PLACEHOLDER', 'DXUDwz9Wu5sSiomqRYkpiB95MrBuxLDRYSNXvCPDnGCM' ];
 // Usaremos os mesmos endereços de contrato da DexScreener para consistência na simulação
 const MEMECOIN_CONTRACTS_PLACEHOLDER_MAP: Record<string, string> = {
   'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzL7EMemjc70dp': 'WIF_SYMBOL_PLACEHOLDER', // Exemplo: Dogwifhat
