@@ -6,9 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { User, BellDot, ShieldCheck, Palette, Volume2, PlayCircle } from "lucide-react";
+import { User, BellDot, ShieldCheck, Palette, Volume2, PlayCircle, Smartphone, AlertTriangle } from "lucide-react";
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -23,6 +34,40 @@ export default function SettingsPage() {
     "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3" 
   );
 
+  const handleSaveProfile = () => {
+    // In a real app, call API to save
+    toast({ title: "Perfil Salvo!", description: "Suas informações de perfil foram atualizadas." });
+  }
+
+  const handleSaveNotificationSettings = () => {
+     // In a real app, call API to save
+    toast({ title: "Notificações Salvas!", description: "Suas preferências de notificação foram atualizadas." });
+  }
+
+  const handleToggle2FA = () => {
+    // This function is now implicitly handled by the AlertDialog actions
+    // The logic to call Firebase for actual 2FA enrollment/unenrollment would go in the
+    // onConfirmEnable2FA and onConfirmDisable2FA functions.
+  };
+
+  const onConfirmEnable2FA = () => {
+    setTwoFactorEnabled(true);
+    toast({
+      title: "🔑 2FA Habilitado (Simulado)",
+      description: "A autenticação de dois fatores foi ativada para sua conta. (Simulação)",
+    });
+    // Next step would be to guide user through phone verification
+  };
+
+  const onConfirmDisable2FA = () => {
+    setTwoFactorEnabled(false);
+    toast({
+      title: "🚫 2FA Desabilitado (Simulado)",
+      description: "A autenticação de dois fatores foi desativada. (Simulação)",
+      variant: "destructive"
+    });
+  };
+
 
   const handleTestSoundNotification = () => {
     toast({
@@ -35,7 +80,6 @@ export default function SettingsPage() {
         const audio = new Audio(notificationSound);
 
         audio.addEventListener('error', (e) => {
-          // Improved console logging
           console.error(
             "Falha ao carregar áudio. URL:", notificationSound, 
             "MediaError Code:", audio.error?.code, 
@@ -45,19 +89,19 @@ export default function SettingsPage() {
           
           let errorMessage = "Não foi possível carregar o som. ";
           const errorCode = audio.error?.code;
-          if (errorCode === 1) { // MEDIA_ERR_ABORTED
+          if (errorCode === 1) {
             errorMessage += "Reprodução abortada pelo usuário ou sistema.";
-          } else if (errorCode === 2) { // MEDIA_ERR_NETWORK
+          } else if (errorCode === 2) {
             errorMessage += "Erro de rede ao tentar carregar o áudio.";
-          } else if (errorCode === 3) { // MEDIA_ERR_DECODE
+          } else if (errorCode === 3) {
             errorMessage += "Erro ao decodificar o arquivo de áudio (formato inválido ou corrompido?).";
-          } else if (errorCode === 4) { // MEDIA_ERR_SRC_NOT_SUPPORTED
+          } else if (errorCode === 4) {
             errorMessage += "Formato/URL do áudio não suportado ou inacessível. Verifique o link direto, CORS, e se o formato (ex: MP3, WAV) é válido e compatível com seu navegador. Pode ser um erro de formato específico.";
           } else {
             errorMessage += "Causa desconhecida. Verifique a URL, sua conexão e o console do navegador para mais detalhes.";
           }
           
-          if (audio.error?.message && audio.error.message.length > 1) { // Add message if it's not empty
+          if (audio.error?.message && audio.error.message.length > 1) {
             errorMessage += ` Detalhes: ${audio.error.message}`;
           }
 
@@ -119,7 +163,7 @@ export default function SettingsPage() {
             <Input id="email" type="email" value={email} disabled />
             <p className="text-xs text-muted-foreground">O endereço de email não pode ser alterado aqui.</p>
           </div>
-          <Button>Salvar Perfil</Button>
+          <Button onClick={handleSaveProfile}>Salvar Perfil</Button>
         </CardContent>
       </Card>
 
@@ -169,7 +213,7 @@ export default function SettingsPage() {
             <p className="text-xs text-muted-foreground">Personalize o som para alertas de novos trades. Insira uma URL válida e de acesso direto para um arquivo de som.</p>
           </div>
           <div className="flex gap-2">
-            <Button>Salvar Configurações de Notificação</Button>
+            <Button onClick={handleSaveNotificationSettings}>Salvar Configurações de Notificação</Button>
             <Button variant="outline" onClick={handleTestSoundNotification}>
               <PlayCircle className="mr-2 h-4 w-4" /> Testar Notificação Sonora
             </Button>
@@ -197,9 +241,45 @@ export default function SettingsPage() {
                 Adicione uma camada extra de segurança à sua conta.
               </span>
             </Label>
-            <Button variant={twoFactorEnabled ? "destructive" : "default"} onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}>
-                {twoFactorEnabled ? "Desabilitar 2FA" : "Habilitar 2FA"}
-            </Button>
+            {twoFactorEnabled ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive">Desabilitar 2FA</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center"><AlertTriangle className="mr-2 h-5 w-5 text-destructive"/>Desabilitar Autenticação de Dois Fatores?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Isso removerá a camada adicional de segurança da sua conta. Você tem certeza?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={onConfirmDisable2FA} className="bg-destructive hover:bg-destructive/90">Confirmar Desativação</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default">Habilitar 2FA</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center"><Smartphone className="mr-2 h-5 w-5 text-primary"/>Configurar Autenticação de Dois Fatores (2FA)</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Para habilitar a 2FA, você normalmente precisaria verificar seu número de telefone via SMS ou configurar um aplicativo autenticador.
+                      <br/><br/>
+                      <strong>Este é um passo simulado.</strong> Em uma implementação real, clicar em "Prosseguir" iniciaria esse processo.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={onConfirmEnable2FA}>Prosseguir com Configuração (Simulado)</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -220,4 +300,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
