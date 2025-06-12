@@ -5,17 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppLogo } from "@/components/shared/AppLogo";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase"; 
-import { GoogleAuthProvider, signInWithPopup, AuthError } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, AuthError } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, LogIn } from "lucide-react";
-
-// Import a Google icon (you might need to install 'lucide-react' or similar)
-// For this example, I'll use a simple text prefix or an SVG if you prefer.
-// Let's assume you have a way to show a Google icon or just use text.
+import { AlertTriangle, LogIn, Mail, KeyRound } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const GoogleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -29,8 +27,11 @@ const GoogleIcon = () => (
 
 
 export default function LoginPage() {
-  const [isSigningIn, setIsSigningIn] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
@@ -40,8 +41,41 @@ export default function LoginPage() {
     }
   }, [user, authLoading, router]);
 
-  const handleGoogleSignIn = async () => {
+  const handleEmailPasswordSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSigningIn(true);
+    setError(null);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Auth state change will be caught by useAuth hook and redirect
+    } catch (e) {
+      const authError = e as AuthError;
+      console.error("Email/Password Sign-In Error:", authError);
+      let friendlyMessage = "Falha ao fazer login. Verifique seu email e senha.";
+      switch (authError.code) {
+        case 'auth/invalid-email':
+          friendlyMessage = "O formato do email é inválido.";
+          break;
+        case 'auth/user-not-found':
+          friendlyMessage = "Nenhum usuário encontrado com este email.";
+          break;
+        case 'auth/wrong-password':
+          friendlyMessage = "Senha incorreta.";
+          break;
+        case 'auth/too-many-requests':
+           friendlyMessage = "Acesso temporariamente desabilitado devido a muitas tentativas de login malsucedidas. Tente novamente mais tarde.";
+           break;
+        case 'auth/invalid-credential':
+            friendlyMessage = "Credenciais inválidas. Verifique seu email e senha.";
+            break;
+      }
+      setError(friendlyMessage);
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleSigningIn(true);
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
@@ -57,9 +91,8 @@ export default function LoginPage() {
       } else {
         setError(authError.message || "Falha ao fazer login com Google. Tente novamente.");
       }
-      setIsSigningIn(false);
+      setIsGoogleSigningIn(false);
     }
-    // setIsSigningIn will be set to false by the useEffect redirect or error handling
   };
 
   if (authLoading || (!authLoading && user)) {
@@ -88,7 +121,7 @@ export default function LoginPage() {
             <LogIn className="mr-2 h-6 w-6" /> Acesso à Plataforma
           </CardTitle>
           <CardDescription>
-            Use sua conta Google para acessar o MemeTrade Pro.
+            Use suas credenciais ou sua conta Google para acessar.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -99,13 +132,73 @@ export default function LoginPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
+          <form onSubmit={handleEmailPasswordSignIn} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="password">Senha</Label>
+               <div className="relative">
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Sua senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isSigningIn || isGoogleSigningIn}
+            >
+              {isSigningIn ? (
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <LogIn className="mr-2 h-5 w-5" />
+              )}
+              {isSigningIn ? "Entrando..." : "Entrar com Email"}
+            </Button>
+          </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Ou continue com
+              </span>
+            </div>
+          </div>
+
           <Button 
             onClick={handleGoogleSignIn} 
             className="w-full" 
-            disabled={isSigningIn}
+            disabled={isSigningIn || isGoogleSigningIn}
             variant="outline"
           >
-            {isSigningIn ? (
+            {isGoogleSigningIn ? (
               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -113,18 +206,22 @@ export default function LoginPage() {
             ) : (
               <GoogleIcon />
             )}
-            {isSigningIn ? "Autenticando..." : "Entrar com Google"}
+            {isGoogleSigningIn ? "Autenticando..." : "Entrar com Google"}
           </Button>
            <p className="text-xs text-muted-foreground text-center px-4">
             Ao continuar, você concorda com nossos <Link href="#" className="underline hover:text-primary">Termos de Serviço</Link> e <Link href="#" className="underline hover:text-primary">Política de Privacidade</Link>.
           </p>
         </CardContent>
-        <CardFooter className="text-center text-sm">
+        <CardFooter className="text-center text-sm flex-col items-center space-y-2">
            <p className="text-muted-foreground">
             Não tem uma conta? O login com Google criará uma para você.
+            Para email/senha, <Link href="#" className="underline hover:text-primary">registre-se aqui</Link> (funcionalidade a ser implementada).
           </p>
+          <Link href="#" className="text-xs text-primary hover:underline">Esqueceu sua senha?</Link>
         </CardFooter>
       </Card>
     </div>
   );
 }
+
+    
