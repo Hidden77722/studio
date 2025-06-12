@@ -2,27 +2,50 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { Auth, getAuth } from 'firebase/auth';
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-};
+// Explicitly load environment variables
+const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
+const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+const messagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID;
+const appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
+const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID; // Optional
 
-// Adicionando verificação explícita para a chave de API
-if (!firebaseConfig.apiKey) {
+// Enhanced check for critical Firebase config variables
+if (!apiKey || apiKey === "YOUR_API_KEY" || apiKey.length < 10) {
   console.error(
-    "ERRO CRÍTICO NA CONFIGURAÇÃO DO FIREBASE: A variável de ambiente NEXT_PUBLIC_FIREBASE_API_KEY está ausente ou indefinida." +
-    " Verifique se ela está corretamente configurada no seu arquivo .env e se o servidor de desenvolvimento foi reiniciado." +
-    " Você pode obter esta chave no console do Firebase, nas configurações do seu projeto web."
+    "🛑 CRITICAL FIREBASE CONFIG ERROR: NEXT_PUBLIC_FIREBASE_API_KEY is missing, a placeholder, or invalid." +
+    "\n\n  ➡️ Please ensure the following:" +
+    "\n    1. You have a '.env' file in the root of your project." +
+    "\n    2. It contains the line: NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_ACTUAL_KEY_FROM_FIREBASE" +
+    "\n       (Replace YOUR_ACTUAL_KEY_FROM_FIREBASE with the real key from your Firebase project)." +
+    "\n    3. All other NEXT_PUBLIC_FIREBASE_... variables (authDomain, projectId, etc.) are also correctly set in '.env'." +
+    "\n    4. You obtained these keys from your Firebase project: Go to Project Settings (gear icon) -> General tab -> Your Web App section." +
+    "\n    5. 🔥 MOST IMPORTANT: After creating or modifying the '.env' file, YOU MUST RESTART your Next.js development server (e.g., stop 'npm run dev' and run it again)." +
+    `\n\n  Current value found for NEXT_PUBLIC_FIREBASE_API_KEY: '${apiKey}'` +
+    "\n  If the value above is 'undefined' or still a placeholder, your .env file is not set up correctly or not being loaded."
   );
 }
+if (!authDomain) {
+  console.warn("⚠️ FIREBASE CONFIG WARNING: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is missing from .env. This is usually required.");
+}
+if (!projectId) {
+  console.warn("⚠️ FIREBASE CONFIG WARNING: NEXT_PUBLIC_FIREBASE_PROJECT_ID is missing from .env. This is usually required.");
+}
 
-// Log the configuration being used for debugging
-console.log('Firebase Config being used in src/lib/firebase.ts:', firebaseConfig);
+
+const firebaseConfig = {
+  apiKey: apiKey,
+  authDomain: authDomain,
+  projectId: projectId,
+  storageBucket: storageBucket,
+  messagingSenderId: messagingSenderId,
+  appId: appId,
+  measurementId: measurementId,
+};
+
+// Log the configuration being used for debugging (this log is very important)
+console.log('👉 Firebase Config being used by src/lib/firebase.ts (CHECK THIS CAREFULLY):', firebaseConfig);
 
 // Initialize Firebase
 let app: FirebaseApp;
