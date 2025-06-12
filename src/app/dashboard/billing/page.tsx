@@ -5,25 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Download, PlusCircle, Edit, Star } from "lucide-react";
+import { CreditCard, Download, PlusCircle, Edit, Star, ShieldCheck, XCircle } from "lucide-react";
 import React from "react";
+import Link from "next/link";
 
 // Mock data
 const currentPlan = {
-  name: "Annual Pro",
-  price: "$299,00/ano", // Preço atualizado
-  renewsOn: "15 de Janeiro de 2025",
+  name: "Plano Gratuito",
+  price: "Grátis",
+  renewsOn: "N/A", // Not applicable for a free plan
   status: "Ativo",
 };
 
 const paymentMethods = [
-  { id: "pm1", type: "Visa", last4: "4242", expiry: "12/25", isDefault: true },
-  { id: "pm2", type: "Mastercard", last4: "5555", expiry: "08/26", isDefault: false },
+  // For a free user, payment methods might not be relevant, or could be empty
+  // { id: "pm1", type: "Visa", last4: "4242", expiry: "12/25", isDefault: true },
 ];
 
 const billingHistory = [
-  { id: "bh1", date: "15 de Janeiro de 2024", description: "Assinatura Anual Pro", amount: "$299.00", status: "Pago" }, // Preço atualizado no histórico mock
-  { id: "bh2", date: "10 de Dezembro de 2023", description: "Pro Mensal (Rateado)", amount: "$29.99", status: "Pago" }, // Preço atualizado no histórico mock
+  // Billing history would likely be empty for a free user
+  // { id: "bh1", date: "15 de Janeiro de 2024", description: "Assinatura Anual Pro", amount: "$299.00", status: "Pago" },
+  // { id: "bh2", date: "10 de Dezembro de 2023", description: "Pro Mensal (Rateado)", amount: "$29.99", status: "Pago" },
 ];
 
 const availablePlans = [
@@ -66,11 +68,10 @@ export default function BillingPage() {
     <div className="space-y-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-headline font-semibold">Faturamento e Assinatura</h1>
 
-      {/* Current Plan - Assumes the user is on 'Annual Pro' for this mock */}
       <Card>
         <CardHeader>
           <CardTitle>Seu Plano de Assinatura Atual</CardTitle>
-          <CardDescription>Gerencie seu plano MemeTrade Pro.</CardDescription>
+          <CardDescription>Gerencie seu plano MemeTrade.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-muted rounded-lg shadow-inner">
@@ -82,16 +83,23 @@ export default function BillingPage() {
             </Badge>
           </div>
            <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline">Mudar Plano</Button>
-            <Button variant="destructive">Cancelar Assinatura</Button>
+            {currentPlan.name === "Plano Gratuito" ? (
+                 <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Link href="#available-plans"> <ShieldCheck className="mr-2 h-4 w-4"/> Fazer Upgrade para Pro</Link>
+                </Button>
+            ) : (
+                <>
+                    <Button variant="outline">Mudar Plano</Button>
+                    <Button variant="destructive"> <XCircle className="mr-2 h-4 w-4"/> Cancelar Assinatura</Button>
+                </>
+            )}
           </div>
         </CardContent>
       </Card>
 
       <Separator />
 
-      {/* Available Plans Section */}
-      <Card>
+      <Card id="available-plans">
         <CardHeader>
             <CardTitle>Opções de Planos MemeTrade Pro</CardTitle>
             <CardDescription>Escolha o plano que melhor se adapta às suas necessidades.</CardDescription>
@@ -119,7 +127,7 @@ export default function BillingPage() {
                     </CardContent>
                     <CardFooter>
                         <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                            {plan.name === currentPlan.name ? "Seu Plano Atual" : "Escolher Plano"}
+                            Escolher Plano {plan.name.split(' ')[1]}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -129,12 +137,11 @@ export default function BillingPage() {
       
       <Separator />
 
-      {/* Payment Methods */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Métodos de Pagamento</CardTitle>
-            <CardDescription>Suas opções de pagamento salvas.</CardDescription>
+            <CardDescription>Adicione um método para futuras assinaturas Pro.</CardDescription>
           </div>
           <Button variant="outline" size="sm"><PlusCircle className="mr-2 h-4 w-4"/> Adicionar Método de Pagamento</Button>
         </CardHeader>
@@ -159,14 +166,13 @@ export default function BillingPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-muted-foreground">Nenhum método de pagamento salvo.</p>
+            <p className="text-muted-foreground">Nenhum método de pagamento salvo. Adicione um para assinar o plano Pro.</p>
           )}
         </CardContent>
       </Card>
 
       <Separator />
 
-      {/* Billing History */}
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Faturamento</CardTitle>
@@ -206,13 +212,11 @@ export default function BillingPage() {
               </TableBody>
             </Table>
           ) : (
-            <p className="text-muted-foreground">Nenhum histórico de faturamento disponível.</p>
+            <p className="text-muted-foreground">Nenhum histórico de faturamento disponível para o plano gratuito.</p>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
-    
-
     
