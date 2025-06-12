@@ -1,8 +1,6 @@
 
 "use client";
 
-import { useLiveCalls } from "@/hooks/useLiveCalls";
-import { useAuth } from "@/context/AuthContext";
 import React, { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +10,9 @@ import type { MemeCoinCall } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
+import { CallCard } from "@/app/dashboard/components/CallCard";
+import { useAuth } from "@/context/AuthContext";
+import { useLiveCalls } from "@/hooks/useLiveCalls";
 
 const NUMBER_OF_VISIBLE_CARDS_PRO = 3;
 const DAILY_LIMIT_FREE_USER = 2;
@@ -23,7 +24,7 @@ interface DailyFixedCallsInfo {
 
 export default function LiveCallsPage() {
   const { liveCalls, isLoadingInitial: isLoadingLiveCalls } = useLiveCalls();
-  const { isProUser } = useAuth();
+  const { user, isProUser } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -34,18 +35,29 @@ export default function LiveCallsPage() {
   const [notifiedCallIds, setNotifiedCallIds] = useState<Set<string>>(new Set());
   const [upgradeToastShownForCurrentBatch, setUpgradeToastShownForCurrentBatch] = useState(false);
 
-  const getTodayString = useCallback(() => new Date().toISOString().split('T')[0], []);
+  const getTodayString = useCallback(() => {
+    return new Date().toISOString().split('T')[0];
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
-    
+
     if (!localStorageLoaded) {
       setLocalStorageLoaded(true);
+      // Allow the effect to continue to the next checks in the same run
     }
-
-    if (isProUser || isLoadingLiveCalls || !localStorageLoaded) {
+    
+    // This check needs to happen after attempting to set localStorageLoaded
+    // Otherwise, on the very first run, it might return early if !localStorageLoaded was true
+    // and then isProUser or isLoadingLiveCalls was also true.
+    if (isProUser || isLoadingLiveCalls || !localStorageLoaded) { 
+      // If still not loaded (e.g. first run didn't make it past here)
+      // or if pro/loading, then exit.
+      // The !localStorageLoaded here ensures that if this is the first run,
+      // and it was set to true above, this condition won't make it return prematurely
+      // unless isProUser or isLoadingLiveCalls is true.
       return;
     }
 
@@ -54,7 +66,7 @@ export default function LiveCallsPage() {
     try {
       const item = localStorage.getItem('memetrade_free_user_fixed_calls');
       if (item) {
-        storedDailyInfo = JSON.parse(item);
+        storedDailyInfo = JSON.parse(item) as DailyFixedCallsInfo;
       }
     } catch (error) {
       console.error("Error parsing fixed calls from localStorage:", error);
@@ -64,7 +76,8 @@ export default function LiveCallsPage() {
     if (storedDailyInfo && storedDailyInfo.date === todayStr) {
       setFixedDailyCallsForFreeUser(storedDailyInfo.calls);
       setDailyLimitReached(storedDailyInfo.calls.length >= DAILY_LIMIT_FREE_USER);
-    } else if (liveCalls.length > 0) { 
+    } else if (liveCalls.length > 0) {
+      // New day or no stored calls for today, fix new ones
       const callsToFix = liveCalls.slice(0, DAILY_LIMIT_FREE_USER);
       const newDailyInfo: DailyFixedCallsInfo = { date: todayStr, calls: callsToFix };
       try {
@@ -75,56 +88,61 @@ export default function LiveCallsPage() {
       setFixedDailyCallsForFreeUser(callsToFix);
       setDailyLimitReached(callsToFix.length >= DAILY_LIMIT_FREE_USER);
 
-      setNotifiedCallIds(prevNotified => {
-        const updatedNotified = new Set(prevNotified);
-        callsToFix.forEach((call, index) => {
-          if (!updatedNotified.has(call.id)) {
+      // Notify for newly fixed calls
+      callsToFix.forEach((call, index) => {
+        setNotifiedCallIds(prevNotified => {
+          if (!prevNotified.has(call.id)) {
+            // Calculate callNumber based on the actual number of calls being fixed now.
+            const callNumber = index + 1; 
             toast({
-              title: "🔥 Nova Call Gratuita!",
-              description: `${call.coinName} (${call.coinSymbol}) - Sua ${index + 1}ª call gratuita de hoje (${callsToFix.length}/${DAILY_LIMIT_FREE_USER} no total fixadas).`,
+              title: "🔥 Nova Call Gratuita Diária!",
+              description: `${call.coinName} (${call.coinSymbol}) - Sua ${callNumber}ª call gratuita de hoje (${callsToFix.length}/${DAILY_LIMIT_FREE_USER} fixadas).`,
             });
+            const updatedNotified = new Set(prevNotified);
             updatedNotified.add(call.id);
+            return updatedNotified;
           }
+          return prevNotified;
         });
-        return updatedNotified;
       });
     }
-  }, [isProUser, isLoadingLiveCalls, liveCalls, localStorageLoaded, getTodayString, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps 
+  }, [isProUser, isLoadingLiveCalls, liveCalls, localStorageLoaded, getTodayString, toast]); // toast is used, getTodayString is a callback
 
 
   useEffect(() => {
-    if (!localStorageLoaded) return;
+    if (!localStorageLoaded) {
+      return;
+    }
 
     if (isProUser) {
       setViewableCalls(liveCalls.slice(0, NUMBER_OF_VISIBLE_CARDS_PRO));
-      setDailyLimitReached(false); 
+      setDailyLimitReached(false); // Pro users never reach a limit
 
-      setNotifiedCallIds(prevNotified => {
-        const updatedNotified = new Set(prevNotified);
-        let newNotificationsSent = false;
-        liveCalls.forEach(call => {
-          if (!updatedNotified.has(call.id)) {
+      liveCalls.forEach(call => {
+        setNotifiedCallIds(prev => { // Use prev for consistency
+          if (!prev.has(call.id)) {
             toast({
               title: "🚀 Nova Call de Trade!",
               description: `${call.coinName} (${call.coinSymbol}) - Entrada: $${call.entryPrice.toPrecision(4)}`,
             });
-            updatedNotified.add(call.id);
-            newNotificationsSent = true;
+            const newSet = new Set(prev); // Create new set from previous
+            newSet.add(call.id);
+            return newSet;
           }
+          return prev;
         });
-        return newNotificationsSent ? updatedNotified : prevNotified;
       });
-      
+
       if (upgradeToastShownForCurrentBatch) {
         setUpgradeToastShownForCurrentBatch(false);
       }
-
-    } else { 
+    } else { // Free user logic
       setViewableCalls(fixedDailyCallsForFreeUser);
 
       const newSystemCallsUnseenByFreeUser = liveCalls.filter(sysCall =>
         !fixedDailyCallsForFreeUser.some(fixedCall => fixedCall.id === sysCall.id) &&
-        !notifiedCallIds.has(`upgrade-toast-for-${sysCall.id}`) 
+        !notifiedCallIds.has(`upgrade-toast-for-${sysCall.id}`)
       );
 
       if (newSystemCallsUnseenByFreeUser.length > 0 && dailyLimitReached && !upgradeToastShownForCurrentBatch) {
@@ -138,29 +156,31 @@ export default function LiveCallsPage() {
           ),
         });
         setUpgradeToastShownForCurrentBatch(true);
-        
-        setNotifiedCallIds(prevNotified => {
-            const updatedNotified = new Set(prevNotified);
-            newSystemCallsUnseenByFreeUser.forEach(call => {
-                updatedNotified.add(`upgrade-toast-for-${call.id}`);
-            });
-            return updatedNotified;
-        });
 
+        newSystemCallsUnseenByFreeUser.forEach(call => {
+            setNotifiedCallIds(prev => { // Use prev for consistency
+                const newSet = new Set(prev); // Create new set from previous
+                newSet.add(`upgrade-toast-for-${call.id}`);
+                return newSet;
+            });
+        });
       } else if (newSystemCallsUnseenByFreeUser.length === 0 && upgradeToastShownForCurrentBatch) {
          setUpgradeToastShownForCurrentBatch(false);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isProUser,
     liveCalls,
     fixedDailyCallsForFreeUser,
     dailyLimitReached,
-    toast,
-    router,
+    toast, // toast is used
+    router, // router is used
     localStorageLoaded,
     notifiedCallIds, 
     upgradeToastShownForCurrentBatch,
+    // State setters like setViewableCalls, setDailyLimitReached, setNotifiedCallIds, setUpgradeToastShownForCurrentBatch
+    // are stable and don't strictly need to be listed, but values read do.
   ]);
 
 
@@ -207,7 +227,7 @@ export default function LiveCallsPage() {
             <CallCard key={call.id} call={call} />
           ))}
         </div>
-      ) : !isProUser && dailyLimitReached && fixedDailyCallsForFreeUser.length === 0 && !isLoadingLiveCalls && (
+      ) : !isProUser && dailyLimitReached && fixedDailyCallsForFreeUser.length === 0 && !isLoadingLiveCalls ? (
          <div className="flex flex-col items-center justify-center h-64 bg-card rounded-lg p-8">
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-coffee text-primary mb-4"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
             <h2 className="text-xl font-headline text-foreground mb-2">Nenhuma Call Fixada Hoje</h2>
@@ -217,7 +237,7 @@ export default function LiveCallsPage() {
             </p>
         </div>
       )
-      : (isLoadingLiveCalls && isProUser && viewableCalls.length === 0) ? ( 
+      : isLoadingLiveCalls && isProUser && viewableCalls.length === 0 ? ( 
         <div className="flex flex-col items-center justify-center h-64 bg-card rounded-lg p-8">
            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-loader-circle animate-spin text-primary mb-4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
           <h2 className="text-xl font-headline text-foreground mb-2">Verificando Alertas...</h2>
@@ -249,26 +269,3 @@ export default function LiveCallsPage() {
     </div>
   );
 }
-
-// Adicionando CallCard aqui se não estiver importado globalmente ou se for específico para esta página
-// Para este contexto, assumimos que CallCard é importado de "@/app/dashboard/components/CallCard"
-// Se precisar do código de CallCard, por favor, me avise.
-
-interface CallCardProps { // Supondo que CallCardProps e CallCard estejam definidos em outro lugar
-  call: MemeCoinCall;
-}
-
-// Placeholder para CallCard se não for importado (apenas para evitar erro de tipo)
-// Em um cenário real, CallCard seria importado corretamente.
-const CallCard: React.FC<CallCardProps> = ({ call }) => {
-  // Conteúdo do CallCard...
-  return (
-    <Card>
-      <CardHeader><CardTitle>{call.coinName}</CardTitle></CardHeader>
-      <CardContent><p>Detalhes da call...</p></CardContent>
-    </Card>
-  );
-};
-
-
-    
