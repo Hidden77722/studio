@@ -15,14 +15,14 @@ const firebaseConfig = {
 // Adicionando verificação explícita para a chave de API
 if (!firebaseConfig.apiKey) {
   console.error(
-    "ERRO CRÍTICO: A Firebase API Key (NEXT_PUBLIC_FIREBASE_API_KEY) está ausente ou indefinida." +
+    "ERRO CRÍTICO NA CONFIGURAÇÃO DO FIREBASE: A variável de ambiente NEXT_PUBLIC_FIREBASE_API_KEY está ausente ou indefinida." +
     " Verifique se ela está corretamente configurada no seu arquivo .env e se o servidor de desenvolvimento foi reiniciado." +
     " Você pode obter esta chave no console do Firebase, nas configurações do seu projeto web."
   );
-  // Considerar lançar um erro aqui pode ser útil em alguns cenários de build,
-  // mas para desenvolvimento, um log claro pode ser suficiente inicialmente.
-  // Ex: throw new Error("Configuração do Firebase incompleta: API Key ausente.");
 }
+
+// Log the configuration being used for debugging
+console.log('Firebase Config being used in src/lib/firebase.ts:', firebaseConfig);
 
 // Initialize Firebase
 let app: FirebaseApp;
