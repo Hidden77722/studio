@@ -1,16 +1,17 @@
+
 "use client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Download, PlusCircle, Edit } from "lucide-react";
+import { CreditCard, Download, PlusCircle, Edit, Star } from "lucide-react";
 import React from "react";
 
 // Mock data
 const currentPlan = {
   name: "Annual Pro",
-  price: "$199.99/ano",
+  price: "$299,00/ano", // Preço atualizado
   renewsOn: "15 de Janeiro de 2025",
   status: "Ativo",
 };
@@ -21,8 +22,34 @@ const paymentMethods = [
 ];
 
 const billingHistory = [
-  { id: "bh1", date: "15 de Janeiro de 2024", description: "Assinatura Anual Pro", amount: "$199.99", status: "Pago" },
-  { id: "bh2", date: "10 de Dezembro de 2023", description: "Pro Mensal (Rateado)", amount: "$19.99", status: "Pago" },
+  { id: "bh1", date: "15 de Janeiro de 2024", description: "Assinatura Anual Pro", amount: "$299.00", status: "Pago" }, // Preço atualizado no histórico mock
+  { id: "bh2", date: "10 de Dezembro de 2023", description: "Pro Mensal (Rateado)", amount: "$29.99", status: "Pago" }, // Preço atualizado no histórico mock
+];
+
+const availablePlans = [
+    {
+        name: "Pro Mensal",
+        price: "$29,99/mês",
+        description: "Acesso completo a todos os recursos, cobrado mensalmente.",
+        features: [
+            "Alertas de trade ilimitados",
+            "Análise de IA para cada call",
+            "Histórico completo de trades",
+            "Pares em Alta (DexScreener)",
+            "Suporte prioritário"
+        ]
+    },
+    {
+        name: "Pro Anual",
+        price: "$299,00/ano",
+        description: "Economize com o plano anual! Acesso completo a todos os recursos.",
+        features: [
+            "Todos os benefícios do Pro Mensal",
+            "Desconto significativo em relação ao plano mensal",
+            "Menos preocupações com renovações frequentes"
+        ],
+        highlight: "Melhor Valor!"
+    }
 ];
 
 export default function BillingPage() {
@@ -30,16 +57,8 @@ export default function BillingPage() {
   const [billingHistoryLocale, setBillingHistoryLocale] = React.useState<typeof billingHistory>([]);
 
   React.useEffect(() => {
-    // This is a mock, in a real app this would be pre-formatted or formatted from ISO string
-    setCurrentPlanRenewsOnLocale(currentPlan.renewsOn); // Assuming it's already localized
-    
-    const localizedHistory = billingHistory.map(item => ({
-      ...item,
-      // date: new Date(item.date).toLocaleDateString('pt-BR') // Assuming item.date is ISO string
-      // For this mock, we'll assume dates are already localized strings
-    }));
-    setBillingHistoryLocale(localizedHistory);
-
+    setCurrentPlanRenewsOnLocale(currentPlan.renewsOn);
+    setBillingHistoryLocale(billingHistory.map(item => ({ ...item })));
   }, []);
 
 
@@ -47,14 +66,14 @@ export default function BillingPage() {
     <div className="space-y-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-headline font-semibold">Faturamento e Assinatura</h1>
 
-      {/* Current Plan */}
+      {/* Current Plan - Assumes the user is on 'Annual Pro' for this mock */}
       <Card>
         <CardHeader>
-          <CardTitle>Plano de Assinatura Atual</CardTitle>
-          <CardDescription>Gerencie seu plano MemeTrade Pro atual.</CardDescription>
+          <CardTitle>Seu Plano de Assinatura Atual</CardTitle>
+          <CardDescription>Gerencie seu plano MemeTrade Pro.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 bg-muted rounded-lg">
+          <div className="p-4 bg-muted rounded-lg shadow-inner">
             <h3 className="text-lg font-semibold text-primary">{currentPlan.name}</h3>
             <p className="text-muted-foreground">{currentPlan.price}</p>
             <p className="text-sm text-muted-foreground">Renova em: {currentPlanRenewsOnLocale}</p>
@@ -62,13 +81,52 @@ export default function BillingPage() {
               {currentPlan.status}
             </Badge>
           </div>
-          <div className="flex gap-2">
+           <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline">Mudar Plano</Button>
             <Button variant="destructive">Cancelar Assinatura</Button>
           </div>
         </CardContent>
       </Card>
 
+      <Separator />
+
+      {/* Available Plans Section */}
+      <Card>
+        <CardHeader>
+            <CardTitle>Opções de Planos MemeTrade Pro</CardTitle>
+            <CardDescription>Escolha o plano que melhor se adapta às suas necessidades.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-2 gap-6">
+            {availablePlans.map(plan => (
+                <Card key={plan.name} className={`flex flex-col ${plan.highlight ? 'border-primary shadow-primary/20' : 'border-border'}`}>
+                    <CardHeader>
+                        <CardTitle className="flex justify-between items-center">
+                            {plan.name}
+                            {plan.highlight && <Badge variant="default" className="bg-primary text-primary-foreground">{plan.highlight}</Badge>}
+                        </CardTitle>
+                        <CardDescription className="text-2xl font-bold text-foreground">{plan.price}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow space-y-2">
+                        <p className="text-sm text-muted-foreground">{plan.description}</p>
+                        <ul className="space-y-1 text-sm">
+                            {plan.features.map(feature => (
+                                <li key={feature} className="flex items-center">
+                                    <Star className="h-4 w-4 mr-2 text-yellow-400 flex-shrink-0" />
+                                    {feature}
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                    <CardFooter>
+                        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                            {plan.name === currentPlan.name ? "Seu Plano Atual" : "Escolher Plano"}
+                        </Button>
+                    </CardFooter>
+                </Card>
+            ))}
+        </CardContent>
+      </Card>
+      
       <Separator />
 
       {/* Payment Methods */}
@@ -155,3 +213,5 @@ export default function BillingPage() {
     </div>
   );
 }
+
+    
