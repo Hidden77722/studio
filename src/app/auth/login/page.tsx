@@ -38,8 +38,8 @@ export default function LoginPage() {
       // Auth state change will be caught by useAuth hook and redirect
     } catch (e) {
       const authError = e as AuthError;
-      console.error("Email/Password Sign-In Error:", authError);
-      let friendlyMessage = "Falha ao fazer login. Verifique seu email e senha.";
+      console.error("Email/Password Sign-In Error:", authError.code, authError.message);
+      let friendlyMessage = "Falha ao fazer login. Tente novamente.";
       switch (authError.code) {
         case 'auth/invalid-email':
           friendlyMessage = "O formato do email é inválido.";
@@ -47,15 +47,16 @@ export default function LoginPage() {
         case 'auth/user-disabled':
           friendlyMessage = "Este usuário foi desabilitado.";
           break;
-        // Newer SDKs might use 'auth/invalid-credential' for both user-not-found and wrong-password
-        case 'auth/user-not-found': // Specific to older SDKs or particular error responses
-        case 'auth/wrong-password': // Specific to older SDKs or particular error responses
-        case 'auth/invalid-credential': // General invalid credential error
-          friendlyMessage = "Credenciais inválidas. Verifique seu email e senha.";
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          friendlyMessage = "Email ou senha inválidos. Por favor, verifique e tente novamente.";
           break;
         case 'auth/too-many-requests':
            friendlyMessage = "Acesso temporariamente desabilitado devido a muitas tentativas de login malsucedidas. Tente novamente mais tarde.";
            break;
+        default:
+          friendlyMessage = "Ocorreu um erro desconhecido ao tentar fazer login. Por favor, tente novamente.";
       }
       setError(friendlyMessage);
       setIsSigningIn(false);
