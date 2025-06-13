@@ -3,12 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MemeTrade Pro - App Principal</title>
+    <title>Página Não Encontrada - MemeTrade Pro</title>
     <style media="screen">
       body { background: #1a1a2e; color: #e0e0e0; font-family: 'Poppins', 'Inter', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
       #message { background: #2a2a3e; max-width: 500px; margin: 20px; padding: 32px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-top: 5px solid #A020F0; }
       #message h1 { font-size: 28px; font-weight: 700; color: #A020F0; margin: 0 0 16px;}
-      #message h2 { color: #f0f0f0; font-weight: 600; font-size: 20px; margin: 0 0 8px; }
       #message p { line-height: 1.6; margin: 16px 0 24px; font-size: 15px; }
       #message a { display: inline-block; text-align: center; background: #A020F0; text-transform: uppercase; text-decoration: none; color: white; padding: 12px 24px; border-radius: 4px; font-weight: 600; transition: background-color 0.3s ease; }
       #message a:hover { background: #8A2BE2; }
@@ -22,17 +21,13 @@
   </head>
   <body>
     <div id="message">
-      <h2>Bem-vindo ao</h2>
-      <h1>MemeTrade Pro</h1>
-      <p class="warning">
-        <strong>Nota Importante para Aplicativos Next.js no Firebase Hosting:</strong><br/>
-        MemeTrade Pro é um aplicativo Next.js. Em uma configuração correta do Firebase Hosting para Next.js, esta página <code>public/index.html</code> geralmente <strong>não</strong> deveria ser exibida. O Firebase deve servir as páginas dinamicamente geradas pelo Next.js (a partir da pasta <code>src/app/</code> do seu projeto).<br/><br/>
-        Se você está vendo esta mensagem, pode ser que:<br/>
-        - A implantação (deploy) do seu aplicativo Next.js no Firebase Hosting não foi concluída ou configurada corretamente para renderização SSR/SSG do Next.js.<br/>
-        - Sua configuração no <code>firebase.json</code> (ou App Hosting via <code>apphosting.yaml</code>) pode estar incorreta, fazendo com que o Firebase sirva este arquivo estático em vez do seu app Next.js.<br/><br/>
-        Certifique-se de que seu Firebase Hosting esteja configurado para um aplicativo Next.js (geralmente usando a opção de "web frameworks" ou configurando rewrites para uma função de Cloud/serviço App Hosting). A página principal do seu aplicativo é definida em <code>src/app/page.tsx</code>.
+      <h1>Erro 404 - Página Não Encontrada</h1>
+      <p>Oops! Parece que a página que você está procurando não existe ou foi movida.</p>
+      <a href="/">Voltar para a Página Inicial</a>
+      <p class="warning" style="margin-top: 30px;">
+        <strong>Nota para Desenvolvedores (Next.js):</strong><br/>
+        Se você está vendo esta página <code>public/404.html</code> estática, pode ser que a configuração do seu Firebase Hosting precise de ajustes para permitir que o Next.js manipule os erros 404 dinamicamente (por exemplo, com um arquivo <code>src/app/not-found.tsx</code>). Idealmente, este arquivo estático não seria o principal manipulador de 404 para uma aplicação Next.js bem configurada.
       </p>
-      <p>Se você é um desenvolvedor, verifique sua configuração de deploy. Se você é um usuário, por favor, contate o suporte.</p>
     </div>
   </body>
 </html>
