@@ -19,16 +19,23 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  // Define a URL base para metadados. Use uma variável de ambiente para produção.
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'),
   title: 'MemeTrade Pro',
   description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
+  manifest: '/manifest.json',
+  themeColor: '#A020F0', // Primary color
+  icons: {
+    icon: '/favicon.png', // Standard favicon
+    apple: '/apple-touch-icon.png', // For Apple devices, e.g. 180x180
+  },
   openGraph: {
     title: 'MemeTrade Pro',
     description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002',
+    siteName: 'MemeTrade Pro',
     images: [
       {
-        url: '/logo-social.png',
+        url: '/logo-social.png', // Must be an absolute URL or Next.js will prefix with metadataBase
         width: 1200,
         height: 630,
         alt: 'MemeTrade Pro Logo',
@@ -36,26 +43,15 @@ export const metadata: Metadata = {
     ],
     locale: 'pt_BR',
     type: 'website',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002', // Adiciona a URL canônica aqui também
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MemeTrade Pro',
     description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
-    images: ['/logo-social.png'],
-    // Adicione o site e o creator se tiver um handle do Twitter
-    // site: '@seuTwitterHandle',
-    // creator: '@seuTwitterHandle',
+    images: ['/logo-social.png'], // Must be an absolute URL or Next.js will prefix with metadataBase
+    // site: '@memetradepro', // Optional: your Twitter handle
+    // creator: '@creatorhandle', // Optional: creator's Twitter handle
   },
-  manifest: '/manifest.json',
-  icons: {
-    icon: '/favicon.png',
-    apple: '/apple-touch-icon.png', // Exemplo de ícone para Apple
-  },
-  themeColor: '#a020f0',
-  // Adicione outros metadados relevantes aqui
-  // keywords: ['memecoin', 'trade', 'crypto', 'alertas', 'investimento'],
-  // authors: [{ name: 'MemeTrade Pro Team', url: process.env.NEXT_PUBLIC_APP_URL }],
 };
 
 export default function RootLayout({
@@ -66,7 +62,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>
       <head>
-        {/* next/font otimiza o carregamento de fontes, não são necessários preconnects manuais aqui */}
+        {/* next/font otimiza o carregamento de fontes, não são necessários preconnects manuais para Google Fonts aqui se usando next/font */}
+        {/* Outras tags <head> globais podem ser adicionadas aqui se necessário, mas prefira o objeto metadata */}
       </head>
       <body className={`font-body antialiased bg-background text-foreground`}>
         <AuthProvider>
