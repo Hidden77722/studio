@@ -44,8 +44,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
         {/* Adicionando link para o favicon */}
         <link rel="icon" href="/favicon.png" type="image/png" sizes="any" />
-        {/* Você também pode adicionar outros tamanhos de ícone ou um favicon.ico aqui se desejar */}
-        {/* Exemplo: <link rel="icon" href="/favicon.ico" sizes="any" /> */}
+        {/* Adicionando link para o manifest.json para PWA */}
+        <link rel="manifest" href="/manifest.json" />
+        {/* Meta tag para cor do tema (PWA e alguns navegadores) */}
+        <meta name="theme-color" content="#a020f0" /> {/* Cor primária do tema */}
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         <AuthProvider>

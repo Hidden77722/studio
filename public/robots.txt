@@ -1,0 +1,7 @@
+# Instruções para web crawlers (robôs de mecanismos de busca)
+
+User-agent: *
+Allow: /
+
+# Se você tiver um sitemap, adicione o link aqui quando estiver pronto:
+# Sitemap: /sitemap.xml
