@@ -1,11 +1,10 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/AuthContext';
 import { Inter, Poppins } from 'next/font/google';
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
@@ -20,6 +19,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  // Define a URL base para metadados. Use uma variável de ambiente para produção.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'),
   title: 'MemeTrade Pro',
   description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
   openGraph: {
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
     images: [
       {
-        url: '/logo-social.png', // Ensure this image exists in public/
+        url: '/logo-social.png',
         width: 1200,
         height: 630,
         alt: 'MemeTrade Pro Logo',
@@ -35,18 +36,26 @@ export const metadata: Metadata = {
     ],
     locale: 'pt_BR',
     type: 'website',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002', // Adiciona a URL canônica aqui também
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MemeTrade Pro',
     description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
-    images: ['/logo-social.png'], // Ensure this image exists in public/
+    images: ['/logo-social.png'],
+    // Adicione o site e o creator se tiver um handle do Twitter
+    // site: '@seuTwitterHandle',
+    // creator: '@seuTwitterHandle',
   },
-  manifest: '/manifest.json', // Ensure this file exists in public/
+  manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.png', // Ensure this image exists in public/
+    icon: '/favicon.png',
+    apple: '/apple-touch-icon.png', // Exemplo de ícone para Apple
   },
-  themeColor: '#a020f0', 
+  themeColor: '#a020f0',
+  // Adicione outros metadados relevantes aqui
+  // keywords: ['memecoin', 'trade', 'crypto', 'alertas', 'investimento'],
+  // authors: [{ name: 'MemeTrade Pro Team', url: process.env.NEXT_PUBLIC_APP_URL }],
 };
 
 export default function RootLayout({
@@ -55,14 +64,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>
       <head>
-        {/* next/font handles font loading, preconnects are not strictly needed here but harmless */}
-        {/* <link rel="preconnect" href="https://fonts.googleapis.com" /> */}
-        {/* <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" /> */}
-        {/* Removed direct Google Font links, next/font will manage them */}
+        {/* next/font otimiza o carregamento de fontes, não são necessários preconnects manuais aqui */}
       </head>
-      <body className={`${inter.variable} ${poppins.variable} font-body antialiased bg-background text-foreground`}>
+      <body className={`font-body antialiased bg-background text-foreground`}>
         <AuthProvider>
           {children}
         </AuthProvider>
