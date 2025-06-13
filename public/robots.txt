@@ -1,5 +1,6 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Disallow: /api/ # Bloqueia rotas de API se não forem para serem indexadas
 
 Sitemap: [YOUR_APP_URL]/sitemap.xml

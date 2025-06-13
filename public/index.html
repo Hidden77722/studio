@@ -1,38 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MemeTrade Pro - App Principal</title>
-    <style media="screen">
-      body { background: #1a1a2e; color: #e0e0e0; font-family: 'Poppins', 'Inter', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
-      #message { background: #2a2a3e; max-width: 500px; margin: 20px; padding: 32px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-top: 5px solid #A020F0; }
-      #message h1 { font-size: 28px; font-weight: 700; color: #A020F0; margin: 0 0 16px;}
-      #message h2 { color: #f0f0f0; font-weight: 600; font-size: 20px; margin: 0 0 8px; }
-      #message p { line-height: 1.6; margin: 16px 0 24px; font-size: 15px; }
-      #message a { display: inline-block; text-align: center; background: #A020F0; text-transform: uppercase; text-decoration: none; color: white; padding: 12px 24px; border-radius: 4px; font-weight: 600; transition: background-color 0.3s ease; }
-      #message a:hover { background: #8A2BE2; }
-      .warning { background-color: rgba(255, 165, 0, 0.1); border-left: 4px solid #A020F0; padding: 15px; margin-top: 20px; text-align: left; border-radius: 4px;}
-      .warning strong { color: #A020F0; }
-      @media (max-width: 600px) {
-        body { padding-top: 0; }
-        #message { margin: 0; border-radius: 0; box-shadow: none; border-top: 5px solid #A020F0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;}
+    <title>MemeTrade Pro - Fallback</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      body { 
+        font-family: 'Inter', sans-serif; 
+        background-color: #111827; /* bg-background dark */
+        color: #F3F4F6; /* text-foreground light */
+        margin: 0; 
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        text-align: center;
+      }
+      .container {
+        background-color: #1F2937; /* card dark */
+        padding: 30px 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-width: 600px;
+      }
+      h1 {
+        font-family: 'Poppins', sans-serif;
+        color: #A020F0; /* primary violet */
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+      }
+      h2 {
+        font-family: 'Poppins', sans-serif;
+        color: #D1D5DB; /* muted-foreground */
+        font-size: 1.5rem;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+      }
+      p {
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+        color: #9CA3AF; /* text-muted-foreground */
+      }
+      strong {
+        color: #FBBF24; /* yellow-500 for warning */
+      }
+      code {
+        background-color: #374151; /* muted dark */
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        color: #E5E7EB;
+      }
+      .footer-note {
+        margin-top: 2rem;
+        font-size: 0.8rem;
+        color: #6B7280; /* gray-500 */
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .logo svg {
+        width: 3rem;
+        height: 3rem;
+        stroke: #A020F0; /* primary violet */
+      }
+      .logo span {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #A020F0; /* primary violet */
       }
     </style>
   </head>
   <body>
-    <div id="message">
-      <h2>Bem-vindo ao</h2>
-      <h1>MemeTrade Pro</h1>
-      <p class="warning">
-        <strong>Nota Importante para Aplicativos Next.js no Firebase Hosting:</strong><br/>
-        MemeTrade Pro é um aplicativo Next.js. Em uma configuração correta do Firebase Hosting para Next.js, esta página <code>public/index.html</code> geralmente <strong>não</strong> deveria ser exibida. O Firebase deve servir as páginas dinamicamente geradas pelo Next.js (a partir da pasta <code>src/app/</code> do seu projeto).<br/><br/>
-        Se você está vendo esta mensagem, pode ser que:<br/>
-        - A implantação (deploy) do seu aplicativo Next.js no Firebase Hosting não foi concluída ou configurada corretamente para renderização SSR/SSG do Next.js.<br/>
-        - Sua configuração no <code>firebase.json</code> (ou App Hosting via <code>apphosting.yaml</code>) pode estar incorreta, fazendo com que o Firebase sirva este arquivo estático em vez do seu app Next.js.<br/><br/>
-        Certifique-se de que seu Firebase Hosting esteja configurado para um aplicativo Next.js (geralmente usando a opção de "web frameworks" ou configurando rewrites para uma função de Cloud/serviço App Hosting). A página principal do seu aplicativo é definida em <code>src/app/page.tsx</code>.
-      </p>
-      <p>Se você é um desenvolvedor, verifique sua configuração de deploy. Se você é um usuário, por favor, contate o suporte.</p>
+    <div class="container">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+        <span>MemeTrade Pro</span>
+      </div>
+      <h2>Bem-vindo ao MemeTrade Pro</h2>
+      <p>Você está vendo esta página de fallback. Se você esperava ver o aplicativo MemeTrade Pro, continue lendo abaixo.</p>
+      
+      <hr style="border-color: #374151; margin: 1.5rem 0;">
+
+      <p><strong>Nota Importante para Aplicativos Next.js no Firebase Hosting:</strong></p>
+      <p>MemeTrade Pro é um aplicativo Next.js. Em uma configuração correta do Firebase Hosting para Next.js, esta página <code>public/index.html</code> geralmente <strong>não</strong> deveria ser exibida. O Firebase deve servir as páginas dinamicamente geradas pelo Next.js (a partir da pasta <code>src/app/</code> do seu projeto).</p>
+      <p>Se você está vendo esta mensagem, pode ser que:</p>
+      <ul>
+        <li>A implantação (deploy) do seu aplicativo Next.js no Firebase Hosting não foi concluída ou configurada corretamente para renderização do Next.js.</li>
+        <li>Sua configuração no <code>firebase.json</code> (para Firebase Hosting tradicional) ou <code>apphosting.yaml</code> (para Firebase App Hosting) pode estar incorreta, fazendo com que o Firebase sirva este arquivo estático em vez do seu app Next.js.</li>
+      </ul>
+      <p>Certifique-se de que seu Firebase Hosting esteja configurado para um aplicativo Next.js. A página principal do seu aplicativo é definida em <code>src/app/page.tsx</code>.</p>
     </div>
+    <p class="footer-note">Se esta página persistir, verifique sua configuração de deploy do Firebase Hosting.</p>
   </body>
 </html>

@@ -142,7 +142,7 @@ export default function HomePage() {
             <Link href="/legal/privacy-policy" className="hover:text-primary hover:underline">Política de Privacidade</Link>
           </nav>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} MemeTrade Pro. Todos os direitos reservados.
+            © ${new Date().getFullYear()} MemeTrade Pro. Todos os direitos reservados.
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Lembre-se: Trading de criptomoedas é arriscado. Invista apenas o que você pode perder. MemeTrade Pro não é aconselhamento financeiro.

@@ -22,11 +22,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'),
   title: 'MemeTrade Pro',
   description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
-  manifest: '/manifest.json',
+  manifest: '/manifest.json', // Referencia o manifest.json na pasta public
   themeColor: '#A020F0', // Primary color
   icons: {
-    icon: '/favicon.png', // Standard favicon
-    apple: '/apple-touch-icon.png', // For Apple devices, e.g. 180x180
+    icon: '/favicon.png', // Referencia o favicon.png na pasta public
+    apple: '/apple-touch-icon.png', // Referencia o apple-touch-icon.png na pasta public
   },
   openGraph: {
     title: 'MemeTrade Pro',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     siteName: 'MemeTrade Pro',
     images: [
       {
-        url: '/logo-social.png', // Must be an absolute URL or Next.js will prefix with metadataBase
+        url: '/logo-social.png', // Referencia o logo-social.png na pasta public
         width: 1200,
         height: 630,
         alt: 'MemeTrade Pro Logo',
@@ -48,9 +48,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MemeTrade Pro',
     description: 'Alertas de negociação de meme coins em tempo real com alta precisão.',
-    images: ['/logo-social.png'], // Must be an absolute URL or Next.js will prefix with metadataBase
-    // site: '@memetradepro', // Optional: your Twitter handle
-    // creator: '@creatorhandle', // Optional: creator's Twitter handle
+    images: ['/logo-social.png'], // Referencia o logo-social.png na pasta public
   },
 };
 
@@ -62,8 +60,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>
       <head>
-        {/* next/font otimiza o carregamento de fontes, não são necessários preconnects manuais para Google Fonts aqui se usando next/font */}
-        {/* Outras tags <head> globais podem ser adicionadas aqui se necessário, mas prefira o objeto metadata */}
+        {/* next/font otimiza o carregamento de fontes */}
+        {/* O manifest.json e ícones são linkados através do objeto metadata */}
       </head>
       <body className={`font-body antialiased bg-background text-foreground`}>
         <AuthProvider>
