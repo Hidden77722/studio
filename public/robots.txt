@@ -1,8 +1,5 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow: /auth/ # Disallow indexing of auth pages
-Disallow: /dashboard/ # Disallow indexing of dashboard pages (if they require login)
-
 Allow: /
 
 Sitemap: [YOUR_APP_URL]/sitemap.xml

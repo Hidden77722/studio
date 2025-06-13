@@ -3,79 +3,70 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MemeTrade Pro</title>
+    <title>MemeTrade Pro - Alertas de Trade com IA</title>
 
-    <!-- update the version number as needed -->
+    <!-- Firebase SDK (geralmente injetado automaticamente pelo Firebase Hosting) -->
     <script defer src="/__/firebase/11.9.1/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
     <script defer src="/__/firebase/11.9.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/11.9.1/firebase-firestore-compat.js"></script>
-    <!-- Add other Firebase SDKs if your Next.js app uses them directly in client-side JS outside of Next.js components -->
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <script defer src="/__/firebase/init.js?useEmulator=false"></script>
 
     <style media="screen">
-      body { background: #222222; color: #ECEFF1; font-family: Poppins, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: #2a2a2a; max-width: 480px; margin: 60px auto 16px; padding: 32px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-      #message h1 { font-size: 28px; font-weight: 700; color: #A020F0; margin: 0 0 16px;}
-      #message h2 { color: #8A2BE2; font-weight: 600; font-size: 20px; margin: 0 0 12px; }
-      #message p { line-height: 1.6; margin: 16px 0 24px; font-size: 15px; font-family: Inter, sans-serif; }
-      #message a { display: inline-block; text-align: center; background: #A020F0; text-transform: uppercase; text-decoration: none; color: white; padding: 14px 22px; border-radius: 5px; font-weight: 600; font-size: 14px; transition: background-color 0.3s ease;}
+      body { background: #222; color: #f0f0f0; font-family: 'Inter', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
+      #message { background: #333; max-width: 480px; margin: 20px; padding: 32px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+      #message h1 { font-size: 28px; font-weight: 600; color: #A020F0; margin: 0 0 16px;}
+      #message h2 { color: #ccc; font-weight: 500; font-size: 18px; margin: 0 0 8px; }
+      #message p { line-height: 1.6; margin: 16px 0 24px; font-size: 15px; color: #ddd; }
+      #message a { display: inline-block; background: #A020F0; text-transform: uppercase; text-decoration: none; color: white; padding: 14px 28px; border-radius: 4px; font-weight: 500; font-size: 14px; transition: background-color 0.2s ease; }
       #message a:hover { background: #8A2BE2; }
-      #load { color: rgba(255,255,255,0.6); text-align: center; font-size: 13px; margin-top: 20px;}
-      .note { background-color: #3a3a3a; padding: 15px; border-radius: 5px; margin-top: 25px; border-left: 4px solid #ffa100; }
-      .note p { margin: 0; font-size: 13px; }
+      #alert-note { background-color: rgba(255, 165, 0, 0.1); border-left: 4px solid #FFA500; padding: 12px; margin-top: 20px; text-align: left; font-size: 13px; color: #FFA500; border-radius: 4px; }
+      #alert-note strong { color: #FFD700; }
+      #load { color: rgba(255,255,255,0.5); text-align: center; font-size: 13px; margin-top: 20px; }
       @media (max-width: 600px) {
-        body { border-top: 10px solid #A020F0; }
-        #message { margin: 20px 10px; padding: 24px 18px;}
+        body { padding: 16px 0; align-items: flex-start; }
+        #message { margin: 16px; }
         #message h1 { font-size: 24px; }
-        #message h2 { font-size: 18px; }
+        #message h2 { font-size: 16px; }
       }
     </style>
   </head>
   <body>
     <div id="message">
+      <h2>Bem-vindo ao</h2>
       <h1>MemeTrade Pro</h1>
-      <h2>Next.js Application Status</h2>
+      <p>Você está vendo esta página de fallback. Se você esperava ver o aplicativo MemeTrade Pro, continue lendo abaixo.</p>
       
-      <p>If you are seeing this page, it likely means the static <code>index.html</code> file located in your <code>public</code> folder is being served directly by Firebase Hosting.</p>
-      
-      <div class="note">
-        <p><strong>Important for Next.js Apps:</strong></p>
-        <p>For your MemeTrade Pro Next.js application to display correctly, this <code>public/index.html</code> file should typically be <strong>removed</strong>. Your main application content is defined in <code>src/app/page.tsx</code> (the landing page) and uses <code>src/app/layout.tsx</code> as its HTML shell.</p>
-        <p>Please ensure your Firebase Hosting configuration is set up to properly serve your Next.js application (e.g., via Firebase App Hosting or by correctly configuring rewrites in <code>firebase.json</code> to your Next.js app's build output).</p>
+      <div id="alert-note">
+        <strong>Nota Importante para Aplicativos Next.js no Firebase Hosting:</strong>
+        <p>MemeTrade Pro é um aplicativo Next.js. Em uma configuração correta do Firebase Hosting para Next.js, esta página <code>public/index.html</code> geralmente <strong>não</strong> deveria ser exibida. O Firebase deve servir as páginas dinamicamente geradas pelo Next.js (a partir da pasta <code>src/app/</code> do seu projeto).</p>
+        <p>Se você está vendo esta mensagem, pode ser que:</p>
+        <ul style="margin-left: 20px; padding-left: 0; list-style-type: disc;">
+            <li>A implantação (deploy) do seu aplicativo Next.js no Firebase Hosting não foi concluída ou configurada corretamente para renderização SSR/SSG do Next.js.</li>
+            <li>Sua configuração no <code>firebase.json</code> (ou App Hosting) pode estar incorreta, fazendo com que o Firebase sirva este arquivo estático em vez do seu app Next.js.</li>
+        </ul>
+        <p>Certifique-se de que seu Firebase Hosting esteja configurado para um aplicativo Next.js (geralmente usando a opção de "web frameworks" ou configurando rewrites para uma função de Cloud). A página principal do seu aplicativo é definida em <code>src/app/page.tsx</code>.</p>
       </div>
-      
-      <p style="margin-top: 30px;">
-        <a target="_blank" href="https://firebase.google.com/docs/hosting/nextjs">Next.js on Firebase Hosting</a>
-      </p>
+      <br/>
+      <a target="_blank" href="https://memetrade.pro">Visite o Site (se já estiver no ar)</a>
     </div>
-    <p id="load">Firebase SDK Initializing&hellip;</p>
+    <p id="load">SDK do Firebase Carregando&hellip;</p>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const loadEl = document.querySelector('#load');
         try {
-          // Ensure Firebase is initialized by /__/firebase/init.js
-          if (typeof firebase !== 'undefined' && typeof firebase.app === 'function') {
-            let app = firebase.app(); // This should use the config from init.js
+          // Firebase SDK should be initialized by /__/firebase/init.js
+          if (firebase && firebase.app) {
+            let app = firebase.app();
             let features = [
               'auth', 
-              'firestore',
-              // Add other features if you are using them directly in this static HTML context
-            ].filter(feature => typeof app[feature] === 'function');
-            loadEl.textContent = `Firebase SDK initialized for MemeTrade Pro. Detected features: ${features.join(', ') || 'core'}.`;
-            console.log("Firebase SDK initialized by /__/firebase/init.js for project:", app.options.projectId);
+            ].filter(feature => typeof app[feature] === 'function'); // Check only for auth for example
+            loadEl.textContent = `SDK do Firebase carregado ${features.length > 0 ? 'com: ' + features.join(', ') : ''}`;
           } else {
-            loadEl.textContent = 'Firebase SDK not found or init.js failed to load. Check console.';
-            console.error('Firebase global object not found. Ensure /__/firebase/init.js is loaded and initialized correctly by Firebase Hosting.');
+            loadEl.textContent = 'SDK do Firebase não parece estar inicializado.';
           }
         } catch (e) {
-          console.error("Error during Firebase SDK check in public/index.html:", e);
-          loadEl.textContent = 'Error initializing the Firebase SDK for MemeTrade Pro. Check the console.';
+          console.error(e);
+          loadEl.textContent = 'Erro ao verificar o SDK do Firebase, verifique o console.';
         }
       });
     </script>
