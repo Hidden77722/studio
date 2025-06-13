@@ -3,29 +3,43 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MemeTrade Pro - Alertas de Trade com IA</title>
+    <title>MemeTrade Pro - Fallback</title>
 
-    <!-- Firebase SDK (geralmente injetado automaticamente pelo Firebase Hosting) -->
+    <!-- update the version number as needed -->
     <script defer src="/__/firebase/11.9.1/firebase-app-compat.js"></script>
+    <!-- include only the Firebase features as you need -->
     <script defer src="/__/firebase/11.9.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/init.js?useEmulator=false"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-database-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-firestore-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-functions-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-messaging-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-storage-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-analytics-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-remote-config-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-performance-compat.js"></script>
+    <!-- 
+      initialize the SDK after all desired features are loaded, set useEmulator to false
+      to avoid connecting the SDK to running emulators.
+    -->
+    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
 
     <style media="screen">
-      body { background: #222; color: #f0f0f0; font-family: 'Inter', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
-      #message { background: #333; max-width: 480px; margin: 20px; padding: 32px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+      body { background: #0A0A0B; color: #f0f0f0; font-family: 'Poppins', Helvetica, Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center;}
+      #message { background: #1A1A1D; max-width: 600px; margin: 20px; padding: 32px 24px; border-radius: 8px; border: 1px solid #3A006F; }
       #message h1 { font-size: 28px; font-weight: 600; color: #A020F0; margin: 0 0 16px;}
-      #message h2 { color: #ccc; font-weight: 500; font-size: 18px; margin: 0 0 8px; }
-      #message p { line-height: 1.6; margin: 16px 0 24px; font-size: 15px; color: #ddd; }
-      #message a { display: inline-block; background: #A020F0; text-transform: uppercase; text-decoration: none; color: white; padding: 14px 28px; border-radius: 4px; font-weight: 500; font-size: 14px; transition: background-color 0.2s ease; }
+      #message h2 { color: #D4ADFC; font-weight: bold; font-size: 20px; margin: 0 0 8px; }
+      #message p { line-height: 160%; margin: 16px 0 24px; font-size: 14px; color: #c0c0c0; }
+      #message .important-note { background-color: rgba(160, 32, 240, 0.1); border-left: 4px solid #A020F0; padding: 12px; margin-bottom: 20px; text-align: left; }
+      #message .important-note h3 { color: #D4ADFC; margin-top: 0; font-size: 16px; }
+      #message .important-note ul { list-style-type: disc; margin-left: 20px; padding-left: 0;}
+      #message .important-note li { margin-bottom: 8px; }
+      #message a { display: inline-block; background: #A020F0; text-transform: uppercase; text-decoration: none; color: white; padding: 14px 28px; border-radius: 4px; font-weight: 500; transition: background-color 0.3s ease; }
       #message a:hover { background: #8A2BE2; }
-      #alert-note { background-color: rgba(255, 165, 0, 0.1); border-left: 4px solid #FFA500; padding: 12px; margin-top: 20px; text-align: left; font-size: 13px; color: #FFA500; border-radius: 4px; }
-      #alert-note strong { color: #FFD700; }
-      #load { color: rgba(255,255,255,0.5); text-align: center; font-size: 13px; margin-top: 20px; }
+      #message, #message a { box-shadow: 0 2px 5px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.3); }
+      #load { color: rgba(240,240,240,0.5); text-align: center; font-size: 13px; margin-top: 20px; }
       @media (max-width: 600px) {
-        body { padding: 16px 0; align-items: flex-start; }
-        #message { margin: 16px; }
-        #message h1 { font-size: 24px; }
-        #message h2 { font-size: 16px; }
+        body { padding: 16px; }
+        #message { margin: 0; }
       }
     </style>
   </head>
@@ -35,38 +49,41 @@
       <h1>MemeTrade Pro</h1>
       <p>Você está vendo esta página de fallback. Se você esperava ver o aplicativo MemeTrade Pro, continue lendo abaixo.</p>
       
-      <div id="alert-note">
-        <strong>Nota Importante para Aplicativos Next.js no Firebase Hosting:</strong>
-        <p>MemeTrade Pro é um aplicativo Next.js. Em uma configuração correta do Firebase Hosting para Next.js, esta página <code>public/index.html</code> geralmente <strong>não</strong> deveria ser exibida. O Firebase deve servir as páginas dinamicamente geradas pelo Next.js (a partir da pasta <code>src/app/</code> do seu projeto).</p>
+      <div class="important-note">
+        <h3>Nota Importante para Aplicativos Next.js no Firebase Hosting:</h3>
+        <p>MemeTrade Pro é um aplicativo Next.js. Em uma configuração correta do Firebase Hosting para Next.js, esta página <code>public/index.html</code> geralmente não deveria ser exibida. O Firebase deve servir as páginas dinamicamente geradas pelo Next.js (a partir da pasta <code>src/app/</code> do seu projeto).</p>
         <p>Se você está vendo esta mensagem, pode ser que:</p>
-        <ul style="margin-left: 20px; padding-left: 0; list-style-type: disc;">
+        <ul>
             <li>A implantação (deploy) do seu aplicativo Next.js no Firebase Hosting não foi concluída ou configurada corretamente para renderização SSR/SSG do Next.js.</li>
             <li>Sua configuração no <code>firebase.json</code> (ou App Hosting) pode estar incorreta, fazendo com que o Firebase sirva este arquivo estático em vez do seu app Next.js.</li>
         </ul>
         <p>Certifique-se de que seu Firebase Hosting esteja configurado para um aplicativo Next.js (geralmente usando a opção de "web frameworks" ou configurando rewrites para uma função de Cloud). A página principal do seu aplicativo é definida em <code>src/app/page.tsx</code>.</p>
       </div>
-      <br/>
-      <a target="_blank" href="https://memetrade.pro">Visite o Site (se já estiver no ar)</a>
+
+      <a target="_blank" href="https://firebase.google.com/docs/hosting/frameworks/nextjs">Documentação: Next.js no Firebase</a>
     </div>
-    <p id="load">SDK do Firebase Carregando&hellip;</p>
+    <p id="load">Firebase SDK Loading&hellip;</p>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const loadEl = document.querySelector('#load');
         try {
-          // Firebase SDK should be initialized by /__/firebase/init.js
-          if (firebase && firebase.app) {
-            let app = firebase.app();
-            let features = [
-              'auth', 
-            ].filter(feature => typeof app[feature] === 'function'); // Check only for auth for example
-            loadEl.textContent = `SDK do Firebase carregado ${features.length > 0 ? 'com: ' + features.join(', ') : ''}`;
-          } else {
-            loadEl.textContent = 'SDK do Firebase não parece estar inicializado.';
-          }
+          let app = firebase.app();
+          let features = [
+            'auth', 
+            'database', 
+            'firestore',
+            'functions',
+            'messaging', 
+            'storage', 
+            'analytics', 
+            'remoteConfig',
+            'performance',
+          ].filter(feature => typeof app[feature] === 'function');
+          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
         } catch (e) {
           console.error(e);
-          loadEl.textContent = 'Erro ao verificar o SDK do Firebase, verifique o console.';
+          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
         }
       });
     </script>
