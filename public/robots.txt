@@ -1,7 +1,8 @@
-# Instruções para web crawlers (robôs de mecanismos de busca)
-
+# https://www.robotstxt.org/robotstxt.html
 User-agent: *
+Disallow: /auth/ # Disallow indexing of auth pages
+Disallow: /dashboard/ # Disallow indexing of dashboard pages (if they require login)
+
 Allow: /
 
-# Se você tiver um sitemap, adicione o link aqui quando estiver pronto:
-# Sitemap: /sitemap.xml
+Sitemap: [YOUR_APP_URL]/sitemap.xml

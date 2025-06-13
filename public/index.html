@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MemeTrade Pro</title>
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/11.9.1/firebase-app-compat.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/11.9.1/firebase-auth-compat.js"></script>
+    <script defer src="/__/firebase/11.9.1/firebase-firestore-compat.js"></script>
+    <!-- Add other Firebase SDKs if your Next.js app uses them directly in client-side JS outside of Next.js components -->
+    <!-- 
+      initialize the SDK after all desired features are loaded, set useEmulator to false
+      to avoid connecting the SDK to running emulators.
+    -->
+    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+    <style media="screen">
+      body { background: #222222; color: #ECEFF1; font-family: Poppins, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
+      #message { background: #2a2a2a; max-width: 480px; margin: 60px auto 16px; padding: 32px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+      #message h1 { font-size: 28px; font-weight: 700; color: #A020F0; margin: 0 0 16px;}
+      #message h2 { color: #8A2BE2; font-weight: 600; font-size: 20px; margin: 0 0 12px; }
+      #message p { line-height: 1.6; margin: 16px 0 24px; font-size: 15px; font-family: Inter, sans-serif; }
+      #message a { display: inline-block; text-align: center; background: #A020F0; text-transform: uppercase; text-decoration: none; color: white; padding: 14px 22px; border-radius: 5px; font-weight: 600; font-size: 14px; transition: background-color 0.3s ease;}
+      #message a:hover { background: #8A2BE2; }
+      #load { color: rgba(255,255,255,0.6); text-align: center; font-size: 13px; margin-top: 20px;}
+      .note { background-color: #3a3a3a; padding: 15px; border-radius: 5px; margin-top: 25px; border-left: 4px solid #ffa100; }
+      .note p { margin: 0; font-size: 13px; }
+      @media (max-width: 600px) {
+        body { border-top: 10px solid #A020F0; }
+        #message { margin: 20px 10px; padding: 24px 18px;}
+        #message h1 { font-size: 24px; }
+        #message h2 { font-size: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="message">
+      <h1>MemeTrade Pro</h1>
+      <h2>Next.js Application Status</h2>
+      
+      <p>If you are seeing this page, it likely means the static <code>index.html</code> file located in your <code>public</code> folder is being served directly by Firebase Hosting.</p>
+      
+      <div class="note">
+        <p><strong>Important for Next.js Apps:</strong></p>
+        <p>For your MemeTrade Pro Next.js application to display correctly, this <code>public/index.html</code> file should typically be <strong>removed</strong>. Your main application content is defined in <code>src/app/page.tsx</code> (the landing page) and uses <code>src/app/layout.tsx</code> as its HTML shell.</p>
+        <p>Please ensure your Firebase Hosting configuration is set up to properly serve your Next.js application (e.g., via Firebase App Hosting or by correctly configuring rewrites in <code>firebase.json</code> to your Next.js app's build output).</p>
+      </div>
+      
+      <p style="margin-top: 30px;">
+        <a target="_blank" href="https://firebase.google.com/docs/hosting/nextjs">Next.js on Firebase Hosting</a>
+      </p>
+    </div>
+    <p id="load">Firebase SDK Initializing&hellip;</p>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const loadEl = document.querySelector('#load');
+        try {
+          // Ensure Firebase is initialized by /__/firebase/init.js
+          if (typeof firebase !== 'undefined' && typeof firebase.app === 'function') {
+            let app = firebase.app(); // This should use the config from init.js
+            let features = [
+              'auth', 
+              'firestore',
+              // Add other features if you are using them directly in this static HTML context
+            ].filter(feature => typeof app[feature] === 'function');
+            loadEl.textContent = `Firebase SDK initialized for MemeTrade Pro. Detected features: ${features.join(', ') || 'core'}.`;
+            console.log("Firebase SDK initialized by /__/firebase/init.js for project:", app.options.projectId);
+          } else {
+            loadEl.textContent = 'Firebase SDK not found or init.js failed to load. Check console.';
+            console.error('Firebase global object not found. Ensure /__/firebase/init.js is loaded and initialized correctly by Firebase Hosting.');
+          }
+        } catch (e) {
+          console.error("Error during Firebase SDK check in public/index.html:", e);
+          loadEl.textContent = 'Error initializing the Firebase SDK for MemeTrade Pro. Check the console.';
+        }
+      });
+    </script>
+  </body>
+</html>
