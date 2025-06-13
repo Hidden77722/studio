@@ -5,12 +5,32 @@ import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallCard } from "./components/CallCard";
 import { HistoricalCallCard } from "./components/HistoricalCallCard";
-import { PerformanceChart } from "./components/PerformanceChart";
+// import { PerformanceChart } from "./components/PerformanceChart"; // Original import
 import type { HistoricalCall, UserPerformance, MemeCoinCall } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon } from "lucide-react";
+import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon, Loader2 } from "lucide-react";
 import { useLiveCalls } from '@/hooks/useLiveCalls';
-import { useAuth } from '@/context/AuthContext'; // Added
+import { useAuth } from '@/context/AuthContext'; 
+import dynamic from 'next/dynamic';
+
+const PerformanceChartLoadingSkeleton = () => (
+  <Card className="shadow-lg h-[auto] min-h-[346px]"> {/* Adjusted for auto height based on content */}
+    <CardHeader>
+      <div className="h-6 bg-muted/30 rounded w-3/4 animate-pulse mb-1"></div> {/* Skeleton for title */}
+      <div className="h-4 bg-muted/30 rounded w-1/2 animate-pulse"></div> {/* Skeleton for description */}
+    </CardHeader>
+    <CardContent className="flex items-center justify-center h-[250px]">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="ml-2 text-muted-foreground">Loading Chart...</p>
+    </CardContent>
+  </Card>
+);
+
+const PerformanceChart = dynamic(() => import('./components/PerformanceChart').then(mod => mod.PerformanceChart), {
+  ssr: false,
+  loading: () => <PerformanceChartLoadingSkeleton />
+});
+
 
 const mockHistoricalCalls: HistoricalCall[] = [
   {
@@ -268,5 +288,3 @@ function StatCard({ title, value, icon }: StatCardProps) {
     </Card>
   );
 }
-
-    

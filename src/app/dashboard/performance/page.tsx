@@ -1,9 +1,24 @@
 
 "use client";
-import { PerformanceChart } from "@/app/dashboard/components/PerformanceChart";
+// import { PerformanceChart } from "@/app/dashboard/components/PerformanceChart"; // Original import
 import type { UserPerformance } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon, BarChartHorizontalBig, Activity } from "lucide-react";
+import { DollarSign, Percent, ListChecks, TrendingUpIcon, TrendingDownIcon, BarChartHorizontalBig, Activity, Loader2 } from "lucide-react";
+import dynamic from 'next/dynamic';
+import React from 'react';
+
+const ChartLoadingSkeleton = () => (
+  <div className="h-[300px] w-full flex items-center justify-center bg-muted/20 rounded-md p-4"> {/* Adjusted height based on CardContent */}
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <p className="ml-2 text-muted-foreground">Loading Chart...</p>
+  </div>
+);
+
+const PerformanceChart = dynamic(() => import("@/app/dashboard/components/PerformanceChart").then(mod => mod.PerformanceChart), {
+  ssr: false,
+  loading: () => <ChartLoadingSkeleton />
+});
+
 
 const mockUserPerformance: UserPerformance = {
   accuracy: 95.0, 
@@ -123,5 +138,3 @@ function StatCard({ title, value, icon, description }: StatCardProps) {
     </Card>
   );
 }
-
-    

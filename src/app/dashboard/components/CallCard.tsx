@@ -5,10 +5,20 @@ import type { MemeCoinCall } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Info, AlertTriangle, Clock, Target, ShieldAlert, FileText, DollarSign, Droplets } from "lucide-react";
+import { TrendingUp, TrendingDown, Info, AlertTriangle, Clock, Target, ShieldAlert, FileText, DollarSign, Droplets, Loader2 } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-import { WhyThisCoinModal } from "./WhyThisCoinModal";
+import dynamic from 'next/dynamic';
+
+const WhyThisCoinModal = dynamic(() => import('./WhyThisCoinModal').then(mod => mod.WhyThisCoinModal), {
+  ssr: false,
+  loading: () => (
+    <div className="p-4 text-center">
+      <Loader2 className="h-6 w-6 animate-spin text-primary inline-block" />
+      <p className="text-sm text-muted-foreground">Loading Analysis...</p>
+    </div>
+  )
+});
 
 interface CallCardProps {
   call: MemeCoinCall;
@@ -119,13 +129,15 @@ export function CallCard({ call }: CallCardProps) {
           </Button>
         </CardFooter>
       </Card>
-      <WhyThisCoinModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        coinName={call.coinName}
-        technicalAnalysis={call.technicalAnalysisSummary}
-        marketSentiment={call.marketSentimentSummary}
-      />
+      {isModalOpen && (
+        <WhyThisCoinModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            coinName={call.coinName}
+            technicalAnalysis={call.technicalAnalysisSummary}
+            marketSentiment={call.marketSentimentSummary}
+        />
+      )}
     </>
   );
 }
